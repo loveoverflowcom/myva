@@ -1,1 +1,3 @@
 /target
+# Replay ghi từ graybox hoặc myva-replay demo.
+*.myva-replay

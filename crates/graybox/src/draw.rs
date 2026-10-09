@@ -117,7 +117,7 @@ pub(crate) fn frame(game: &Match, show_boxes: bool) {
         "tat"
     };
     let controls = format!(
-        "A/D di chuyen  Space nhay  Shift luot  L do  J/K nhe/nang  Q/E/R thuat  |  B bot ({bot})  H hitbox  F5 dau lai"
+        "A/D di chuyen  Space nhay  Shift luot  L do  J/K nhe/nang  Q/E/R thuat  |  B bot ({bot})  H hitbox  F5 dau lai  F9 luu replay"
     );
     draw_text(&controls, 20.0, screen_height() - 16.0, 18.0, DIM);
 }

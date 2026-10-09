@@ -188,6 +188,8 @@ pub const HUMAN: Body = Body {
 /// 2 đòn cơ bản (đòn nhẹ là chuỗi 3 nhịp) + 3 thuật được trang bị.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Kit {
+    /// Mã ASCII ổn định dùng trong replay và cấu hình.
+    pub id: &'static str,
     pub lineage: &'static str,
     pub body: Body,
     pub light: [ActionSpec; 3],
@@ -215,6 +217,7 @@ const GON_SONG: ActionSpec = ActionSpec {
 
 /// Long Lưu: điều tiết dòng chảy, giữ khoảng cách vừa và phản công (combat.md §7).
 pub const LONG_LUU: Kit = Kit {
+    id: "long-luu",
     lineage: "Long Lưu",
     body: HUMAN,
     // Nhịp 3 đẩy lùi nhẹ.

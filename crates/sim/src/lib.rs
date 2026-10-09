@@ -19,6 +19,7 @@ pub mod input;
 pub mod kit;
 pub mod meter;
 pub mod projectile;
+pub mod replay;
 pub mod rng;
 pub mod tick;
 pub mod world;

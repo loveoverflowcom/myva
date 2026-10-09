@@ -3,10 +3,11 @@
 //! gom input và thể hiện trạng thái.
 //!
 //! Phím theo combat.md §12: A/D hoặc ←/→ di chuyển, Space nhảy, Shift lướt, giữ L để đỡ, J/K đòn
-//! nhẹ/nặng, Q/E/R thuật 1–3. B bật/tắt bot, H bật/tắt hitbox, F5 đấu lại, Esc thoát.
+//! nhẹ/nặng, Q/E/R thuật 1–3. B bật/tắt bot, H bật/tắt hitbox, F5 đấu lại, F9 lưu replay,
+//! Esc thoát.
 //!
 //! `--demo` để bot điều khiển cả hai bên; `--screenshot <file.png>` chạy demo vài giây, lưu ảnh
-//! màn hình rồi thoát.
+//! màn hình cùng replay của trận rồi thoát.
 
 mod draw;
 
@@ -14,6 +15,7 @@ use std::collections::VecDeque;
 
 use macroquad::prelude::*;
 use myva_sim::bot::RandomBot;
+use myva_sim::replay::Recorder;
 use myva_sim::tick::TICK_HZ;
 use myva_sim::{Buttons, Event, FighterId, InputFrame, LONG_LUU, PX, State, World};
 
@@ -23,6 +25,7 @@ const MAX_FRAME_TIME: f32 = 0.25;
 const LOG_LINES: usize = 6;
 const SCREENSHOT_FRAMES: u32 = 600;
 const KO_RESET_TICKS: u32 = 2 * TICK_HZ;
+const CHECKPOINT_EVERY: u32 = TICK_HZ;
 
 const PRESS_KEYS: [(KeyCode, Buttons); 8] = [
     (KeyCode::Space, Buttons::JUMP),
@@ -87,6 +90,7 @@ pub(crate) struct Match {
     /// Ở chế độ demo, bot điều khiển cả người chơi.
     pub player_bot: Option<RandomBot>,
     pub log: VecDeque<String>,
+    recorder: Recorder,
     ko_ticks: u32,
     round: u64,
 }
@@ -97,6 +101,7 @@ impl Match {
         let player = world.spawn(&LONG_LUU, 640 * PX, 1);
         let rival = world.spawn(&LONG_LUU, 960 * PX, -1);
         Self {
+            recorder: Recorder::new(&world, CHECKPOINT_EVERY),
             world,
             player,
             rival,
@@ -122,12 +127,9 @@ impl Match {
             inputs.push((self.rival, bot.next_frame()));
         }
         let tick = self.world.tick();
-        for event in self.world.step(&inputs) {
+        for event in self.recorder.step(&mut self.world, &inputs) {
             if let Some(line) = self.describe(&event) {
-                self.log.push_back(format!("t{tick:>5}  {line}"));
-                if self.log.len() > LOG_LINES {
-                    self.log.pop_front();
-                }
+                self.note(format!("t{tick:>5}  {line}"));
             }
         }
         if self
@@ -138,6 +140,30 @@ impl Match {
         {
             self.ko_ticks += 1;
         }
+    }
+
+    fn note(&mut self, line: String) {
+        self.log.push_back(line);
+        if self.log.len() > LOG_LINES {
+            self.log.pop_front();
+        }
+    }
+
+    /// Ghi replay của trận hiện tại ra thư mục làm việc; kiểm tra bằng `myva-replay`.
+    #[cfg(not(target_arch = "wasm32"))]
+    fn save_replay(&mut self) {
+        let path = format!("graybox-r{}-t{}.myva-replay", self.round, self.world.tick());
+        let text = self.recorder.snapshot(&self.world).to_text();
+        let line = match std::fs::write(&path, text) {
+            Ok(()) => format!("da luu replay: {path}"),
+            Err(error) => format!("khong luu duoc replay: {error}"),
+        };
+        self.note(line);
+    }
+
+    #[cfg(target_arch = "wasm32")]
+    fn save_replay(&mut self) {
+        self.note("ban web chua luu duoc replay".to_owned());
     }
 
     pub fn is_ko(&self) -> bool {
@@ -227,6 +253,9 @@ async fn main() {
         if is_key_pressed(KeyCode::H) {
             show_boxes = !show_boxes;
         }
+        if is_key_pressed(KeyCode::F9) {
+            game.save_replay();
+        }
 
         keyboard.poll();
         accumulator += get_frame_time().min(MAX_FRAME_TIME);
@@ -240,6 +269,7 @@ async fn main() {
         if let Some(path) = &screenshot {
             if frames >= SCREENSHOT_FRAMES {
                 get_screen_data().export_png(path);
+                game.save_replay();
                 break;
             }
         }

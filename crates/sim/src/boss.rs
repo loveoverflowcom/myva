@@ -63,6 +63,7 @@ const ARC: ActionSpec = ActionSpec {
 /// Ô đòn: nhẹ = Quét Ngang, nặng = Đập Đất, thuật 1 = Nước Dâng, thuật 2 = Đạn Vòng Cung.
 /// Thuật 3 để trống (lặp Quét Ngang): pha 3 nối các đòn đã học thay vì thêm đòn mới.
 pub const KE_GIU_DAP: Kit = Kit {
+    id: "ke-giu-dap",
     lineage: "Kẻ Giữ Đập",
     body: Body {
         max_hp: 2_400,
