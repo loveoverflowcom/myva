@@ -2,6 +2,8 @@
 
 Repository hiện ở giai đoạn docs-only. Các bước dưới đây là công việc prototype cần review riêng; chưa có mã nguồn để khẳng định cấu trúc crate, schema hoặc native bridge cuối cùng.
 
+[Planning và Kanban](planning.md) liên kết các issue triển khai với project GitHub; trạng thái hiện tại được cập nhật trên board.
+
 Số `010`, `020`, ... biểu thị **thứ tự khuyến nghị hiện tại**, có thể đánh lại khi ưu tiên thay đổi; không phải ID cố định. Luật chuyên môn nằm trong docs/design và docs/technical, không sao chép thành một hệ thống quản lý trạng thái khác.
 
 | Thứ tự | Công việc | Kết quả cần review | Phụ thuộc |

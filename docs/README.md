@@ -34,6 +34,7 @@ Yêu cầu đã chốt: MyVa / Thần Mạch; hậu duệ hoặc người kế t
 | [Roadmap](production/roadmap.md) | Thứ tự từ thiết kế đến MMORPG nhiều linh vực là gì? |
 | [QA](production/qa.md) | Kiểm tra combat, networking, kinh tế, đồ họa và mobile bằng chứng gì? |
 | [Work plan](work-plan/README.md) | Công việc tiếp theo có thể giao và review riêng là gì? |
+| [Planning & Kanban](work-plan/planning.md) | Issue, project và điều kiện chuyển trạng thái được theo dõi ở đâu? |
 | [Foundation decision](decisions/0001-project-foundation.md) | Quy tắc tên, nhánh, scope và nguồn sự thật là gì? |
 
 ## Quy tắc cập nhật
