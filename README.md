@@ -9,8 +9,8 @@ Người chơi trưởng thành từ một linh vực, học cách chiến đấ
 ## Trạng thái dự án
 
 - **Giai đoạn:** thiết kế tiền sản xuất; tài liệu draft v0.1, ngày 2026-10-09.
-- **Hiện có:** review ý tưởng, GDD, World Bible, luật chiến đấu, kinh tế, kiến trúc đề xuất và kế hoạch kiểm chứng.
-- **Chưa có:** runtime gameplay, server, asset thành phẩm hoặc tích hợp Macroquad native vào CMP đã được xác nhận.
+- **Hiện có:** review ý tưởng, GDD, World Bible, luật chiến đấu, kinh tế, kiến trúc đề xuất và kế hoạch kiểm chứng; skeleton Rust gồm lõi mô phỏng combat, mô phỏng kinh tế headless và client graybox (chưa qua playtest).
+- **Chưa có:** gameplay hoàn chỉnh, server, asset thành phẩm hoặc tích hợp Macroquad native vào CMP đã được xác nhận.
 - **Nhánh đầu tiên và mặc định:** `develop`. Các nhánh công việc và PR sau này lấy `develop` làm base.
 - **Tên tiếng Anh:** MyVa. **Tên tiếng Việt:** Thần Mạch.
 
@@ -26,6 +26,22 @@ Các con số trong tài liệu là giả thuyết thiết kế cần đo bằng
 | Online | Server authoritative; simulation tách khỏi renderer |
 | Persistence | PostgreSQL là đề xuất ban đầu; xác nhận ở prototype persistence |
 | Assets | Atlas, tải theo nhu cầu, cache bền vững và ngân sách bộ nhớ; skeletal runtime cần thử nghiệm riêng |
+
+## Mã nguồn
+
+Workspace Rust tối thiểu cho work-plan [020](docs/work-plan/020-combat-graybox.md) và [030](docs/work-plan/030-economy-simulator.md). Các crate là ranh giới thử nghiệm, chưa phải kiến trúc cuối; mọi thông số là giả thuyết thiết kế.
+
+| Crate | Vai trò |
+| --- | --- |
+| `crates/sim` (`myva-sim`) | Mô phỏng combat thuần Rust: tick 60 Hz, số nguyên, kit Long Lưu, bot B0, hash để so replay. Không phụ thuộc renderer; build được cho wasm32. |
+| `crates/economy` (`myva-economy`) | Sổ cái R/N/I/X/Q/Z, ngân sách theo giờ và bộ chạy headless `myva-econ-sim`. |
+| `crates/graybox` (`myva-graybox`) | Client Macroquad vẽ hình khối; phím theo [combat.md §12](docs/design/combat.md#12-điều-khiển-và-khả-năng-tiếp-cận). Chưa có touch, gamepad hay trang web loader. |
+
+```bash
+cargo test --workspace
+cargo run -p myva-graybox
+cargo run -p myva-economy --bin myva-econ-sim -- --seed 7 --days 90 > econ.csv
+```
 
 ## Đọc tài liệu
 

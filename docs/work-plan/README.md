@@ -1,6 +1,6 @@
 # Hàng đợi công việc MyVa
 
-Repository hiện ở giai đoạn docs-only. Các bước dưới đây là công việc prototype cần review riêng; chưa có mã nguồn để khẳng định cấu trúc crate, schema hoặc native bridge cuối cùng.
+Repository có skeleton Rust tối thiểu trong `crates/` cho 020 và 030; các bước dưới đây vẫn là công việc prototype cần review riêng. Skeleton chưa khẳng định cấu trúc crate, schema hoặc native bridge cuối cùng.
 
 [Planning và Kanban](planning.md) liên kết các issue triển khai với project GitHub; trạng thái hiện tại được cập nhật trên board.
 
