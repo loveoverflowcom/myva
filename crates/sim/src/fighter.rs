@@ -348,10 +348,10 @@ impl Fighter {
     fn start_attack(&mut self, action: ActionKind, next_instance: &mut u32) -> Outcome {
         let kit: &'static Kit = self.kit;
         let spec = kit.spec(action);
-        if let ActionKind::Skill(slot) = action {
-            if self.cooldowns[usize::from(slot)] > 0 {
-                return Outcome::Refused;
-            }
+        if let ActionKind::Skill(slot) = action
+            && self.cooldowns[usize::from(slot)] > 0
+        {
+            return Outcome::Refused;
         }
         if !self.stamina.can_spend(spec.stamina_cost) || !self.energy.can_spend(spec.energy_cost) {
             return Outcome::Refused;

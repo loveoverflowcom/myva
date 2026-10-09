@@ -300,7 +300,7 @@ impl Recorder {
             .extend(inputs.iter().map(|&(id, input)| (tick, id, input)));
         let events = world.step(inputs);
         self.replay.ticks = world.tick();
-        if world.tick() % self.checkpoint_every == 0 {
+        if world.tick().is_multiple_of(self.checkpoint_every) {
             self.replay
                 .checkpoints
                 .push((world.tick(), world.state_hash()));

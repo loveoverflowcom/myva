@@ -356,12 +356,12 @@ async fn main() {
 
         draw::frame(&game, show_boxes);
         frames += 1;
-        if let Some(path) = &screenshot {
-            if frames >= SCREENSHOT_FRAMES {
-                get_screen_data().export_png(path);
-                game.save_replay();
-                break;
-            }
+        if let Some(path) = &screenshot
+            && frames >= SCREENSHOT_FRAMES
+        {
+            get_screen_data().export_png(path);
+            game.save_replay();
+            break;
         }
         next_frame().await;
     }

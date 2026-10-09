@@ -1,0 +1,13 @@
+:root{font:16px/1.6 system-ui,sans-serif;color:#e5eee9;background:#0b151b;color-scheme:dark}
+*{box-sizing:border-box}body{margin:0}header,main,footer{width:min(1100px,92vw);margin:auto}
+header{display:flex;justify-content:space-between;align-items:center;padding:28px 0;border-bottom:1px solid #294044;gap:16px}
+.brand{color:#f0dca4;text-decoration:none;font-weight:800;letter-spacing:.08em}.brand span{color:#96b2b7;font-size:.75rem}
+.badge,.eyebrow{font-size:.75rem;letter-spacing:.14em;color:#9ab3b4}.badge{border:1px solid #365150;padding:4px 10px;border-radius:20px}
+main{min-height:76vh;padding:48px 0}.intro{max-width:640px;padding:30px 0}h1{font-size:clamp(2rem,6vw,3.6rem);line-height:1.1;letter-spacing:-.04em;margin:16px 0 24px}
+p{color:#b4c8c8}label{display:block;margin:24px 0 8px;font-size:.9rem}input{display:block;width:min(100%,400px);padding:12px 16px;border-radius:8px;border:1px solid #395555;background:#14252b;color:#fff;font:inherit}
+button{cursor:pointer;border:1px solid #3c595a;background:#192c33;color:#e9f4ee;padding:10px 15px;border-radius:8px;font:inherit;font-size:.9rem}button:hover{background:#29444c}button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #ecd285;outline-offset:4px}
+.primary{background:#e8cf94;color:#172329;border:0;font-weight:700;margin-top:20px;padding:14px 24px}.primary:hover{background:#f6e4b8}.muted,footer{font-size:.8rem;color:#779499}footer{padding:24px 0;border-top:1px solid #294044}
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:16px}.toolbar h1{font-size:1.6rem;margin:0}.eyebrow{margin:0 0 6px}.actions{display:flex;gap:8px;flex-wrap:wrap}
+#game-host{width:100%;height:clamp(260px,55vh,580px);border:1px solid #395456;background:#112830;border-radius:12px;overflow:hidden}iframe{display:block;width:100%;height:100%;border:0}iframe:fullscreen{background:#112830;width:100vw;height:100vh}
+.controls{font-size:.85rem}#shell-status{border-left:2px solid #bca26f;padding-left:14px;min-height:26px}.hidden{display:none!important}
+@media(max-width:600px){header{padding:20px 0}.brand span{display:block}.badge{font-size:.6rem}main{padding-top:24px}.actions button{font-size:.78rem;padding:8px}.intro{padding:12px 0}#game-host{height:48vh}}
