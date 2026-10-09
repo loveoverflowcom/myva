@@ -4,13 +4,14 @@
 //! font có giấy phép rõ ràng (CONTRIBUTING.md).
 
 use macroquad::prelude::*;
+use myva_sim::boss::BossPhase;
 use myva_sim::fighter::ARENA_WIDTH;
 use myva_sim::kit::Rect as SimRect;
 use myva_sim::meter::Meter;
 use myva_sim::tick::TICK_HZ;
 use myva_sim::{Fighter, Phase, State};
 
-use crate::Match;
+use crate::{Match, Mode};
 
 const BACKGROUND: Color = Color::new(0.11, 0.12, 0.15, 1.0);
 const GROUND: Color = Color::new(0.55, 0.57, 0.62, 1.0);
@@ -18,6 +19,8 @@ const TEXT: Color = Color::new(0.88, 0.89, 0.92, 1.0);
 const DIM: Color = Color::new(0.55, 0.57, 0.62, 1.0);
 const PLAYER: Color = Color::new(0.30, 0.56, 0.92, 1.0);
 const RIVAL: Color = Color::new(0.62, 0.64, 0.70, 1.0);
+const BOSS: Color = Color::new(0.58, 0.45, 0.34, 1.0);
+const TELEGRAPH: Color = Color::new(1.0, 0.85, 0.2, 0.18);
 
 /// Chiếu tọa độ mô phỏng (mili-pixel, y hướng lên) sang màn hình.
 struct View {
@@ -31,7 +34,7 @@ impl View {
         let margin = 40.0;
         Self {
             left: margin,
-            ground: screen_height() * 0.72,
+            ground: screen_height() * 0.66,
             scale: (screen_width() - 2.0 * margin) / ARENA_WIDTH as f32,
         }
     }
@@ -77,6 +80,10 @@ pub(crate) fn frame(game: &Match, show_boxes: bool) {
         draw_rectangle_lines(x, y, w, h, 2.0, WHITE);
     }
     for fighter in game.world.fighters() {
+        // Vùng đòn của boss luôn hiện trong lúc báo: không có hitbox ẩn (combat.md §13).
+        if fighter.kit.body.armored || show_boxes {
+            draw_telegraph(&view, fighter);
+        }
         draw_fighter(
             &view,
             fighter,
@@ -93,37 +100,74 @@ pub(crate) fn frame(game: &Match, show_boxes: bool) {
         } else {
             screen_width() - hud_width - 20.0
         };
-        draw_hud(x, 24.0, hud_width, game.name(fighter.id), fighter);
+        let name = game.name(fighter.id);
+        if fighter.kit.body.armored {
+            draw_boss_hud(x, 24.0, hud_width, name, fighter, game.boss_phase());
+        } else {
+            draw_hud(x, 24.0, hud_width, name, fighter);
+        }
     }
 
-    let title = format!(
-        "MyVa - Than Mach graybox  |  tick {}  |  hash {:016x}",
+    if game.is_ko() {
+        let verdict = match (game.mode, game.player_won()) {
+            (Mode::Boss, true) => "THANG - F5 de dau lai",
+            (Mode::Boss, false) => "THUA - F5 de thu lai",
+            (Mode::Duel, _) => "KO - F5 de dau lai",
+        };
+        centered(verdict, screen_height() * 0.35, 40.0, TEXT);
+    }
+
+    // Log chỉ hiện số dòng vừa khoảng giữa nền và chân trang, để không đè lên phím.
+    let footer = screen_height() - 44.0;
+    let line_height = 22.0;
+    let first = view.ground + 34.0;
+    let fits = ((footer - first) / line_height).max(0.0) as usize;
+    let skip = game.log.len().saturating_sub(fits);
+    for (i, line) in game.log.iter().skip(skip).enumerate() {
+        draw_text(line, 20.0, first + i as f32 * line_height, 20.0, TEXT);
+    }
+
+    let mode = match game.sparring_bot() {
+        None => "M dau tap".to_owned(),
+        Some(on) => format!("M danh boss  B bot ({})", if on { "bat" } else { "tat" }),
+    };
+    draw_text(
+        "A/D di chuyen  Space nhay  Shift luot  L do  J/K nhe/nang  Q/E/R thuat",
+        20.0,
+        screen_height() - 34.0,
+        18.0,
+        DIM,
+    );
+    let meta = format!(
+        "{mode}  H hitbox  F5 dau lai  F9 luu replay  |  tick {}  hash {:016x}",
         game.world.tick(),
         game.world.state_hash()
     );
-    centered(&title, 24.0, 18.0, DIM);
-    if game.is_ko() {
-        centered("KO - F5 de dau lai", screen_height() * 0.35, 40.0, TEXT);
-    }
+    draw_text(meta, 20.0, screen_height() - 12.0, 18.0, DIM);
+}
 
-    let mut y = view.ground + 40.0;
-    for line in &game.log {
-        draw_text(line, 20.0, y, 20.0, TEXT);
-        y += 22.0;
-    }
-    let bot = if game.rival_bot.is_some() {
-        "bat"
-    } else {
-        "tat"
+/// Vùng đòn sắp đánh trong pha startup; với đòn bắn đạn là chỗ đạn sẽ sinh ra.
+fn draw_telegraph(view: &View, fighter: &Fighter) {
+    let Some((_, spec, Phase::Startup)) = fighter.action() else {
+        return;
     };
-    let controls = format!(
-        "A/D di chuyen  Space nhay  Shift luot  L do  J/K nhe/nang  Q/E/R thuat  |  B bot ({bot})  H hitbox  F5 dau lai  F9 luu replay"
-    );
-    draw_text(&controls, 20.0, screen_height() - 16.0, 18.0, DIM);
+    let hitbox = match spec.projectile {
+        Some(projectile) => projectile.hitbox,
+        None if spec.damage > 0 => spec.hitbox,
+        None => return,
+    };
+    let zone = hitbox.place(fighter.x, fighter.y, fighter.facing);
+    let (x, y, w, h) = view.rect(&zone);
+    draw_rectangle(x, y, w, h, TELEGRAPH);
+    draw_rectangle_lines(x, y, w, h, 2.0, YELLOW);
 }
 
 fn draw_fighter(view: &View, fighter: &Fighter, name: &str, is_player: bool, show_boxes: bool) {
-    let base = if is_player { PLAYER } else { RIVAL };
+    let base = match (is_player, fighter.kit.body.armored) {
+        (true, _) => PLAYER,
+        (false, true) => BOSS,
+        (false, false) => RIVAL,
+    };
     let mut color = match (fighter.state, fighter.action()) {
         (_, Some((_, _, Phase::Startup))) => YELLOW,
         (_, Some((_, _, Phase::Active))) => RED,
@@ -210,6 +254,40 @@ fn draw_hud(x: f32, y: f32, width: f32, name: &str, fighter: &Fighter) {
         .collect();
     draw_text(cooldowns.join("  "), x, row + 34.0, 18.0, DIM);
     draw_text(state_label(fighter), x, row + 54.0, 18.0, DIM);
+}
+
+fn draw_boss_hud(
+    x: f32,
+    y: f32,
+    width: f32,
+    name: &str,
+    fighter: &Fighter,
+    phase: Option<BossPhase>,
+) {
+    let header = format!("{name}  {}", ascii(fighter.kit.lineage));
+    draw_text(&header, x, y, 22.0, TEXT);
+    let max = fighter.kit.body.max_hp;
+    let row = y + 10.0;
+    bar(
+        x,
+        row,
+        width,
+        fighter.hp as f32 / max as f32,
+        RED,
+        &format!("HP {}/{max}", fighter.hp),
+    );
+    // Vạch ngưỡng đổi pha 70% và 35%.
+    for threshold in [0.70, 0.35] {
+        let tx = x + width * threshold;
+        draw_line(tx, row - 2.0, tx, row + 18.0, 2.0, TEXT);
+    }
+    let phase = match phase {
+        Some(BossPhase::Recognize) | None => "Pha 1 - Nhan dien",
+        Some(BossPhase::Terrain) => "Pha 2 - Doi dia hinh",
+        Some(BossPhase::Combine) => "Pha 3 - Phoi hop quy luat",
+    };
+    draw_text(phase, x, row + 38.0, 18.0, DIM);
+    draw_text(state_label(fighter), x, row + 58.0, 18.0, DIM);
 }
 
 fn fill(meter: Meter) -> f32 {

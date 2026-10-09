@@ -1,20 +1,23 @@
 //! Graybox combat của MyVa — Thần Mạch (work-plan 020): một arena phẳng, Long Lưu do người chơi
-//! điều khiển và một đối thủ bot B0. Chỉ vẽ hình khối; mọi luật nằm trong `myva-sim`, client chỉ
-//! gom input và thể hiện trạng thái.
+//! điều khiển. Chỉ vẽ hình khối; mọi luật nằm trong `myva-sim`, client chỉ gom input và thể hiện
+//! trạng thái.
+//!
+//! Hai chế độ: đánh boss Kẻ Giữ Đập (mặc định) và đấu tập với bot B0 (`--duel`).
 //!
 //! Phím theo combat.md §12: A/D hoặc ←/→ di chuyển, Space nhảy, Shift lướt, giữ L để đỡ, J/K đòn
-//! nhẹ/nặng, Q/E/R thuật 1–3. B bật/tắt bot, H bật/tắt hitbox, F5 đấu lại, F9 lưu replay,
-//! Esc thoát.
+//! nhẹ/nặng, Q/E/R thuật 1–3. M đổi chế độ, B bật/tắt bot đấu tập, H bật/tắt hitbox, F5 đấu
+//! lại, F9 lưu replay, Esc thoát.
 //!
-//! `--demo` để bot điều khiển cả hai bên; `--screenshot <file.png>` chạy demo vài giây, lưu ảnh
-//! màn hình cùng replay của trận rồi thoát.
+//! `--demo` để bot điều khiển người chơi (B1 khi đánh boss, B0 khi đấu tập);
+//! `--screenshot <file.png>` chạy demo vài giây, lưu ảnh màn hình cùng replay rồi thoát.
 
 mod draw;
 
 use std::collections::VecDeque;
 
 use macroquad::prelude::*;
-use myva_sim::bot::RandomBot;
+use myva_sim::boss::{BossBrain, BossPhase, KE_GIU_DAP};
+use myva_sim::bot::{PatternReader, RandomBot};
 use myva_sim::replay::Recorder;
 use myva_sim::tick::TICK_HZ;
 use myva_sim::{Buttons, Event, FighterId, InputFrame, LONG_LUU, PX, State, World};
@@ -24,6 +27,8 @@ const DT: f32 = 1.0 / TICK_HZ as f32;
 const MAX_FRAME_TIME: f32 = 0.25;
 const LOG_LINES: usize = 6;
 const SCREENSHOT_FRAMES: u32 = 600;
+/// Bot B1 trong demo phản ứng như ngân sách combat.md §10.
+const DEMO_REACTION_MS: u32 = 250;
 const KO_RESET_TICKS: u32 = 2 * TICK_HZ;
 const CHECKPOINT_EVERY: u32 = TICK_HZ;
 
@@ -82,49 +87,119 @@ impl KeyboardInput {
     }
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum Mode {
+    Boss,
+    Duel,
+}
+
+enum PlayerControl {
+    Keyboard,
+    Reader(PatternReader),
+    Random(RandomBot),
+}
+
+enum RivalControl {
+    Boss(BossBrain),
+    Random(RandomBot),
+    Idle,
+}
+
 pub(crate) struct Match {
+    pub mode: Mode,
     pub world: World,
     pub player: FighterId,
     pub rival: FighterId,
-    pub rival_bot: Option<RandomBot>,
-    /// Ở chế độ demo, bot điều khiển cả người chơi.
-    pub player_bot: Option<RandomBot>,
     pub log: VecDeque<String>,
+    player_control: PlayerControl,
+    rival_control: RivalControl,
     recorder: Recorder,
     ko_ticks: u32,
     round: u64,
+    demo: bool,
 }
 
 impl Match {
-    fn new(round: u64, demo: bool) -> Self {
+    fn new(round: u64, mode: Mode, demo: bool) -> Self {
         let mut world = World::new();
-        let player = world.spawn(&LONG_LUU, 640 * PX, 1);
-        let rival = world.spawn(&LONG_LUU, 960 * PX, -1);
+        let (player, rival, player_control, rival_control) = match mode {
+            Mode::Boss => (
+                world.spawn(&LONG_LUU, 400 * PX, 1),
+                world.spawn(&KE_GIU_DAP, 1_100 * PX, -1),
+                if demo {
+                    PlayerControl::Reader(PatternReader::with_reaction_ms(DEMO_REACTION_MS))
+                } else {
+                    PlayerControl::Keyboard
+                },
+                RivalControl::Boss(BossBrain::new()),
+            ),
+            Mode::Duel => (
+                world.spawn(&LONG_LUU, 640 * PX, 1),
+                world.spawn(&LONG_LUU, 960 * PX, -1),
+                if demo {
+                    PlayerControl::Random(RandomBot::new(round ^ 0x5EED))
+                } else {
+                    PlayerControl::Keyboard
+                },
+                RivalControl::Random(RandomBot::new(round)),
+            ),
+        };
         Self {
+            mode,
             recorder: Recorder::new(&world, CHECKPOINT_EVERY),
             world,
             player,
             rival,
-            rival_bot: Some(RandomBot::new(round)),
-            player_bot: demo.then(|| RandomBot::new(round ^ 0x5EED)),
             log: VecDeque::new(),
+            player_control,
+            rival_control,
             ko_ticks: 0,
             round,
+            demo,
         }
     }
 
-    fn rematch(&self) -> Self {
-        Self::new(self.round + 1, self.player_bot.is_some())
+    fn rematch(&self, mode: Mode) -> Self {
+        Self::new(self.round + 1, mode, self.demo)
+    }
+
+    fn toggle_sparring_bot(&mut self) {
+        self.rival_control = match self.rival_control {
+            RivalControl::Random(_) => RivalControl::Idle,
+            RivalControl::Idle => RivalControl::Random(RandomBot::new(self.round)),
+            RivalControl::Boss(_) => return,
+        };
+    }
+
+    pub fn sparring_bot(&self) -> Option<bool> {
+        match self.rival_control {
+            RivalControl::Random(_) => Some(true),
+            RivalControl::Idle => Some(false),
+            RivalControl::Boss(_) => None,
+        }
+    }
+
+    pub fn boss_phase(&self) -> Option<BossPhase> {
+        match &self.rival_control {
+            RivalControl::Boss(brain) => Some(brain.phase()),
+            _ => None,
+        }
     }
 
     fn step(&mut self, keyboard: InputFrame) {
-        let player_frame = match &mut self.player_bot {
-            Some(bot) => bot.next_frame(),
-            None => keyboard,
+        let world = &self.world;
+        let player_frame = match &mut self.player_control {
+            PlayerControl::Keyboard => keyboard,
+            PlayerControl::Reader(reader) => reader.next_frame(world, self.player, self.rival),
+            PlayerControl::Random(bot) => bot.next_frame(),
         };
         let mut inputs = vec![(self.player, player_frame)];
-        if let Some(bot) = &mut self.rival_bot {
-            inputs.push((self.rival, bot.next_frame()));
+        match &mut self.rival_control {
+            RivalControl::Boss(brain) => {
+                inputs.push((self.rival, brain.next_frame(world, self.rival, self.player)));
+            }
+            RivalControl::Random(bot) => inputs.push((self.rival, bot.next_frame())),
+            RivalControl::Idle => {}
         }
         let tick = self.world.tick();
         for event in self.recorder.step(&mut self.world, &inputs) {
@@ -170,8 +245,17 @@ impl Match {
         self.ko_ticks > 0
     }
 
+    pub fn player_won(&self) -> bool {
+        self.world.fighter(self.rival).state == State::Downed
+            && self.world.fighter(self.player).state != State::Downed
+    }
+
     pub fn name(&self, id: FighterId) -> &'static str {
-        if id == self.player { "P1" } else { "Bot" }
+        match (id == self.player, self.mode) {
+            (true, _) => "P1",
+            (false, Mode::Boss) => "Boss",
+            (false, Mode::Duel) => "Bot",
+        }
     }
 
     fn describe(&self, event: &Event) -> Option<String> {
@@ -220,10 +304,12 @@ impl Match {
 async fn main() {
     let mut args = std::env::args().skip(1);
     let mut demo = false;
+    let mut mode = Mode::Boss;
     let mut screenshot = None;
     while let Some(arg) = args.next() {
         match arg.as_str() {
             "--demo" => demo = true,
+            "--duel" => mode = Mode::Duel,
             "--screenshot" => {
                 screenshot = args.next();
                 demo = true;
@@ -232,7 +318,7 @@ async fn main() {
         }
     }
 
-    let mut game = Match::new(1, demo);
+    let mut game = Match::new(1, mode, demo);
     let mut keyboard = KeyboardInput::default();
     let mut show_boxes = true;
     let mut accumulator = 0.0;
@@ -242,13 +328,17 @@ async fn main() {
             break;
         }
         if is_key_pressed(KeyCode::F5) || (demo && game.ko_ticks > KO_RESET_TICKS) {
-            game = game.rematch();
+            game = game.rematch(game.mode);
+        }
+        if is_key_pressed(KeyCode::M) {
+            let other = match game.mode {
+                Mode::Boss => Mode::Duel,
+                Mode::Duel => Mode::Boss,
+            };
+            game = game.rematch(other);
         }
         if is_key_pressed(KeyCode::B) {
-            game.rival_bot = match game.rival_bot {
-                Some(_) => None,
-                None => Some(RandomBot::new(game.round)),
-            };
+            game.toggle_sparring_bot();
         }
         if is_key_pressed(KeyCode::H) {
             show_boxes = !show_boxes;

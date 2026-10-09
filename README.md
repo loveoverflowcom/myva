@@ -33,15 +33,19 @@ Workspace Rust tối thiểu cho work-plan [020](docs/work-plan/020-combat-grayb
 
 | Crate | Vai trò |
 | --- | --- |
-| `crates/sim` (`myva-sim`) | Mô phỏng combat thuần Rust: tick 60 Hz, số nguyên, kit Long Lưu, bot B0, hash để so replay. Không phụ thuộc renderer; build được cho wasm32. |
+| `crates/sim` (`myva-sim`) | Mô phỏng combat thuần Rust: tick 60 Hz, số nguyên, kit Long Lưu, đạn, boss Kẻ Giữ Đập, bot B0/B1, replay và công cụ `myva-replay`. Không phụ thuộc renderer; build được cho wasm32. |
 | `crates/economy` (`myva-economy`) | Sổ cái R/N/I/X/Q/Z, ngân sách theo giờ và bộ chạy headless `myva-econ-sim`. |
-| `crates/graybox` (`myva-graybox`) | Client Macroquad vẽ hình khối; phím theo [combat.md §12](docs/design/combat.md#12-điều-khiển-và-khả-năng-tiếp-cận). Chưa có touch, gamepad hay trang web loader. |
+| `crates/graybox` (`myva-graybox`) | Client Macroquad vẽ hình khối: đánh boss (mặc định) hoặc đấu tập với bot; phím theo [combat.md §12](docs/design/combat.md#12-điều-khiển-và-khả-năng-tiếp-cận). Chạy native hoặc trên trình duyệt. Chưa có touch hay gamepad. |
 
 ```bash
 cargo test --workspace
 cargo run -p myva-graybox
+cargo run -p myva-sim --bin myva-replay -- verify graybox-r1-t600.myva-replay
 cargo run -p myva-economy --bin myva-econ-sim -- --seed 7 --days 90 > econ.csv
+./scripts/build-web.sh && python3 -m http.server -d target/web 8080
 ```
+
+Trong graybox, F9 lưu replay của trận đang chơi; `myva-replay events <file>` in lại từng đòn ra, trúng, đỡ theo tick.
 
 ## Đọc tài liệu
 

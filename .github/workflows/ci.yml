@@ -20,3 +20,4 @@ jobs:
       - run: cargo test --workspace
       # Lõi mô phỏng phải build được cho web mà không kéo theo renderer.
       - run: cargo build -p myva-sim --target wasm32-unknown-unknown
+      - run: ./scripts/build-web.sh
