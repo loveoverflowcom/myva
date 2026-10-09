@@ -1,7 +1,7 @@
 //! Replay tất định và invariant dưới bot ngẫu nhiên (bậc B0).
 
 use myva_sim::bot::RandomBot;
-use myva_sim::fighter::{MAX_HP, MAX_X, MIN_X};
+use myva_sim::fighter::{ARENA_WIDTH, MIN_X};
 use myva_sim::{FighterId, LONG_LUU, PX, State, World};
 
 const TICKS: u32 = 60 * 60;
@@ -33,9 +33,10 @@ fn random_bots_keep_invariants() {
     for seed in 0..20 {
         run(seed, |world| {
             for f in world.fighters() {
-                assert!(f.hp <= MAX_HP);
+                assert!(f.hp <= f.kit.body.max_hp);
                 assert_eq!(f.hp == 0, f.state == State::Downed, "seed {seed}");
-                assert!((MIN_X..=MAX_X).contains(&f.x));
+                let half = f.kit.body.half_width;
+                assert!((half..=ARENA_WIDTH - half).contains(&f.x));
                 assert!(f.y >= 0);
                 for meter in [f.stamina, f.energy, f.mach] {
                     assert!(meter.sub() <= meter.max_sub());

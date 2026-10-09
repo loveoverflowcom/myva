@@ -99,6 +99,11 @@ impl World {
         &self.projectiles
     }
 
+    #[cfg(test)]
+    pub(crate) fn fighters_mut(&mut self) -> &mut [Fighter] {
+        &mut self.fighters
+    }
+
     /// Chạy một tick. Mỗi nhân vật nhận tối đa một khung input mỗi tick; khung thừa, trùng `seq`
     /// hoặc `seq` cũ bị từ chối.
     pub fn step(&mut self, inputs: &[(FighterId, InputFrame)]) -> Vec<Event> {

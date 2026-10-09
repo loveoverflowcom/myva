@@ -2,24 +2,20 @@
 //! (combat.md §2–§5, §11).
 
 use crate::input::{Buttons, InputFrame, Intent};
-use crate::kit::{ActionKind, ActionSpec, Kit, PX, Phase, Rect};
+use crate::kit::{ActionKind, ActionSpec, HUMAN, Kit, PX, Phase, Rect};
 use crate::meter::Meter;
 use crate::tick::ms_to_ticks;
 use crate::world::Event;
 
 /// Sinh lực chuẩn hóa ở phòng thử.
-pub const MAX_HP: u32 = 1_000;
+pub const MAX_HP: u32 = HUMAN.max_hp;
 
 pub const ARENA_WIDTH: i32 = 1_600 * PX;
-pub const HURT_HALF_WIDTH: i32 = 20 * PX;
-pub const HURT_HEIGHT: i32 = 80 * PX;
-pub const MIN_X: i32 = HURT_HALF_WIDTH;
-pub const MAX_X: i32 = ARENA_WIDTH - HURT_HALF_WIDTH;
+/// Giới hạn vị trí của cơ thể chuẩn; cơ thể lớn hơn bị giới hạn theo bề rộng của nó.
+pub const MIN_X: i32 = HUMAN.half_width;
+pub const MAX_X: i32 = ARENA_WIDTH - HUMAN.half_width;
 
 // Vật lý graybox (GT), mili-pixel mỗi tick.
-pub const WALK_SPEED: i32 = 4 * PX;
-const GUARD_WALK_SPEED: i32 = WALK_SPEED / 3;
-const AIR_ATTACK_DRIFT: i32 = WALK_SPEED / 2;
 pub const JUMP_VELOCITY: i32 = 14 * PX;
 pub const GRAVITY: i32 = 800;
 
@@ -108,11 +104,11 @@ impl Fighter {
         Self {
             id,
             kit,
-            x: x.clamp(MIN_X, MAX_X),
+            x: clamp_x(kit, x),
             y: 0,
             vy: 0,
             facing: if facing < 0 { -1 } else { 1 },
-            hp: MAX_HP,
+            hp: kit.body.max_hp,
             stamina: Meter::stamina(),
             energy: Meter::energy(),
             mach: Meter::mach(),
@@ -145,10 +141,10 @@ impl Fighter {
 
     pub fn hurtbox(&self) -> Rect {
         Rect {
-            x0: self.x - HURT_HALF_WIDTH,
-            x1: self.x + HURT_HALF_WIDTH,
+            x0: self.x - self.kit.body.half_width,
+            x1: self.x + self.kit.body.half_width,
             y0: self.y,
-            y1: self.y + HURT_HEIGHT,
+            y1: self.y + self.kit.body.height,
         }
     }
 
@@ -210,17 +206,21 @@ impl Fighter {
         events: &mut Vec<Event>,
     ) {
         self.hp = self.hp.saturating_sub(damage);
-        self.x = (self.x + knockback).clamp(MIN_X, MAX_X);
-        // Bị trúng không phát lại thao tác cũ trong buffer.
-        self.buffered = None;
         if self.hp == 0 {
             self.state = State::Downed;
+            self.buffered = None;
             events.push(Event::Downed { fighter: self.id });
-        } else {
-            self.state = State::Hitstun {
-                remaining: hitstun.max(1),
-            };
+            return;
         }
+        if self.kit.body.armored {
+            return;
+        }
+        self.x = clamp_x(self.kit, self.x + knockback);
+        // Bị trúng không phát lại thao tác cũ trong buffer.
+        self.buffered = None;
+        self.state = State::Hitstun {
+            remaining: hitstun.max(1),
+        };
     }
 
     pub(crate) fn apply_input(
@@ -380,10 +380,12 @@ impl Fighter {
     pub(crate) fn integrate(&mut self) {
         let grounded = self.is_grounded();
         let move_x = i32::from(self.move_x);
+        let walk = self.kit.body.walk_speed;
         let vx = match self.state {
-            State::Neutral => move_x * WALK_SPEED,
-            State::Guard { .. } => move_x * GUARD_WALK_SPEED,
-            State::Attack { .. } if !grounded => move_x * AIR_ATTACK_DRIFT,
+            State::Neutral => move_x * walk,
+            // Đỡ làm chậm di chuyển; đòn trên không chỉ trôi nhẹ.
+            State::Guard { .. } => move_x * walk / 3,
+            State::Attack { .. } if !grounded => move_x * walk / 2,
             State::Dash { elapsed, dir }
                 if (DASH_STARTUP..DASH_STARTUP + DASH_MOVE).contains(&elapsed) =>
             {
@@ -391,7 +393,7 @@ impl Fighter {
             }
             _ => 0,
         };
-        self.x = (self.x + vx).clamp(MIN_X, MAX_X);
+        self.x = clamp_x(self.kit, self.x + vx);
         if !grounded {
             self.y += self.vy;
             self.vy -= GRAVITY;
@@ -466,4 +468,9 @@ impl Fighter {
             .buffered
             .and_then(|(intent, ttl)| (ttl > 1).then_some((intent, ttl - 1)));
     }
+}
+
+/// Giữ cả thân nhân vật trong arena.
+fn clamp_x(kit: &Kit, x: i32) -> i32 {
+    x.clamp(kit.body.half_width, ARENA_WIDTH - kit.body.half_width)
 }

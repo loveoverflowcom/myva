@@ -78,7 +78,7 @@ impl Hitbox {
         }
     }
 
-    const fn px(front: i32, width: i32, bottom: i32, height: i32) -> Self {
+    pub(crate) const fn px(front: i32, width: i32, bottom: i32, height: i32) -> Self {
         Self {
             front: front * PX,
             width: width * PX,
@@ -125,7 +125,12 @@ pub struct ActionSpec {
 
 impl ActionSpec {
     /// Đòn chỉ có timing (ms); các trường khác bằng 0 để ghi đè bằng struct update.
-    const fn timed(name: &'static str, startup_ms: u32, active_ms: u32, recovery_ms: u32) -> Self {
+    pub(crate) const fn timed(
+        name: &'static str,
+        startup_ms: u32,
+        active_ms: u32,
+        recovery_ms: u32,
+    ) -> Self {
         Self {
             name,
             startup: ms_to_ticks(startup_ms),
@@ -159,10 +164,32 @@ impl ActionSpec {
     }
 }
 
+/// Thông số cơ thể theo kit: người chơi dùng `HUMAN`, boss có cơ thể riêng.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct Body {
+    pub max_hp: u32,
+    pub half_width: i32,
+    pub height: i32,
+    /// Mili-pixel mỗi tick.
+    pub walk_speed: i32,
+    /// Nhận damage nhưng không bị choáng hay đẩy lùi; boss dùng luật riêng (combat.md §6).
+    pub armored: bool,
+}
+
+/// Cơ thể chuẩn ở phòng thử 1.000 HP.
+pub const HUMAN: Body = Body {
+    max_hp: 1_000,
+    half_width: 20 * PX,
+    height: 80 * PX,
+    walk_speed: 4 * PX,
+    armored: false,
+};
+
 /// 2 đòn cơ bản (đòn nhẹ là chuỗi 3 nhịp) + 3 thuật được trang bị.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Kit {
     pub lineage: &'static str,
+    pub body: Body,
     pub light: [ActionSpec; 3],
     pub heavy: ActionSpec,
     pub skills: [ActionSpec; 3],
@@ -189,6 +216,7 @@ const GON_SONG: ActionSpec = ActionSpec {
 /// Long Lưu: điều tiết dòng chảy, giữ khoảng cách vừa và phản công (combat.md §7).
 pub const LONG_LUU: Kit = Kit {
     lineage: "Long Lưu",
+    body: HUMAN,
     // Nhịp 3 đẩy lùi nhẹ.
     light: [
         GON_SONG,

@@ -4,7 +4,7 @@
 //! font có giấy phép rõ ràng (CONTRIBUTING.md).
 
 use macroquad::prelude::*;
-use myva_sim::fighter::{ARENA_WIDTH, MAX_HP};
+use myva_sim::fighter::ARENA_WIDTH;
 use myva_sim::kit::Rect as SimRect;
 use myva_sim::meter::Meter;
 use myva_sim::tick::TICK_HZ;
@@ -177,7 +177,7 @@ fn draw_hud(x: f32, y: f32, width: f32, name: &str, fighter: &Fighter) {
         x,
         row,
         width,
-        fighter.hp as f32 / MAX_HP as f32,
+        fighter.hp as f32 / fighter.kit.body.max_hp as f32,
         RED,
         &format!("HP {}", fighter.hp),
     );

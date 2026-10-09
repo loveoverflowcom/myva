@@ -12,6 +12,7 @@
 //! Chưa làm: entity đạn, đại thuật, Thoát Mạch, DR khống chế, coyote time/jump buffer,
 //! đòn không trung riêng và boss. Mỗi phần được thêm khi work-plan 020 cần kiểm chứng nó.
 
+pub mod boss;
 pub mod bot;
 pub mod fighter;
 pub mod input;
