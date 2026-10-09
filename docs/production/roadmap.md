@@ -7,11 +7,13 @@ Mỗi giai đoạn chỉ mở rộng khi đạt gate; nội dung trễ không đ
 | Giai đoạn | Kết quả có thể review | Gate chuyển tiếp |
 | --- | --- | --- |
 | 0. GDD & World Bible | Bộ docs hiện tại, baseline scope và danh sách câu hỏi | Mâu thuẫn giữa combat, tiến triển, kinh tế và platform được xử lý |
-| 1. Feasibility | Combat graybox, native spike Android/iOS, simulator kinh tế độc lập | Có bằng chứng điều khiển, native và invariant; tham số được cập nhật |
+| 1. Feasibility | ADR Bevy #9; native #10 và web #11; ECS/headless #12; pipeline/QA #13; combat #2 và economy #3 | Mỗi platform có bằng chứng riêng, replay/invariant và điều khiển được đo; build standalone không thay gate CMP |
 | 2. Vertical slice | Vân Thủy chơi 20–30 phút, 3 kit, boss, craft/tái sinh | Các gate trong vertical-slice đạt; asset pipeline có mẫu chuẩn |
 | 3. MVP Online | Pilot một linh vực: account, quest/progression, inventory, co-op, giao dịch giới hạn, guild cơ bản | Persistence/restart/reconnect đúng; solo sống được; load có giới hạn được đo |
 | 4. World Expansion | Thêm linh vực, chọn origin, học truyền thừa thứ hai, vận chuyển và trade liên vùng | Nội dung mới qua review văn hóa; không tăng cấp vô hạn hoặc nhân đôi ngân sách |
 | 5. Intercontinental War | Mặt trận có giới hạn, liên minh, tuyến tiếp tế, chiến dịch theo mùa | Chống snowball, phân ghép, recovery và tải mạng đã thử |
+
+[ADR 0003](../decisions/0003-bevy-engine-adoption.md) chốt Bevy và thứ tự #9 → #10/#11, #12 → #13/#2 theo platform; #3 độc lập. [#7 tooling](https://github.com/loveoverflowcom/myva/issues/7) phải phục vụ Bevy; #1 là lịch sử Macroquad đã superseded. Không đẩy #4/#5/#6 qua gate chỉ vì engine đã chọn hoặc web đã chạy.
 
 ## MVP Online có gì
 

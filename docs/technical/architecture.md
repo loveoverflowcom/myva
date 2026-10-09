@@ -1,29 +1,29 @@
 # Kiến trúc kỹ thuật — MyVa · Thần Mạch
 
-**Trạng thái:** đề xuất thiết kế v0.1, ngày 09/10/2026. Repository hiện chứa tài liệu; các module, giao thức và chỉ số dưới đây chưa được triển khai hoặc đo kiểm.
+**Trạng thái:** lựa chọn engine/ownership đã chốt trong [ADR 0003](../decisions/0003-bevy-engine-adoption.md), ngày 09/10/2026. Simulation/economy và graybox legacy đã có; networking, persistence và ngân sách dưới đây vẫn là thiết kế đề xuất. Spike web/native không đồng nghĩa sản phẩm đã đạt gate.
 
 ## 1. Quyết định và giới hạn
 
 | Nội dung | Trạng thái |
 | --- | --- |
-| Gameplay và renderer Rust + Macroquad | Đã chọn theo yêu cầu sản phẩm |
-| Web shell Leptos; mobile shell Kotlin Compose Multiplatform | Đã chọn |
-| Mobile dùng renderer native, không phụ thuộc WebView | Đích kiến trúc; phải vượt qua prototype Android và iOS |
+| Game client Rust + Bevy `=0.20.0`, toolchain Rust `1.97.1` | Đã chọn và pin; xem ADR về feature flags/MSRV |
+| Web shell Leptos `=0.8.22` CSR; mobile shell Kotlin Compose Multiplatform | Đã chọn; CMP integration/toolchain vẫn cần chứng minh trong D02 |
+| Mobile dùng renderer native, không phụ thuộc WebView | Đích kiến trúc; gate Android và iOS thật còn riêng biệt |
 | Online server authoritative | Bắt buộc với vị trí hợp lệ, chiến đấu, phần thưởng, giao dịch và tài nguyên |
 | Backend Rust, Axum/Tokio, PostgreSQL | Đề xuất để làm MVP, chưa chốt phiên bản thư viện |
 | Một backend module hóa trước, tách dịch vụ sau bằng số liệu | Đề xuất để giảm vận hành và giao dịch phân tán |
-| 60 tick/giây, snapshot khoảng 20 lần/giây | Giả thuyết hiệu năng, phải qua load test |
+| 60 tick/giây, snapshot khoảng 20 lần/giây | Giả thuyết hiệu năng online, phải qua load test |
 
-Macroquad có target HTML5, Android và iOS trong tài liệu chính thức [S1–S2]. Điều này xác nhận khả năng xây game độc lập trên các target, chưa xác nhận renderer có thể nhúng trực tiếp vào view CMP với đầy đủ lifecycle.
+Bevy có sample native Android/iOS chính thức tại tag `v0.20.0`. Sample dùng Bevy/Winit làm chủ event loop; nó không chứng minh renderer nhúng được trực tiếp vào native view của CMP. [Compatibility matrix trong ADR](../decisions/0003-bevy-engine-adoption.md#compatibility-matrix-và-gate) phân biệt `KNOWN`, `UNKNOWN`, `BLOCKED`; kết quả từng run ở báo cáo prototype.
 
 ## 2. Phân chia trách nhiệm
 
-Các tên bên dưới là **vai trò logic**, không phải danh sách crate đang tồn tại.
+Các tên bên dưới là **vai trò logic**, không phải yêu cầu tạo sẵn mọi crate/service.
 
 | Thành phần | Sở hữu | Không sở hữu |
 | --- | --- | --- |
-| Mô phỏng Rust thuần | Luật di chuyển, collision, combat, cooldown, RNG có seed, AI | Window, texture, audio, truy cập DB |
-| Client gameplay Macroquad | Input, prediction, render, animation, VFX, âm thanh gameplay | Phát thưởng, định giá, phát hành tài nguyên |
+| Mô phỏng Rust thuần (`myva-sim`) | Luật di chuyển, collision, combat, cooldown, RNG có seed, AI, replay/headless | Window, texture, audio, truy cập DB |
+| Client Bevy | Input game, adapter ECS, prediction, renderer, animation, VFX, âm thanh gameplay khi được triển khai | Mint reward, định giá, phát hành tài nguyên, sửa ledger authoritative |
 | Shell Leptos/CMP | Login, chọn nhân vật, tải nội dung, IME, navigation, thiết lập | Tự sửa trạng thái chiến đấu hoặc túi đồ |
 | Server world | Phiên chơi, bản đồ, tick authoritative, kiểm tra command, interest management | Render đồ họa |
 | Server nghiệp vụ | Nhân vật, inventory, nhiệm vụ, bang hội, ledger, giao dịch | Tin kết quả do client tự báo |
@@ -32,54 +32,58 @@ Các tên bên dưới là **vai trò logic**, không phải danh sách crate đ
 
 ```mermaid
 flowchart TD
-    Shell["Leptos / CMP shell"] --> Client["Macroquad client"]
-    Client --> World["World server"]
-    World --> Sim["Mô phỏng Rust thuần"]
+    Shell["Leptos / CMP shell"] <-->|"bridge có version"| Client["Bevy: input / ECS / renderer"]
+    Client <-->|"intent / snapshot"| World["World server authoritative"]
+    Client --> Sim["Mô phỏng Rust thuần / headless"]
+    World --> Sim
     World --> Domain["Nghiệp vụ và ledger"]
     Domain --> DB["PostgreSQL"]
     Shell --> Assets["Manifest và asset"]
     Client --> Assets
 ```
 
-Simulation có API nhận trạng thái, command hợp lệ và thời gian tick rồi trả trạng thái cùng sự kiện. Client và server dùng chung quy tắc, nhưng chỉ server có quyền quyết định sự kiện được chấp nhận.
+Simulation nhận trạng thái, command và tick rồi trả trạng thái/sự kiện; server mới xác nhận command và kết quả online. Giữ core thuần Rust hiện có; [D04 / #12](https://github.com/loveoverflowcom/myva/issues/12) bổ sung adapter ECS và schema versioned, fixed schedule `input → movement → collision → combat → status → events`, domain entity ID khác Bevy `Entity`. Nếu cần ECS headless, dùng `bevy_ecs`/`bevy_app` pin cùng version và kiểm chứng feature độc lập, không dùng renderer/Winit/asset trên server.
+
+`crates/graybox` dùng Macroquad là **implementation lịch sử chờ #12 rồi #2 chuyển đổi**. Không thêm công việc engine mới vào client legacy hoặc dùng nó làm bằng chứng Bevy đã hoàn thành.
 
 ## 3. Web: tách shell và game runtime
 
-Leptos SSR/hydration sử dụng bản build server và bản WASM cho trình duyệt [S3]. Macroquad có loader và vòng lặp riêng [S1]. **Không giả định hai framework cùng build thành một WASM bằng cách thêm dependency.**
+[D03 / #11](https://github.com/loveoverflowcom/myva/issues/11) chọn Leptos CSR cho shell và bundle Bevy WASM riêng. CSR không có bước server hydration; nếu sau này thêm SSR, chỉ mount game ở client sau khi canvas tồn tại [S2].
 
-Đường thử nghiệm ưu tiên:
+1. Leptos giữ DOM shell, navigation, loading/error và IME.
+2. Khi người dùng vào game, mount iframe cùng origin; document game tạo canvas trước khi khởi tạo Bevy. Mỗi document chỉ khởi tạo runtime một lần.
+3. Bridge shell/game dùng message có version/session, kiểm `origin` và `source`; bỏ message của lần mount cũ. Không đưa token vào URL, log hoặc manifest.
+4. Game sở hữu canvas, input game và render loop. Shell giữ focus cho input/IME khi người dùng nhập văn bản; mất focus phải xóa phím đang giữ để không tiếp tục di chuyển.
+5. Rời game tháo document iframe và dọn listener/handle của shell. Đây là boundary hủy runtime của spike; không giả định có thể restart `App::run`/Winit an toàn trong cùng document.
+6. `Window.canvas`, `fit_canvas_to_parent` và browser event handling phải theo API `0.20.0`; container có kích thước độc lập canvas để tránh vòng lặp resize [S1].
 
-1. Leptos hiển thị login, chọn vùng, tải nội dung và trạng thái lỗi.
-2. Sau khi DOM/canvas đã sẵn sàng, shell khởi tạo loader Macroquad đúng một lần.
-3. Game WASM và shell WASM tách bundle; bridge JS nhỏ trao đổi command/event có version.
-4. Bridge truyền token phiên ngắn hạn theo hợp đồng; không đưa token vào URL hoặc manifest.
-5. Game giữ ownership canvas và render loop; Leptos giữ DOM ngoài canvas.
-6. Rời game phải đóng network, hủy listener, giải phóng handle; nếu runtime không hỗ trợ teardown an toàn, chuyển sang game route/document riêng cùng origin trong prototype.
+[Báo cáo web D03](../reports/web-feasibility.md) ghi browser/build/command và phạm vi bằng chứng. D03 phải kiểm tra load/error/retry, resize/DPR, focus/keyboard/touch, visibility/pause, route enter/exit lặp, listener và memory. WebGL2 là cấu hình spike; WebGPU và từng browser/OS vẫn có kết quả riêng. Audio cần thao tác người dùng; hỗ trợ context loss/recovery không được suy ra từ load thành công. Không block event loop browser bằng I/O đồng bộ.
 
-Cần đo thêm: load hai WASM, clipboard, audio cần thao tác người dùng, fullscreen, focus bàn phím, zoom/DPR, resize, WebGL context loss và browser tab nền. Game không block vòng lặp trình duyệt bằng I/O đồng bộ.
-
-Bridge không chuyển toàn bộ thế giới qua JSON mỗi frame. Gửi sự kiện shell thưa, còn gameplay/network ở trong runtime game; dùng buffer có giới hạn nếu cần trao đổi input native.
+Bridge gửi sự kiện shell thưa, không JSON toàn thế giới mỗi frame. Gameplay/network ở runtime; server vẫn sở hữu authority. Cảnh di chuyển 2D kiểm chứng tích hợp không phải combat graybox đã chuyển đổi.
 
 ## 4. Mobile: feasibility gate trước khi cam kết sản xuất
 
-Android Compose có `AndroidView`; CMP iOS có `UIKitView` để chứa native view [S4–S5]. Đây là điểm gắn UI **có thể nghiên cứu**, không phải adapter Macroquad đã có sẵn.
+[Native feasibility report](../reports/native-feasibility.md) ghi toolchain, code path, kết quả và blocker thực tế. D02 [#10](https://github.com/loveoverflowcom/myva/issues/10) thay spike Macroquad cũ #1.
 
-Prototype phải kiểm chứng khả năng tách/quản lý vòng lặp và native surface của Macroquad/miniquad, thay vì để hai runtime tranh ownership Activity, view, graphics context hoặc main thread.
+Android Compose có `AndroidView`; CMP iOS có `UIKitView` để chứa native view [S3–S4]. Đây là hook UI cần nghiên cứu, không phải adapter Bevy đã có. `WinitPlugin` thay runner và tạo event loop; mobile không hưởng tùy chọn `run_on_any_thread` của Linux/Windows. Sample Android `#[bevy_main]`/GameActivity chạy standalone, không tự chấp nhận `SurfaceView` do CMP tạo [S5–S6].
 
 | Hạng mục prototype | Bằng chứng cần có |
 | --- | --- |
-| Android | Rust library được gọi qua JNI/C ABI; native surface nằm trong CMP; kiểm tra surface mất/tạo lại |
-| iOS | Rust library được link trong app; native view/controller chứa renderer; kiểm tra backend đồ họa và thread thực tế |
+| Android embedded (A) | Rust library + CMP native surface có owner Activity/thread/context rõ; mất/tạo lại surface không giữ handle cũ |
+| iOS embedded (A) | Rust library + native view/controller trong CMP; backend/thread, safe area, rotation, memory pressure được kiểm tra |
+| Màn native riêng (B) | Chỉ đánh giá nếu A bị chặn; CMP điều hướng vào/ra game native và phục hồi được state, không chỉ chạy executable độc lập |
 | Lifecycle | Vào/rời game 30 lần; background/resume 20 lần; resize/orientation; không crash, không giữ resource cũ |
-| Input | Multi-touch, hủy touch, gamepad/keyboard nếu hỗ trợ; chuyển focus giữa game và shell đúng |
+| Input | Multi-touch, hủy touch, gamepad/keyboard nếu hỗ trợ; chuyển focus game/shell đúng |
 | IME | Chat tiếng Việt do shell quản lý; mở bàn phím không làm người chơi tự di chuyển hoặc đánh |
-| Audio | Một owner cho audio gameplay; xử lý interruption, tai nghe, mute, resume |
-| Hiệu năng | Profile render native và overlay CMP; không copy CPU toàn màn hình mỗi frame |
-| Đóng gói | Chạy trên thiết bị Android/iPhone thật và build release có signing hợp lệ |
+| Audio | Một owner audio gameplay; interruption, tai nghe, mute/resume; không kết luận nếu chưa có audio harness |
+| Hiệu năng | Profile game native và CMP overlay; không copy CPU toàn màn hình mỗi frame |
+| Đóng gói | Build/release/signing và run Android/iPhone thật; ghi chính xác target/ABI/OS/device |
 
-Hợp đồng adapter dự kiến: `create`, `resize`, `pause`, `resume`, `enqueue_input`, `poll_events`, `destroy`. Chưa chốt ABI, allocator hay cơ chế ownership; FFI phải dùng handle, mã lỗi và bộ nhớ có quy tắc giải phóng rõ ràng.
+Source/probe trong D02 đã thấy `RecreationAttempt` khi dựng Winit loop lần hai và stock runner iOS yêu cầu tự gọi `UIApplicationMain` trước khi UIKit tồn tại. Vì vậy gọi `App::run()` trong CMP controller hiện hữu hoặc drop/tạo app mỗi lần navigation đều chưa là phương án hợp lệ. iOS A/B cần custom runner hoặc đảo ownership application; chứng minh trên thiết bị vẫn đang BLOCKED.
 
-Nếu embedding cần sửa miniquad sâu hoặc không đạt lifecycle, ghi ADR với chi phí và lựa chọn: màn native độc lập do CMP điều hướng là phương án nghiên cứu đầu tiên. Không tự đổi sản phẩm sang WebView hoặc engine khác. Chưa vượt gate thì chưa công bố mobile đã hỗ trợ.
+Hợp đồng adapter dự kiến: `create`, `resize`, `pause`, `resume`, `enqueue_input`, `poll_events`, `destroy`. ABI, allocator, native surface handles và thread chưa chốt; không viết như API có sẵn. FFI phải có mã lỗi và quy tắc cấp/giải phóng bộ nhớ khi implementation được chọn.
+
+Nếu A cần sửa sâu runner/renderer hoặc không đạt lifecycle, báo kết quả và chi phí rồi thử B. Rollback **cách tích hợp**, không tự đổi engine hoặc dùng WebView. Thiếu thiết bị/SDK/host ghi `BLOCKED`; build standalone không đóng gate CMP native. Chưa vượt gate tương ứng thì chưa công bố mobile được hỗ trợ.
 
 ## 5. Tick, prediction và chiến đấu online
 
@@ -145,14 +149,15 @@ Chưa chọn vendor, máy chủ hay chi phí tháng. Benchmark phải ghi cấu 
 4. **Durability:** fault injection tại trước/sau commit; reconnect/restart không nhân thưởng, lặp trade hoặc tăng budget.
 5. **Load:** cap pilot đạt tick/snapshot/memory budget; chỉ tăng cap sau khi có bằng chứng.
 
-Không cần viết game code để “làm đầy” repository tài liệu. Các gate trên là đầu vào cho PR prototype, rồi mới đến vertical slice và online MVP.
+Các spike chỉ kiểm chứng boundary tích hợp. Chúng không thay thế gate ECS/headless [#12](https://github.com/loveoverflowcom/myva/issues/12), combat/playtest #2 hoặc vertical slice #4. Báo cáo riêng từng platform và giữ phần chưa chạy ở trạng thái BLOCKED/NOT_RUN.
 
 ## Nguồn kiểm chứng
 
-Truy cập ngày **09/10/2026**. Các nguồn xác nhận khả năng nền tảng; mọi lựa chọn kiến trúc của MyVa phía trên là đề xuất của dự án.
+Kiểm tra ngày **09/10/2026**. API/source được pin; lựa chọn kiến trúc và gate là hợp đồng của MyVa, không phải lời bảo đảm của thư viện.
 
-- **[S1]** [Macroquad — repository chính thức, target và loader WASM](https://github.com/not-fl3/macroquad).
-- **[S2]** [Macroquad on iOS — hướng dẫn chính thức](https://macroquad.rs/articles/ios/).
-- **[S3]** [Leptos — The Life of a Page Load](https://book.leptos.dev/ssr/22_life_cycle.html).
-- **[S4]** [Android Developers — Using Views in Compose](https://developer.android.com/develop/ui/compose/migrate/interoperability-apis/views-in-compose).
-- **[S5]** [Kotlin — Integration with the UIKit framework](https://kotlinlang.org/docs/multiplatform/compose-uikit-integration.html).
+- **[S1]** [Bevy 0.20 Window: canvas và resize](https://github.com/bevyengine/bevy/blob/v0.20.0/crates/bevy_window/src/window.rs).
+- **[S2]** [Leptos: CSR và SSR](https://book.leptos.dev/getting_started/index.html).
+- **[S3]** [Android Developers — Using Views in Compose](https://developer.android.com/develop/ui/compose/migrate/interoperability-apis/views-in-compose).
+- **[S4]** [Kotlin — Integration with UIKit](https://kotlinlang.org/docs/multiplatform/compose-uikit-integration.html).
+- **[S5]** [Bevy 0.20 WinitPlugin](https://github.com/bevyengine/bevy/blob/v0.20.0/crates/bevy_winit/src/lib.rs).
+- **[S6]** [Bevy 0.20 mobile example](https://github.com/bevyengine/bevy/blob/v0.20.0/examples/mobile/src/lib.rs).

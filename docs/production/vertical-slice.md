@@ -21,10 +21,12 @@ Trong 20–30 phút, một người mới đến Bến Lau, học di chuyển v�
 | Tài nguyên | 2 vật tư thường, 1 vật tư hiếm; đơn vị và trần xem economy |
 | Chế tạo | 1 recipe bắt buộc học, vài lựa chọn sidegrade; thu hồi một phần vật liệu |
 | Nhiệm vụ | Chuỗi chính hữu hạn, 1 nhánh phụ minh họa lựa chọn; tránh lặp “giết 100 quái” |
-| Platform | Web playable; Android và iOS qua native spike rồi mobile slice |
+| Platform | Bevy + Leptos web qua #11; Android/iOS Bevy + CMP qua #10 riêng từng hệ rồi mobile slice |
 | Online kiểm chứng | 2 client co-op nhỏ sau khi slice local đạt cảm giác chơi |
 
 Số lượng này chỉ là ngân sách slice. Không đồng nghĩa MMORPG phát hành chỉ có ba truyền thừa.
+
+Trước slice, [ADR 0003](../decisions/0003-bevy-engine-adoption.md) và foundation #12 phải được áp dụng vào combat #2; economy #3 giữ độc lập engine. #13 đo pipeline trên platform đã đạt gate. Cảnh spike 2D hoặc graybox Macroquad lịch sử không thay thế các gate này.
 
 ## Nhịp trải nghiệm
 

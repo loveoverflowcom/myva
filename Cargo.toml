@@ -5,9 +5,16 @@ members = ["crates/*"]
 [workspace.package]
 version = "0.1.0"
 edition = "2024"
-rust-version = "1.85"
+rust-version = "1.97.1"
 # Chủ dự án chưa chọn license (CONTRIBUTING.md); không phát hành crate nào.
 publish = false
 
 [workspace.lints.rust]
 unsafe_code = "forbid"
+
+[profile.web]
+inherits = "release"
+opt-level = "s"
+lto = "thin"
+codegen-units = 16
+strip = "debuginfo"

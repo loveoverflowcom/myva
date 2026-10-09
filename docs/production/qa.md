@@ -10,11 +10,15 @@
 | Kinh tế | Stock caps, budget, mint/sink, ledger, shards, controller | Simulation dài hạn và báo cáo invariant/distribution |
 | Online | Authoritative hit, sequence, lag, reconnect, duplicate command | Hai client độc lập, network impairment và server trace |
 | Persistence | Atomic reward/trade/craft; crash/restore | Fault injection tại các ranh giới commit |
-| Web/desktop game | Đồ họa, input, loading, cache, focus | Video/screenshot, frame-time và memory profile |
-| CMP native | Surface/context, touch, IME ngoài gameplay, audio, safe area, lifecycle | Android/iOS device run có log bridge và screenshot |
+| Bevy web + Leptos | Đồ họa, input/focus/IME, loading/error, resize/DPR, visibility, bridge/version/session, navigation/cleanup | Browser run có version/build, screenshot đã xem, counters và memory profile qua vòng vào/rời |
+| Bevy + CMP native | Surface/context/thread, touch cancel, IME ngoài game, audio focus, safe area, navigation/lifecycle | Android/iOS thật riêng biệt: 30 vòng vào/rời, 20 background/resume, log và screenshot |
 | Playtest | Hiểu luật, solo progression, boss fairness, mobile layout | Quan sát người chơi và các lỗi thao tác thực tế |
 
 Kiểm tra rules và render độc lập vẫn cần một vòng tích hợp CMP thật. Desktop/web chạy tốt không chứng minh Android/iOS native embedding đã đúng.
+
+Kết quả dùng `PASS`, `FAIL`, `BLOCKED`, `NOT_RUN`, `NOT_IMPLEMENTED`, `NOT_APPLICABLE`, ghi command/config/revision và phạm vi. Compile, browser interaction, screenshot captured/inspected, standalone executable và device-tested là các lớp bằng chứng khác nhau. Thiếu GPU/device/Xcode hoặc suite không chạy không được trả PASS. [ADR matrix](../decisions/0003-bevy-engine-adoption.md#compatibility-matrix-và-gate) dùng `KNOWN/UNKNOWN/BLOCKED` cho trạng thái kiến thức, không thay kết quả test.
+
+Graybox Macroquad lịch sử không chứng minh Bevy đã được kiểm chứng. #12 giữ unit/replay/invariant headless không GPU; #13 đo frame time/memory/build size trên platform đã qua #10/#11.
 
 ## Combat scenarios
 

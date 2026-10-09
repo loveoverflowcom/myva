@@ -11,7 +11,7 @@ Phiên bản nền tảng: **v0.1 / 2026-10-09**. Ngôn ngữ thiết kế chín
 | Gate | Điều kiện phải đạt trước khi chuyển sang bước phụ thuộc |
 | Chưa kiểm chứng | Không được mô tả như tính năng đã triển khai |
 
-Yêu cầu đã chốt: MyVa / Thần Mạch; hậu duệ hoặc người kế thừa; MMORPG hành động 2D HD; web, Android, iOS; Rust + Macroquad, Leptos, CMP; mobile hướng native; solo và cày chay có đường tiến triển; phát hành tài nguyên bị giới hạn; server authoritative; nhánh đầu tiên và mặc định `develop`.
+Yêu cầu đã chốt: MyVa / Thần Mạch; hậu duệ hoặc người kế thừa; MMORPG hành động 2D HD; web, Android, iOS; Rust + Bevy, Leptos, CMP; mobile hướng native; solo và cày chay có đường tiến triển; phát hành tài nguyên bị giới hạn; server authoritative; nhánh đầu tiên và mặc định `develop`.
 
 ## Thiết kế
 
@@ -50,6 +50,8 @@ Chờ duyệt qua [quyết định 0002](decisions/0002-lineages-world-structure
 | Tài liệu | Câu hỏi được giải quyết |
 | --- | --- |
 | [Architecture](technical/architecture.md) | Ai sở hữu state, native integration cần chứng minh gì và giao dịch được phục hồi ra sao? |
+| [Web feasibility](reports/web-feasibility.md) | Spike Bevy + Leptos chạy/kiểm thử gì, còn thiếu browser/device nào? |
+| [Native feasibility](reports/native-feasibility.md) | Standalone build, CMP embedding và Android/iOS thật có bằng chứng hoặc blocker gì? |
 | [Assets & Performance](technical/assets-performance.md) | Tải gì, giữ gì trong RAM/VRAM và đo hiệu năng thế nào? |
 | [Vertical slice](production/vertical-slice.md) | Bản thử đầu tiên phải chơi được gì và khi nào đủ điều kiện tiến tiếp? |
 | [Roadmap](production/roadmap.md) | Thứ tự từ thiết kế đến MMORPG nhiều linh vực là gì? |
@@ -57,6 +59,7 @@ Chờ duyệt qua [quyết định 0002](decisions/0002-lineages-world-structure
 | [QA](production/qa.md) | Kiểm tra combat, networking, kinh tế, đồ họa và mobile bằng chứng gì? |
 | [Work plan](work-plan/README.md) | Công việc tiếp theo có thể giao và review riêng là gì? |
 | [Planning & Kanban](work-plan/planning.md) | Issue, project và điều kiện chuyển trạng thái được theo dõi ở đâu? |
+| [Bevy adoption — ADR 0003](decisions/0003-bevy-engine-adoption.md) | Engine hiện hành, phiên bản, ownership và gate Web/Android/iOS là gì? |
 | [Foundation decision](decisions/0001-project-foundation.md) | Quy tắc tên, nhánh, scope và nguồn sự thật là gì? |
 | [Decision 0002 (đề xuất)](decisions/0002-lineages-world-structure.md) | Truyền thừa, linh vực thứ hai, vũ trụ quan và chính sách văn hóa được đề xuất chốt thế nào? |
 

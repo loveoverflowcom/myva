@@ -21,3 +21,9 @@
 Triển khai công việc ưu tiên trong [work-plan](docs/work-plan/README.md). Chọn ranh giới module từ prototype thực tế; giữ gameplay simulation không phụ thuộc renderer và client không sở hữu kinh tế online. Không mở rộng roster hoặc service ngoài consumer đang được kiểm chứng.
 
 Các test nên bảo vệ luật hoặc lỗi có thể gây mất state, nhân đôi reward, sai budget và trải nghiệm điều khiển. Không chạy benchmark trên placeholder rồi gọi đó là năng lực của game thành phẩm.
+
+## Kiểm tra tài liệu
+
+Chạy `python3 scripts/check-docs.py` để kiểm tra inline links, ảnh và heading fragments nội bộ trong README, CONTRIBUTING và `docs/`. Có thể truyền thêm file/thư mục, ví dụ `python3 scripts/check-docs.py docs prototypes/native`. Script không truy cập mạng hoặc xác nhận nội dung nguồn bên ngoài.
+
+Khi sửa Mermaid, chạy parser/render Mermaid riêng; link checker không xác nhận cú pháp diagram. Ví dụ dùng Mermaid CLI đã cài: trích nội dung một fence `mermaid` vào file `.mmd`, rồi chạy `mmdc -i diagram.mmd -o diagram.svg` và xem kết quả. ADR 0003 và sơ đồ ownership architecture đã được parse bằng Mermaid `12.1.0`; việc parse không thay thế review ownership trong sơ đồ.

@@ -37,7 +37,7 @@ Thực hiện trong một PR (việc R-08), sửa đồng thời:
 
 ## Không thay đổi
 
-Tên MyVa / Thần Mạch; người chơi là hậu duệ/người kế thừa; MMORPG hành động 2D HD; web, Android, iOS; Rust + Macroquad, Leptos, CMP; server authoritative; solo và cày chay có đường tiến triển; không bán sức mạnh hoặc quota tài nguyên; nhánh `develop`. Phạm vi vertical slice (3 bản đồ, 3 truyền thừa, 1 boss) giữ nguyên.
+Tên MyVa / Thần Mạch; người chơi là hậu duệ/người kế thừa; MMORPG hành động 2D HD; web, Android, iOS; Rust + Bevy (engine cập nhật theo [ADR 0003](0003-bevy-engine-adoption.md)), Leptos, CMP; server authoritative; solo và cày chay có đường tiến triển; không bán sức mạnh hoặc quota tài nguyên; nhánh `develop`. Phạm vi vertical slice (3 bản đồ, 3 truyền thừa, 1 boss) giữ nguyên.
 
 ## Khi nào xem xét lại
 

@@ -11,7 +11,7 @@ MyVa là dự án riêng cho MMORPG hành động 2D HD, với trải nghiệm c
 
 1. Tên dự án: **MyVa**. Tên tiếng Việt: **Thần Mạch**.
 2. Nhánh khởi tạo là `develop`; đặt nhánh mặc định cùng tên. Không tạo `main` trong bước khởi tạo. PR công việc sau này lấy `develop` làm base.
-3. Stack định hướng: Rust + Macroquad gameplay, Leptos web shell, Kotlin Compose Multiplatform mobile shell. Native embedding phải được kiểm chứng; WebView không phải phương án hoàn thành yêu cầu mobile này.
+3. **Lịch sử — lựa chọn engine đã bị [ADR 0003](0003-bevy-engine-adoption.md) thay thế:** Rust + Macroquad gameplay. Quyết định hiện hành dùng **Rust + Bevy**; Leptos web shell và Kotlin Compose Multiplatform mobile shell giữ nguyên. Native embedding phải được kiểm chứng; WebView không phải phương án hoàn thành yêu cầu mobile này.
 4. Server sở hữu gameplay online, item, trade, reward và ngân sách tài nguyên. Client prediction không được mint item hoặc xác nhận giao dịch.
 5. Hậu duệ/người kế thừa là nhân vật chính; không gán văn hóa hoặc vị trí thật của người chơi vào sức mạnh nhân vật.
 6. Solo/cày chay có con đường tiến triển chiến đấu hoàn chỉnh. Doanh thu đề xuất từ cosmetic; không bán sức mạnh hoặc quota tài nguyên.

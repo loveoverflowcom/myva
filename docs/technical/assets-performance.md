@@ -20,7 +20,7 @@ Animation render không quyết định luật hit. Startup/active/recovery, hur
 
 ## 2. Skeletal animation là lựa chọn cần kiểm chứng
 
-Không ghi skeletal animation thành tính năng đã có của MyVa hoặc mặc định Macroquad cung cấp runtime đó. Cần một spike đánh giá công cụ authoring, format export, runtime Rust/WASM/native và quyền sử dụng/phân phối.
+Không ghi skeletal animation thành tính năng đã có của MyVa hoặc mặc định Bevy cung cấp runtime skeletal 2D đó. Cần một spike đánh giá công cụ authoring, format export, runtime Rust/WASM/native và quyền sử dụng/phân phối.
 
 So sánh ít nhất hai đường:
 
@@ -31,9 +31,9 @@ Acceptance: cùng clip đứng/đi/nhảy/combo 10 giây chạy trên web + Andr
 
 ## 3. Atlas, texture và shader
 
-Macroquad có API texture và custom material/shader [S1–S2]. Cần shader variant đúng backend, không giả định shader WebGL chạy nguyên xi trên Metal. Tài liệu `load_material` hiện ghi hạn chế `_ScreenTexture` với Metal [S2]; hiệu ứng cần render texture/screen sampling phải có spike riêng.
+Bevy `0.20.0` cung cấp sprite/texture atlas và material 2D qua các module riêng [S1–S2]. Spike web chỉ bật những feature cần cho sprite và WebGL2; WebGPU hoặc backend native là các cấu hình phải kiểm chứng riêng. Shader/custom material phải được thử ở từng backend; không suy ra tương thích từ một ảnh render desktop. D05 [#13](https://github.com/loveoverflowcom/myva/issues/13) đo pipeline 2D sau khi platform tương ứng vượt gate tích hợp.
 
-Ưu tiên atlas đóng gói offline để tính kích thước và ownership. API `build_textures_atlas` của Macroquad giữ allocation texture ban đầu ngoài atlas [S3]; gọi tự động với mọi asset đã tải có thể làm tăng bộ nhớ và gom các bundle không cùng vòng đời.
+Ưu tiên atlas đóng gói offline để tính kích thước và ownership. Trong Bevy, strong asset handles giữ asset sống [S3]; danh sách preload, resource ECS, sprite/material và render-world có thể giữ tham chiếu sau khi rời map. Ghi rõ owner mỗi bundle, bỏ strong handles khi hết dùng, rồi đo CPU/GPU sau nhiều chu kỳ tải/rời. Despawn entity hoặc file tải nhỏ không đủ chứng minh đã trả hết bộ nhớ.
 
 - Atlas chia theo bản đồ/roster/clip cần cùng lúc, thay vì một atlas chứa cả thế giới.
 - Padding/extrude biên sprite tránh bleeding; mipmap và filter phải thử ở zoom/DPR mục tiêu.
@@ -136,6 +136,6 @@ Chất lượng tự điều chỉnh bằng hysteresis để tránh đổi tier 
 
 Truy cập ngày **09/10/2026**. Budget và pipeline là đề xuất của MyVa; nguồn dưới đây chỉ xác nhận API và hạn chế liên quan.
 
-- **[S1]** [Macroquad — load_texture](https://docs.rs/macroquad/latest/macroquad/texture/fn.load_texture.html).
-- **[S2]** [Macroquad — load_material, backend shader và hạn chế screen texture](https://docs.rs/macroquad/latest/macroquad/material/fn.load_material.html).
-- **[S3]** [Macroquad — build_textures_atlas, allocation texture gốc](https://docs.rs/macroquad/latest/macroquad/texture/fn.build_textures_atlas.html).
+- **[S1]** [Bevy 0.20 sprite module](https://docs.rs/bevy/0.20.0/bevy/sprite/index.html).
+- **[S2]** [Bevy 0.20 Material2d](https://docs.rs/bevy/0.20.0/bevy/sprite_render/trait.Material2d.html).
+- **[S3]** [Bevy 0.20 asset handle implementation](https://github.com/bevyengine/bevy/blob/v0.20.0/crates/bevy_asset/src/handle.rs).

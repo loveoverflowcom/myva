@@ -21,7 +21,7 @@ Ngọc Rồng Online gợi ý nhịp khám phá và gắn bó cộng đồng; Mo
 | Tài nguyên theo tổng cấp độ | Dễ bị tài khoản phụ và tích trữ thao túng | Cấp độ hiệu dụng chỉ là một tín hiệu; còn có hoạt động hợp lệ, trữ lượng, tiêu hao và ngân sách phát hành |
 | Không lạm phát | Là mục tiêu tốt, không thể cam kết tuyệt đối bằng một công thức | Định nghĩa chỉ số, biên điều khiển và cơ chế xử lý sự cố; tách tài nguyên vật lý khỏi tiền tệ |
 | Skeletal animation + 2D HD | Cần kiểm chứng chi phí và runtime | Prototype sprite atlas trước; thử skeletal cho một nhân vật nếu thực sự giảm chi phí sản xuất |
-| Macroquad native trong CMP | Đúng hướng nhưng là rủi ro tích hợp riêng | Spike render surface, input, vòng đời và bộ nhớ trước khi hứa ngang bằng web/mobile |
+| Bevy native trong CMP | Đúng hướng nhưng là rủi ro tích hợp riêng | Spike render surface, input, vòng đời và bộ nhớ trước khi hứa ngang bằng web/mobile |
 | Chiến tranh liên lục địa | Là đích dài hạn | Không đưa vào MVP; phải chứng minh combat, duy trì nội dung và vận hành kinh tế trước |
 
 ## 3. Các trụ cột có thể kiểm chứng

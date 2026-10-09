@@ -22,7 +22,7 @@
 | Một châu lục được xem như một “hệ” | Giản lược các cộng đồng khác nhau thành một kiểu nhân vật | Linh vực là địa lý hư cấu; truyền thừa là các nhánh riêng, có cổng review văn hóa |
 | Xuất thân theo nơi sống | Có thể khóa người chơi vào vị trí thực hoặc chủng tộc | Người chơi tự chọn linh vực; không dùng IP/GPS/quốc tịch để khóa sức mạnh |
 | Học kỹ năng mọi vùng không có giới hạn build | Build tối ưu lấy tất cả, roster bị vô hiệu | 5 slot chiến đấu; 2 căn bản + 3 thuật; cơ chế giao thoa có chi phí cơ hội |
-| Native Macroquad trong CMP được viết như tính năng sẵn có | Chọn nội dung rồi mới phát hiện lifecycle/render không ổn | Spike Android và iOS là gate; chưa thông qua thì chưa cam kết mở rộng mobile |
+| Native Bevy trong CMP bị hiểu nhầm là tính năng sẵn có | Chọn nội dung rồi mới phát hiện lifecycle/render không ổn | Spike Android và iOS là gate; chưa thông qua thì chưa cam kết mở rộng mobile |
 | Skeletal animation và GPU effects chưa có pipeline | Asset đẹp nhưng không chạy được trên thiết bị mục tiêu | Prototype atlas trước; skeletal và effect có gate về chất lượng và ngân sách |
 | Đại chiến không có giới hạn tác nhân/mặt trận | Không kiểm soát networking, fill rate hoặc griefing | Chiến dịch nhiều mặt trận có instance giới hạn, mục tiêu chung và ngân sách chung |
 
