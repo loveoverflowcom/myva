@@ -163,3 +163,5 @@ Các ngưỡng trên là cổng review, không thay thế phỏng vấn người
 - Bố cục touch tap/hold hay hai nút đòn cơ bản; quyết định từ prototype, không từ hình mockup riêng lẻ.
 - Nhịp tiến triển MVP, độ bền, danh mục item có thể trade và giới hạn thương mại.
 - Danh sách thiết bị mục tiêu, mức tải channel và quy mô vận hành; chưa cam kết thiết bị hoặc CCU cụ thể.
+
+Đề xuất trả lời một phần các câu hỏi trên (giữ bản sắc khi học kỹ năng giao thoa, phạm vi bản ra mắt, tạo nhân vật) nằm ở [báo cáo thiết kế thế giới v0.2](worldbuilding-report.md), chờ [quyết định 0002](../decisions/0002-lineages-world-structure.md).

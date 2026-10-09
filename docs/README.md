@@ -24,6 +24,27 @@ Yêu cầu đã chốt: MyVa / Thần Mạch; hậu duệ hoặc người kế t
 | [Progression & Social](design/progression-social.md) | Solo, bang hội, build và chiến dịch liên vùng cùng tồn tại thế nào? |
 | [Economy](design/economy.md) | Tài nguyên hồi phục mà tồn kho, ngân sách phát hành và tiền tệ vẫn được kiểm soát thế nào? |
 
+### Đề xuất v0.2 — thế giới, thần thoại và hệ nhân vật
+
+Chờ duyệt qua [quyết định 0002](decisions/0002-lineages-world-structure.md); chưa sửa các tài liệu v0.1 ở trên.
+
+| Tài liệu | Câu hỏi được giải quyết |
+| --- | --- |
+| [Báo cáo thiết kế](design/worldbuilding-report.md) | Vision hiện tại thiếu gì, mâu thuẫn ở đâu, và cần chủ dự án quyết định điều gì? (mục A–J) |
+| [Glossary](design/glossary.md) | Mỗi thuật ngữ nghĩa là gì, và tồn tại để phục vụ việc chơi nào? |
+| [Lineages](design/lineages.md) | "Hệ nhân vật" được phân tầng thế nào; năm truyền thừa ra mắt khác nhau ra sao? |
+| [Combat, progression & balance](design/combat-progression-balance.md) | Truyền thừa đổi combat thế nào, học kỹ năng liên vùng ra sao, và kiểm chứng cân bằng bằng gì? |
+| [World atlas](design/world-atlas.md) | Các linh vực nối nhau thế nào; từng bản đồ có gì? |
+| [Narrative](design/narrative.md) | Thần Mạch là gì, ai là phản diện, câu chuyện và chiến dịch tiến triển ra sao? |
+| [Monetization](design/monetization.md) | Kinh tế bản ra mắt mở rộng thế nào và kiếm tiền mà không bán sức mạnh ra sao? |
+
+## Nghiên cứu
+
+| Tài liệu | Câu hỏi được giải quyết |
+| --- | --- |
+| [Mythology survey](research/mythology-survey.md) | Thần thoại và văn hóa nào có thể dùng, ở mức nào, với nguồn nào? |
+| [Risk register](research/risk-register.md) | Rủi ro thiết kế, văn hóa, bản quyền, kỹ thuật, pháp lý là gì; duyệt văn hóa theo quy trình nào? |
+
 ## Kỹ thuật và sản xuất
 
 | Tài liệu | Câu hỏi được giải quyết |
@@ -32,10 +53,12 @@ Yêu cầu đã chốt: MyVa / Thần Mạch; hậu duệ hoặc người kế t
 | [Assets & Performance](technical/assets-performance.md) | Tải gì, giữ gì trong RAM/VRAM và đo hiệu năng thế nào? |
 | [Vertical slice](production/vertical-slice.md) | Bản thử đầu tiên phải chơi được gì và khi nào đủ điều kiện tiến tiếp? |
 | [Roadmap](production/roadmap.md) | Thứ tự từ thiết kế đến MMORPG nhiều linh vực là gì? |
+| [Content roadmap](production/content-roadmap.md) | Truyền thừa, linh vực, boss và chương truyện được thêm vào ở giai đoạn nào? (đề xuất v0.2) |
 | [QA](production/qa.md) | Kiểm tra combat, networking, kinh tế, đồ họa và mobile bằng chứng gì? |
 | [Work plan](work-plan/README.md) | Công việc tiếp theo có thể giao và review riêng là gì? |
 | [Planning & Kanban](work-plan/planning.md) | Issue, project và điều kiện chuyển trạng thái được theo dõi ở đâu? |
 | [Foundation decision](decisions/0001-project-foundation.md) | Quy tắc tên, nhánh, scope và nguồn sự thật là gì? |
+| [Decision 0002 (đề xuất)](decisions/0002-lineages-world-structure.md) | Truyền thừa, linh vực thứ hai, vũ trụ quan và chính sách văn hóa được đề xuất chốt thế nào? |
 
 ## Quy tắc cập nhật
 

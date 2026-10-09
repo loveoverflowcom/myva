@@ -151,3 +151,5 @@ Trạng thái xuất bản của một nội dung tham chiếu thực tế phả
 - Mọi hứa hẹn mở rộng được phân biệt với nội dung đã phát hành.
 
 Xem [tiến triển và hoạt động xã hội](progression-social.md) để biết cách chuyển hành trình này thành hệ thống chơi.
+
+Đề xuất v0.2 mở rộng vũ trụ quan, danh mục linh vực, năm truyền thừa và cốt truyện dài hạn nằm ở [báo cáo thiết kế thế giới](worldbuilding-report.md); tài liệu này chỉ được cập nhật sau khi [quyết định 0002](../decisions/0002-lineages-world-structure.md) được duyệt.

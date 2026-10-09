@@ -35,6 +35,7 @@ Các con số trong tài liệu là giả thuyết thiết kế cần đo bằng
 4. [Kiến trúc](docs/technical/architecture.md), [assets và hiệu năng](docs/technical/assets-performance.md).
 5. [Vertical slice](docs/production/vertical-slice.md), [roadmap](docs/production/roadmap.md), [QA](docs/production/qa.md).
 6. [Hàng đợi công việc](docs/work-plan/README.md) và [quyết định nền tảng](docs/decisions/0001-project-foundation.md).
+7. Đề xuất v0.2 về thế giới, thần thoại và hệ nhân vật: [báo cáo thiết kế](docs/design/worldbuilding-report.md), [khảo sát thần thoại](docs/research/mythology-survey.md) và [quyết định 0002 (chờ duyệt)](docs/decisions/0002-lineages-world-structure.md).
 
 [Mục lục đầy đủ](docs/README.md) phân biệt yêu cầu đã chốt, phương án đề xuất và câu hỏi còn mở.
 
