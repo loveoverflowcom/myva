@@ -1,0 +1,10 @@
+[package]
+name = "myva-economy"
+description = "Sổ cái tài nguyên, ngân sách phát hành và mô phỏng kinh tế headless của MyVa — Thần Mạch."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true

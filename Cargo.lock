@@ -3,5 +3,9 @@
 version = 4
 
 [[package]]
+name = "myva-economy"
+version = "0.1.0"
+
+[[package]]
 name = "myva-sim"
 version = "0.1.0"
