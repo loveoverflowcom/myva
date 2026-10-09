@@ -1,6 +1,6 @@
 # Asset streaming và hiệu năng — MyVa · Thần Mạch
 
-**Trạng thái:** đề xuất v0.1, ngày 09/10/2026. Chưa có asset runtime hoặc benchmark. Các budget là điểm khởi đầu để thử nghiệm, không phải kết quả đã đạt.
+**Trạng thái:** đề xuất v0.1, ngày 09/10/2026. Chưa có asset runtime production hoặc benchmark cảnh chuẩn. [D03](../reports/web-feasibility.md) đã đo một cảnh tích hợp tối thiểu; số đo đó không xác nhận các budget bên dưới. Các budget là điểm khởi đầu để thử nghiệm, không phải kết quả đã đạt.
 
 ## 1. Tiêu chuẩn hình ảnh
 

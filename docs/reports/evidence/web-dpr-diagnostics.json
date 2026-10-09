@@ -1,0 +1,314 @@
+[
+  {
+    "forced": false,
+    "config": {
+      "dpr": 1,
+      "mobile": false
+    },
+    "browser": "153.0.8010.36",
+    "data": {
+      "devicePixelRatio": 1,
+      "innerWidth": 357,
+      "innerHeight": 403,
+      "visualViewport": {
+        "width": 357,
+        "height": 403,
+        "scale": 1
+      },
+      "canvas": {
+        "width": 357,
+        "height": 403,
+        "clientWidth": 357,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 357,
+          "height": 403,
+          "top": 0,
+          "right": 357,
+          "bottom": 403,
+          "left": 0
+        }
+      },
+      "entries": [
+        {
+          "name": "CANVAS",
+          "content": {
+            "width": 357,
+            "height": 403
+          },
+          "box": {
+            "inlineSize": 357,
+            "blockSize": 403
+          },
+          "deviceBox": {
+            "inlineSize": 357,
+            "blockSize": 403
+          }
+        },
+        {
+          "name": "DIV",
+          "content": {
+            "width": 100,
+            "height": 100
+          },
+          "box": {
+            "inlineSize": 100,
+            "blockSize": 100
+          },
+          "deviceBox": {
+            "inlineSize": 100,
+            "blockSize": 100
+          }
+        }
+      ],
+      "metrics": {
+        "at": 6254.299999998882,
+        "x": -220,
+        "y": 0,
+        "score": 0,
+        "frames": 0,
+        "updates": 3,
+        "paused": true,
+        "ready": true,
+        "updateHz": 2.901915264077426,
+        "hidden": false
+      }
+    },
+    "errors": []
+  },
+  {
+    "forced": false,
+    "config": {
+      "dpr": 2,
+      "mobile": true
+    },
+    "browser": "153.0.8010.36",
+    "data": {
+      "devicePixelRatio": 2,
+      "innerWidth": 357,
+      "innerHeight": 403,
+      "visualViewport": {
+        "width": 357,
+        "height": 403,
+        "scale": 1
+      },
+      "canvas": {
+        "width": 357,
+        "height": 403,
+        "clientWidth": 357,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 357,
+          "height": 403,
+          "top": 0,
+          "right": 357,
+          "bottom": 403,
+          "left": 0
+        }
+      },
+      "entries": [
+        {
+          "name": "CANVAS",
+          "content": {
+            "width": 357,
+            "height": 403
+          },
+          "box": {
+            "inlineSize": 357,
+            "blockSize": 403
+          },
+          "deviceBox": {
+            "inlineSize": 357,
+            "blockSize": 403
+          }
+        },
+        {
+          "name": "DIV",
+          "content": {
+            "width": 100,
+            "height": 100
+          },
+          "box": {
+            "inlineSize": 100,
+            "blockSize": 100
+          },
+          "deviceBox": {
+            "inlineSize": 100,
+            "blockSize": 100
+          }
+        }
+      ],
+      "metrics": {
+        "at": 6434.800000000745,
+        "x": -220,
+        "y": 0,
+        "score": 0,
+        "frames": 0,
+        "updates": 3,
+        "paused": false,
+        "ready": true,
+        "updateHz": 10.288065843503109,
+        "hidden": false
+      }
+    },
+    "errors": []
+  },
+  {
+    "forced": true,
+    "config": {
+      "dpr": 1,
+      "mobile": false
+    },
+    "browser": "153.0.8010.36",
+    "data": {
+      "devicePixelRatio": 1,
+      "innerWidth": 357,
+      "innerHeight": 403,
+      "visualViewport": {
+        "width": 357,
+        "height": 403,
+        "scale": 1
+      },
+      "canvas": {
+        "width": 714,
+        "height": 806,
+        "clientWidth": 357,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 357,
+          "height": 403,
+          "top": 0,
+          "right": 357,
+          "bottom": 403,
+          "left": 0
+        }
+      },
+      "entries": [
+        {
+          "name": "CANVAS",
+          "content": {
+            "width": 357,
+            "height": 403
+          },
+          "box": {
+            "inlineSize": 357,
+            "blockSize": 403
+          },
+          "deviceBox": {
+            "inlineSize": 714,
+            "blockSize": 806
+          }
+        },
+        {
+          "name": "DIV",
+          "content": {
+            "width": 100,
+            "height": 100
+          },
+          "box": {
+            "inlineSize": 100,
+            "blockSize": 100
+          },
+          "deviceBox": {
+            "inlineSize": 200,
+            "blockSize": 200
+          }
+        }
+      ],
+      "metrics": {
+        "at": 6942.5,
+        "x": -220,
+        "y": 0,
+        "score": 0,
+        "frames": 0,
+        "updates": 3,
+        "paused": false,
+        "ready": true,
+        "updateHz": 3.8314176245210727,
+        "hidden": false
+      }
+    },
+    "errors": []
+  },
+  {
+    "forced": true,
+    "config": {
+      "dpr": 2,
+      "mobile": true
+    },
+    "browser": "153.0.8010.36",
+    "data": {
+      "devicePixelRatio": 2,
+      "innerWidth": 357,
+      "innerHeight": 403,
+      "visualViewport": {
+        "width": 357,
+        "height": 403,
+        "scale": 1
+      },
+      "canvas": {
+        "width": 714,
+        "height": 806,
+        "clientWidth": 357,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 357,
+          "height": 403,
+          "top": 0,
+          "right": 357,
+          "bottom": 403,
+          "left": 0
+        }
+      },
+      "entries": [
+        {
+          "name": "CANVAS",
+          "content": {
+            "width": 357,
+            "height": 403
+          },
+          "box": {
+            "inlineSize": 357,
+            "blockSize": 403
+          },
+          "deviceBox": {
+            "inlineSize": 714,
+            "blockSize": 806
+          }
+        },
+        {
+          "name": "DIV",
+          "content": {
+            "width": 100,
+            "height": 100
+          },
+          "box": {
+            "inlineSize": 100,
+            "blockSize": 100
+          },
+          "deviceBox": {
+            "inlineSize": 200,
+            "blockSize": 200
+          }
+        }
+      ],
+      "metrics": {
+        "at": 7063,
+        "x": -220,
+        "y": 0,
+        "score": 0,
+        "frames": 1,
+        "updates": 4,
+        "paused": false,
+        "ready": true,
+        "updateHz": 1.9968051118181156,
+        "hidden": false
+      }
+    },
+    "errors": []
+  }
+]

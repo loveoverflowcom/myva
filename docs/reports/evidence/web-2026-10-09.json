@@ -1,0 +1,614 @@
+{
+  "source_revision": "72a755b97d2634da5bb793a2aa6af52fa37757f3",
+  "recorded_utc": "2026-10-09T14:50:56.379Z",
+  "environment": {
+    "browser": "153.0.8010.36",
+    "os": "Linux 7.0.0-38-generic x86_64",
+    "cpu": "Intel Core Ultra 7 155H, 22 logical CPUs",
+    "ram": "22 GiB",
+    "renderer": "WebGL2 via Chromium SwiftShader (software, not target hardware)",
+    "viewport": "1280x900 DPR1; touch emulation390x844 DPR2 with --force-device-scale-factor=2"
+  },
+  "test_stats": {
+    "startTime": "2026-10-09T14:49:04.130Z",
+    "duration": 133525.018,
+    "expected": 3,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "bundle": {
+    "revision": "72a755b97d2634da5bb793a2aa6af52fa37757f3",
+    "dirty": true,
+    "profile": "web",
+    "rustc": "rustc 1.97.1 (8bab26f4f 2026-07-14)",
+    "files": [
+      {
+        "path": "bootstrap.js",
+        "bytes": 300,
+        "gzip_bytes": 233,
+        "sha256": "b71c31f1fe0e8ffe02e63bd8057dd414823626f42e35239232efafac4027f509"
+      },
+      {
+        "path": "game/game.css",
+        "bytes": 379,
+        "gzip_bytes": 263,
+        "sha256": "ef87856fc655a136c63ac57e3d75656daafd3bfcb7fe7f0cc876d66c14109d89"
+      },
+      {
+        "path": "game/index.html",
+        "bytes": 536,
+        "gzip_bytes": 380,
+        "sha256": "41c901ad24b222da8c063f83693f5ffd4ffc67da1c7ab1eeb70ad4f08dec6b68"
+      },
+      {
+        "path": "game/pkg/myva_web_game.d.ts",
+        "bytes": 4494,
+        "gzip_bytes": 1040,
+        "sha256": "63b68cde2b8b8cb7c071087389564bc5c9381a82da667f0dfbd41407b9ae9848"
+      },
+      {
+        "path": "game/pkg/myva_web_game.js",
+        "bytes": 102028,
+        "gzip_bytes": 14928,
+        "sha256": "920ecaec001351dc7c8c1ccbcd3b534a01227e9d8fb48bbe8f80f980d54be6ea"
+      },
+      {
+        "path": "game/pkg/myva_web_game_bg.wasm",
+        "bytes": 63294408,
+        "gzip_bytes": 8251795,
+        "sha256": "b416fb7a9e22eaebcf9d3fead6619bd582da9b1bc05e18d0e30f30e408af1c19"
+      },
+      {
+        "path": "game/pkg/myva_web_game_bg.wasm.d.ts",
+        "bytes": 3031,
+        "gzip_bytes": 484,
+        "sha256": "e1028f95cdc1d2d28b99c7f77bdbfe29756348a64d62e3b9937206a35a5b45d8"
+      },
+      {
+        "path": "game/runtime.js",
+        "bytes": 6762,
+        "gzip_bytes": 2333,
+        "sha256": "493ce399dfcb3449db28df741679e5660f9f92517a30bad75f198730c39ab9de"
+      },
+      {
+        "path": "index.html",
+        "bytes": 535,
+        "gzip_bytes": 364,
+        "sha256": "78ced53baf37e9f2397ec089e42ebefd998bc80aab4025873a0bca77e7ac8f65"
+      },
+      {
+        "path": "shell/myva_web_shell.d.ts",
+        "bytes": 4489,
+        "gzip_bytes": 1130,
+        "sha256": "65590b3379d9fbf06ca8717975ef30df36af636db2e5f8a0da07bebf9050993a"
+      },
+      {
+        "path": "shell/myva_web_shell.js",
+        "bytes": 30870,
+        "gzip_bytes": 6224,
+        "sha256": "b0a852d04188ae77eb294b2e38eaa7fcc143ec3d6113bf8ea848c3ac3397235b"
+      },
+      {
+        "path": "shell/myva_web_shell_bg.wasm",
+        "bytes": 384356,
+        "gzip_bytes": 71041,
+        "sha256": "9996a038d763060ebb7b2be4df82576aa46efaa234beb06c10504fc1aa01bdfe"
+      },
+      {
+        "path": "shell/myva_web_shell_bg.wasm.d.ts",
+        "bytes": 2531,
+        "gzip_bytes": 514,
+        "sha256": "a60fa1eb6b6a15ba09b7f1f2d0c37b5c9dbbb111514b295d781ca21a05249a3f"
+      },
+      {
+        "path": "shell/snippets/myva-web-shell-2f0fcbe15a87b985/web/shell-bridge.js",
+        "bytes": 2973,
+        "gzip_bytes": 1271,
+        "sha256": "74cdf62b7441a21247000b6de74b237e3d1ea95e9c21dc69d123cea56ba2034b"
+      },
+      {
+        "path": "style.css",
+        "bytes": 2284,
+        "gzip_bytes": 997,
+        "sha256": "c34021e0038235a7f2c911786bb02ea92cdb56dee43cf3af667c5361ab171868"
+      }
+    ],
+    "total_bytes": 63839976,
+    "total_gzip_bytes": 8352997
+  },
+  "first_load": {
+    "shell": [
+      {
+        "name": "http://127.0.0.1:8080/style.css",
+        "transferSize": 2584,
+        "encodedBodySize": 2284,
+        "decodedBodySize": 2284,
+        "duration": 9.5
+      },
+      {
+        "name": "http://127.0.0.1:8080/bootstrap.js",
+        "transferSize": 600,
+        "encodedBodySize": 300,
+        "decodedBodySize": 300,
+        "duration": 10.599999999627471
+      },
+      {
+        "name": "http://127.0.0.1:8080/shell/myva_web_shell.js",
+        "transferSize": 31170,
+        "encodedBodySize": 30870,
+        "decodedBodySize": 30870,
+        "duration": 3.299999998882413
+      },
+      {
+        "name": "http://127.0.0.1:8080/shell/snippets/myva-web-shell-2f0fcbe15a87b985/web/shell-bridge.js",
+        "transferSize": 3273,
+        "encodedBodySize": 2973,
+        "decodedBodySize": 2973,
+        "duration": 6.800000000745058
+      },
+      {
+        "name": "http://127.0.0.1:8080/shell/myva_web_shell_bg.wasm",
+        "transferSize": 384656,
+        "encodedBodySize": 384356,
+        "decodedBodySize": 384356,
+        "duration": 5.5
+      },
+      {
+        "name": "http://127.0.0.1:8080/game/?session=2ceedb14-aa3f-4d71-a1a7-7498375e3c0a",
+        "transferSize": 836,
+        "encodedBodySize": 536,
+        "decodedBodySize": 536,
+        "duration": 4.700000001117587
+      }
+    ],
+    "game": [
+      {
+        "name": "http://127.0.0.1:8080/game/game.css",
+        "transferSize": 679,
+        "encodedBodySize": 379,
+        "decodedBodySize": 379,
+        "duration": 3.599999999627471
+      },
+      {
+        "name": "http://127.0.0.1:8080/game/runtime.js",
+        "transferSize": 7062,
+        "encodedBodySize": 6762,
+        "decodedBodySize": 6762,
+        "duration": 4.5
+      },
+      {
+        "name": "http://127.0.0.1:8080/game/pkg/myva_web_game.js",
+        "transferSize": 102328,
+        "encodedBodySize": 102028,
+        "decodedBodySize": 102028,
+        "duration": 5.200000001117587
+      },
+      {
+        "name": "http://127.0.0.1:8080/game/pkg/myva_web_game_bg.wasm",
+        "transferSize": 63294708,
+        "encodedBodySize": 63294408,
+        "decodedBodySize": 63294408,
+        "duration": 225.19999999925494
+      }
+    ],
+    "note": "Fresh browser context; resource timing includes response headers in transferSize; local server sends uncompressed bodies. Navigation HTML is recorded separately.",
+    "navigation": [
+      {
+        "name": "http://127.0.0.1:8080/",
+        "entryType": "navigation",
+        "startTime": 0,
+        "duration": 40.100000001490116,
+        "navigationId": 5180,
+        "initiatorType": "navigation",
+        "deliveryType": "",
+        "nextHopProtocol": "http/1.0",
+        "renderBlockingStatus": "non-blocking",
+        "contentType": "text/html",
+        "contentEncoding": "",
+        "workerStart": 0,
+        "workerRouterEvaluationStart": 0,
+        "workerCacheLookupStart": 0,
+        "workerMatchedSourceType": "",
+        "workerFinalSourceType": "",
+        "redirectStart": 0,
+        "redirectEnd": 0,
+        "fetchStart": 1.800000000745058,
+        "domainLookupStart": 1.800000000745058,
+        "domainLookupEnd": 1.800000000745058,
+        "connectStart": 1.800000000745058,
+        "secureConnectionStart": 0,
+        "connectEnd": 1.800000000745058,
+        "requestStart": 3.900000000372529,
+        "responseStart": 5.100000001490116,
+        "firstInterimResponseStart": 0,
+        "finalResponseHeadersStart": 5.100000001490116,
+        "responseEnd": 6.800000000745058,
+        "transferSize": 835,
+        "encodedBodySize": 535,
+        "decodedBodySize": 535,
+        "responseStatus": 200,
+        "serverTiming": [],
+        "unloadEventStart": 0,
+        "unloadEventEnd": 0,
+        "domInteractive": 20.700000001117587,
+        "domContentLoadedEventStart": 39.5,
+        "domContentLoadedEventEnd": 39.600000001490116,
+        "domComplete": 40,
+        "loadEventStart": 40.100000001490116,
+        "loadEventEnd": 40.100000001490116,
+        "type": "navigate",
+        "redirectCount": 0,
+        "activationStart": 0,
+        "criticalCHRestart": 0,
+        "notRestoredReasons": null,
+        "confidence": {
+          "randomizedTriggerRate": 0.4994798,
+          "value": "high"
+        }
+      }
+    ]
+  },
+  "cycles": [
+    {
+      "index": 1,
+      "startup_ms": 1841,
+      "documents": 2,
+      "nodes": 177,
+      "listeners": 37,
+      "heap_bytes": 2665300
+    },
+    {
+      "index": 2,
+      "startup_ms": 1089.7999999988824,
+      "documents": 2,
+      "nodes": 177,
+      "listeners": 37,
+      "heap_bytes": 2824952
+    },
+    {
+      "index": 3,
+      "startup_ms": 1111.7999999988824,
+      "documents": 2,
+      "nodes": 177,
+      "listeners": 37,
+      "heap_bytes": 2834356
+    },
+    {
+      "index": 4,
+      "startup_ms": 1056.300000000745,
+      "documents": 2,
+      "nodes": 177,
+      "listeners": 37,
+      "heap_bytes": 2841352
+    },
+    {
+      "index": 5,
+      "startup_ms": 1090.5999999996275,
+      "documents": 2,
+      "nodes": 177,
+      "listeners": 37,
+      "heap_bytes": 2844600
+    },
+    {
+      "index": 6,
+      "startup_ms": 1097.199999999255,
+      "documents": 2,
+      "nodes": 177,
+      "listeners": 37,
+      "heap_bytes": 2845128
+    },
+    {
+      "index": 7,
+      "startup_ms": 1121.4000000003725,
+      "documents": 2,
+      "nodes": 177,
+      "listeners": 37,
+      "heap_bytes": 2845712
+    },
+    {
+      "index": 8,
+      "startup_ms": 1105,
+      "documents": 2,
+      "nodes": 177,
+      "listeners": 37,
+      "heap_bytes": 2848252
+    },
+    {
+      "index": 9,
+      "startup_ms": 1111.5,
+      "documents": 2,
+      "nodes": 177,
+      "listeners": 37,
+      "heap_bytes": 2851248
+    },
+    {
+      "index": 10,
+      "startup_ms": 1143.300000000745,
+      "documents": 2,
+      "nodes": 177,
+      "listeners": 37,
+      "heap_bytes": 2873672
+    },
+    {
+      "index": 11,
+      "startup_ms": 1141.800000000745,
+      "documents": 2,
+      "nodes": 177,
+      "listeners": 37,
+      "heap_bytes": 2876300
+    },
+    {
+      "index": 12,
+      "startup_ms": 1180.7999999988824,
+      "documents": 2,
+      "nodes": 177,
+      "listeners": 37,
+      "heap_bytes": 2876244
+    },
+    {
+      "index": 13,
+      "startup_ms": 1084.1000000014901,
+      "documents": 2,
+      "nodes": 177,
+      "listeners": 37,
+      "heap_bytes": 2876244
+    },
+    {
+      "index": 14,
+      "startup_ms": 1132.5,
+      "documents": 2,
+      "nodes": 177,
+      "listeners": 37,
+      "heap_bytes": 2880296
+    },
+    {
+      "index": 15,
+      "startup_ms": 1165.2000000011176,
+      "documents": 2,
+      "nodes": 177,
+      "listeners": 37,
+      "heap_bytes": 2882940
+    },
+    {
+      "index": 16,
+      "startup_ms": 1208.7000000011176,
+      "documents": 2,
+      "nodes": 177,
+      "listeners": 37,
+      "heap_bytes": 2882940
+    },
+    {
+      "index": 17,
+      "startup_ms": 1162.9000000003725,
+      "documents": 2,
+      "nodes": 177,
+      "listeners": 37,
+      "heap_bytes": 2884380
+    },
+    {
+      "index": 18,
+      "startup_ms": 1195.7999999988824,
+      "documents": 2,
+      "nodes": 177,
+      "listeners": 37,
+      "heap_bytes": 2884372
+    },
+    {
+      "index": 19,
+      "startup_ms": 1041.2000000011176,
+      "documents": 2,
+      "nodes": 177,
+      "listeners": 37,
+      "heap_bytes": 2887356
+    },
+    {
+      "index": 20,
+      "startup_ms": 1172.9000000003725,
+      "documents": 2,
+      "nodes": 177,
+      "listeners": 37,
+      "heap_bytes": 2891972
+    },
+    {
+      "index": 21,
+      "startup_ms": 1177.0999999996275,
+      "documents": 2,
+      "nodes": 177,
+      "listeners": 37,
+      "heap_bytes": 2891972
+    },
+    {
+      "index": 22,
+      "startup_ms": 1074.0999999996275,
+      "documents": 2,
+      "nodes": 177,
+      "listeners": 37,
+      "heap_bytes": 2895348
+    },
+    {
+      "index": 23,
+      "startup_ms": 1119.4000000003725,
+      "documents": 2,
+      "nodes": 177,
+      "listeners": 37,
+      "heap_bytes": 2895288
+    },
+    {
+      "index": 24,
+      "startup_ms": 1099.300000000745,
+      "documents": 2,
+      "nodes": 177,
+      "listeners": 37,
+      "heap_bytes": 2895288
+    },
+    {
+      "index": 25,
+      "startup_ms": 1103,
+      "documents": 2,
+      "nodes": 177,
+      "listeners": 37,
+      "heap_bytes": 2904688
+    },
+    {
+      "index": 26,
+      "startup_ms": 1123,
+      "documents": 2,
+      "nodes": 177,
+      "listeners": 37,
+      "heap_bytes": 2919296
+    },
+    {
+      "index": 27,
+      "startup_ms": 1141.300000000745,
+      "documents": 2,
+      "nodes": 177,
+      "listeners": 37,
+      "heap_bytes": 2919352
+    },
+    {
+      "index": 28,
+      "startup_ms": 1165.7999999988824,
+      "documents": 2,
+      "nodes": 177,
+      "listeners": 37,
+      "heap_bytes": 2919352
+    },
+    {
+      "index": 29,
+      "startup_ms": 1162.0999999996275,
+      "documents": 2,
+      "nodes": 177,
+      "listeners": 37,
+      "heap_bytes": 2919476
+    },
+    {
+      "index": 30,
+      "startup_ms": 1199.699999999255,
+      "documents": 2,
+      "nodes": 177,
+      "listeners": 37,
+      "heap_bytes": 2920572
+    }
+  ],
+  "metrics": {
+    "cold_runtime_startup_ms": 1841,
+    "warm_runtime_startup_median_ms": 1123,
+    "warm_runtime_startup_p95_ms": 1199.699999999255,
+    "bevy_update_hz_median": 4.375968507964568,
+    "bevy_update_hz_samples": [
+      2.7693159789417705,
+      3.9944078290452887,
+      4.0056078509854105,
+      4.000800160043932,
+      4.000800160029025,
+      4,
+      3.9976014391305648,
+      2,
+      4,
+      4.001600640265051,
+      4,
+      4,
+      4,
+      4,
+      6,
+      1.9996000799780451,
+      2.000400080021966,
+      3.9992001599560902,
+      6.001200240065899,
+      4.000800160029025,
+      4.412089124193057,
+      4.826254826250488,
+      4.357298474945534,
+      4.77326968973747,
+      4.3946385409836015,
+      4.65441005351361,
+      4.409171075841364,
+      4.517732098494163,
+      5.091649694515505,
+      4.977600796429972,
+      2.5068939583832193,
+      4.528985507250197,
+      4.55996352029571,
+      5.030181086523828,
+      5.120327700977746,
+      4.791566842353174,
+      4.596644449536084,
+      4.259850905218317,
+      2.506265664160401,
+      4.757373929586651,
+      4.493372275896818,
+      4.62962962962963,
+      4.441483455485152,
+      4.460303300620737,
+      4.536176003625108,
+      4.7225501770956315,
+      4.001600640250137,
+      2.6198585276318367,
+      2.4172105390423035,
+      5.001250312573486
+    ],
+    "dom_input_to_observed_state_ms": [
+      412.90000000037253
+    ],
+    "post_exit_observation_seconds": 1.5244240000010905,
+    "post_exit_task_duration_seconds": 0.007698000000004868,
+    "percentile_method": "nearest rank: ceil(p*n), n=29 warm mounts"
+  },
+  "errors": [],
+  "protocol": {
+    "date": "2026-10-09T14:51:17.401Z",
+    "browser": "153.0.8010.36",
+    "fullscreenEnabled": true,
+    "parentRejected": {
+      "rejected": [],
+      "accepted": "Linh lực: 424242 · Đang chơi",
+      "cases": 6
+    },
+    "childRejected": {
+      "before": {
+        "x": -220,
+        "y": 0,
+        "score": 0,
+        "frames": 2,
+        "updates": 6,
+        "paused": false,
+        "ready": true
+      },
+      "after": {
+        "x": -220,
+        "y": 0,
+        "score": 0,
+        "frames": 2,
+        "updates": 6,
+        "paused": false,
+        "ready": true
+      },
+      "cases": 6
+    },
+    "staleMessages": [],
+    "errors": [],
+    "visibility": "Synthetic document.hidden overrides and visibilitychange events; actual background-tab/device behavior is not verified here.",
+    "focus": "Real keyboard Tab and Shift+Tab leave the canvas and focus shell controls."
+  },
+  "context_loss": {
+    "handled": true,
+    "status": "Không thể mở bãi tập: Mất kết nối đồ họa. Hãy rời bãi tập và mở lại. Rời bãi tập rồi thử lại.",
+    "pageErrors": [],
+    "runtimeErrors": [
+      "Mất kết nối đồ họa. Hãy rời bãi tập và mở lại"
+    ]
+  },
+  "load_failure": {
+    "status": "Không thể mở bãi tập: Failed to fetch. Rời bãi tập rồi thử lại.",
+    "pageErrors": [],
+    "fault": "WASM request intentionally aborted; error must reach shell without calling uninitialized exports"
+  },
+  "limitations": [
+    "Software renderer; Update Hz is not GPU presentation FPS",
+    "One keyboard latency observation, no percentile/input-to-photon claim",
+    "Synthetic visibility test, no real OS background test",
+    "No physical mobile browser, no audio, no GPU/WASM/native memory profile",
+    "Build dirty flag was only the uncommitted web report; application sources match source_revision"
+  ]
+}

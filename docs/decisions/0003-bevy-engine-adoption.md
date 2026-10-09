@@ -66,7 +66,7 @@ Source audit D02 tìm blocker cụ thể ở winit `0.30.13`: runner iOS kiểm 
 | Bevy 0.20 và feature/MSRV | KNOWN | Manifest registry và source tag `v0.20.0` [S1–S4] | D01, người nâng dependency |
 | Pure Rust simulation/economy hiện hữu | KNOWN về boundary | `crates/sim`, `crates/economy`; không phải foundation ECS hoàn chỉnh | D04 / #12 và #3 |
 | Web canvas API và CSR | KNOWN về API | Bevy `Window.canvas`, `fit_canvas_to_parent`; Leptos CSR [S7–S8] | D03 / #11 |
-| Web shell + Bevy end-to-end | UNKNOWN cho toàn bộ matrix | Kết quả từng browser trong [báo cáo D03](../reports/web-feasibility.md); không lấy build WASM làm bằng chứng navigation/cleanup | D03 / #11 |
+| Web shell + Bevy end-to-end | KNOWN trong Chrome desktop; matrix còn thiếu | 30 vòng navigation, focus/touch emulation và lỗi tải đã kiểm tra; browser mobile thật, presentation FPS/GPU và audio còn thiếu trong [báo cáo D03](../reports/web-feasibility.md) | D03 / #11 |
 | Standalone Bevy Android/iOS | KNOWN về sample chính thức | Không suy ra device run hoặc CMP embedding [S3] | D02 / #10 |
 | CMP native view embedding | UNKNOWN về adapter; stock runner iOS bị chặn | Source audit thấy UIKit ownership conflict và probe event-loop re-entry; chưa có adapter/surface/lifecycle được xác nhận | D02 / #10 |
 | Android thật: render, CMP navigation, lifecycle, touch/IME/audio | BLOCKED | Chưa có thiết bị ADB kết nối; xem [báo cáo D02](../reports/native-feasibility.md) | D02 / #10, người cung cấp thiết bị |
