@@ -4,8 +4,8 @@
 //! font có giấy phép rõ ràng (CONTRIBUTING.md).
 
 use macroquad::prelude::*;
-use myva_sim::fighter::Rect as SimRect;
 use myva_sim::fighter::{ARENA_WIDTH, MAX_HP};
+use myva_sim::kit::Rect as SimRect;
 use myva_sim::meter::Meter;
 use myva_sim::tick::TICK_HZ;
 use myva_sim::{Fighter, Phase, State};
@@ -66,6 +66,16 @@ pub(crate) fn frame(game: &Match, show_boxes: bool) {
         GROUND,
     );
 
+    for projectile in game.world.projectiles() {
+        let (x, y, w, h) = view.rect(&projectile.rect);
+        let color = if projectile.owner == game.player {
+            PLAYER
+        } else {
+            RIVAL
+        };
+        draw_rectangle(x, y, w, h, color);
+        draw_rectangle_lines(x, y, w, h, 2.0, WHITE);
+    }
     for fighter in game.world.fighters() {
         draw_fighter(
             &view,

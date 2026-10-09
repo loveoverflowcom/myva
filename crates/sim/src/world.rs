@@ -1,6 +1,7 @@
 //! Thế giới phòng thử: bước tick tất định nhận input và trả sự kiện (architecture.md §2).
 //!
-//! Thứ tự mỗi tick: nhận input → di chuyển → xử lý trúng đòn → tiến bộ đếm.
+//! Thứ tự mỗi tick: nhận input → di chuyển → đạn bay và sinh đạn → xử lý trúng đòn → tiến
+//! bộ đếm.
 
 use std::hash::{Hash, Hasher};
 
@@ -8,6 +9,7 @@ use crate::fighter::{Fighter, FighterId, State};
 use crate::input::InputFrame;
 use crate::kit::{ActionKind, Kit};
 use crate::meter::SUB_PER_POINT;
+use crate::projectile::Projectile;
 use crate::tick::Tick;
 
 /// Sự kiện do mô phỏng quyết định; client chỉ thể hiện, không tự tạo.
@@ -50,7 +52,23 @@ pub enum Event {
 pub struct World {
     tick: Tick,
     fighters: Vec<Fighter>,
+    projectiles: Vec<Projectile>,
     next_instance: u32,
+}
+
+/// Nguồn của một va chạm đang chờ áp dụng.
+#[derive(Clone, Copy)]
+enum Source {
+    Melee,
+    /// Chỉ số trong `World::projectiles`.
+    Projectile(usize),
+}
+
+struct Strike {
+    attacker: FighterId,
+    target: FighterId,
+    action: ActionKind,
+    source: Source,
 }
 
 impl World {
@@ -75,6 +93,10 @@ impl World {
 
     pub fn fighter(&self, id: FighterId) -> &Fighter {
         &self.fighters[usize::from(id.0)]
+    }
+
+    pub fn projectiles(&self) -> &[Projectile] {
+        &self.projectiles
     }
 
     /// Chạy một tick. Mỗi nhân vật nhận tối đa một khung input mỗi tick; khung thừa, trùng `seq`
@@ -104,7 +126,12 @@ impl World {
         for fighter in &mut self.fighters {
             fighter.integrate();
         }
+        // Đạn cũ bay trước; đạn mới đứng tại chỗ sinh trong tick đầu tiên.
+        self.projectiles.retain_mut(Projectile::fly);
+        self.projectiles
+            .extend(self.fighters.iter().filter_map(Projectile::launch));
         self.resolve_hits(&mut events);
+        self.projectiles.retain(Projectile::is_alive);
         for fighter in &mut self.fighters {
             fighter.advance(&mut events);
         }
@@ -128,39 +155,82 @@ impl World {
             else {
                 continue;
             };
-            for target in &self.fighters {
-                if target.id != attacker.id
-                    && !attacker.hit_set.contains(&target.id)
-                    && !target.is_invulnerable()
-                    && attack_box.overlaps(&target.hurtbox())
-                {
-                    pending.push((attacker.id, target.id, action));
+            for target in self.targets(attacker.id, &attacker.hit_set) {
+                if attack_box.overlaps(&target.hurtbox()) {
+                    pending.push(Strike {
+                        attacker: attacker.id,
+                        target: target.id,
+                        action,
+                        source: Source::Melee,
+                    });
                 }
             }
         }
-        for (attacker, target, action) in pending {
-            self.apply_hit(attacker, target, action, events);
+        for (index, projectile) in self.projectiles.iter().enumerate() {
+            for target in self.targets(projectile.owner, &projectile.hit_set) {
+                if projectile.rect.overlaps(&target.hurtbox()) {
+                    pending.push(Strike {
+                        attacker: projectile.owner,
+                        target: target.id,
+                        action: projectile.action,
+                        source: Source::Projectile(index),
+                    });
+                    if !projectile.pierce {
+                        break;
+                    }
+                }
+            }
+        }
+        for strike in pending {
+            self.apply_hit(strike, events);
         }
     }
 
-    fn apply_hit(
-        &mut self,
-        attacker_id: FighterId,
-        target_id: FighterId,
-        action: ActionKind,
-        events: &mut Vec<Event>,
-    ) {
+    /// Những nhân vật có thể bị trúng bởi đòn của `owner` chưa trúng ai trong `hit_set`.
+    fn targets<'a>(
+        &'a self,
+        owner: FighterId,
+        hit_set: &'a [FighterId],
+    ) -> impl Iterator<Item = &'a Fighter> {
+        self.fighters.iter().filter(move |target| {
+            target.id != owner && !hit_set.contains(&target.id) && !target.is_invulnerable()
+        })
+    }
+
+    fn apply_hit(&mut self, strike: Strike, events: &mut Vec<Event>) {
+        let Strike {
+            attacker: attacker_id,
+            target: target_id,
+            action,
+            source,
+        } = strike;
         let (ai, ti) = (usize::from(attacker_id.0), usize::from(target_id.0));
         let kit: &'static Kit = self.fighters[ai].kit;
         let spec = kit.spec(action);
-        let attacker_x = self.fighters[ai].x;
-        // Một lần ra đòn chỉ trúng mỗi mục tiêu một lần, dù active kéo dài nhiều tick.
-        self.fighters[ai].hit_set.push(target_id);
+        // Một lần ra đòn hoặc một viên đạn chỉ trúng mỗi mục tiêu một lần.
+        let origin_x = match source {
+            Source::Melee => {
+                self.fighters[ai].hit_set.push(target_id);
+                self.fighters[ai].x
+            }
+            Source::Projectile(index) => {
+                let projectile = &mut self.projectiles[index];
+                if projectile.hit_set.contains(&target_id) {
+                    return;
+                }
+                projectile.hit_set.push(target_id);
+                if !projectile.pierce {
+                    projectile.remaining = 0;
+                }
+                projectile.origin_for(self.fighters[ti].x)
+            }
+        };
 
         let target = &mut self.fighters[ti];
-        let push_dir = if target.x >= attacker_x { 1 } else { -1 };
-        if target.faces(attacker_x) {
-            if let Some((damage, hitstun)) = target.counter_ready() {
+        let push_dir = if target.x >= origin_x { 1 } else { -1 };
+        if target.faces(origin_x) {
+            // Tư thế phản công chỉ bắt đòn cận chiến.
+            if let (Source::Melee, Some((damage, hitstun))) = (source, target.counter_ready()) {
                 target.hit_set.push(attacker_id);
                 events.push(Event::Countered {
                     counterer: target_id,
@@ -199,11 +269,15 @@ impl World {
         target.take_hit(spec.damage, spec.hitstun, push_dir * spec.knockback, events);
         let attacker = &mut self.fighters[ai];
         attacker.mach.gain(spec.damage / 10);
-        if let State::Attack {
-            elapsed,
-            confirmed_at,
-            ..
-        } = &mut attacker.state
+        // Chỉ hit cận chiến mở cửa nối thuật.
+        if let (
+            Source::Melee,
+            State::Attack {
+                elapsed,
+                confirmed_at,
+                ..
+            },
+        ) = (source, &mut attacker.state)
         {
             confirmed_at.get_or_insert(*elapsed);
         }
@@ -497,5 +571,96 @@ mod tests {
         events.extend(run_idle(&mut world, 10));
         assert!(!events.iter().any(|e| matches!(e, Event::Hit { .. })));
         assert_eq!(world.fighter(B).stamina.points(), 75);
+    }
+
+    fn hits(events: &[Event]) -> Vec<(FighterId, u32)> {
+        events
+            .iter()
+            .filter_map(|e| match *e {
+                Event::Hit { target, damage, .. } => Some((target, damage)),
+                _ => None,
+            })
+            .collect()
+    }
+
+    #[test]
+    fn projectile_flies_and_hits_once() {
+        let mut world = duel(400, -1);
+        let mut events = world.step(&[(A, press(1, Buttons::SKILL1))]);
+        let mut first_hit = None;
+        for _ in 0..60 {
+            let tick = world.tick();
+            let step = world.step(&[]);
+            if first_hit.is_none() && !hits(&step).is_empty() {
+                first_hit = Some(tick);
+            }
+            if tick == 18 {
+                assert_eq!(
+                    world.projectiles().len(),
+                    1,
+                    "đạn sinh ở tick active đầu tiên"
+                );
+            }
+            events.extend(step);
+        }
+        assert_eq!(hits(&events), [(B, 80)]);
+        // Sinh ở tick 18 với mép trước cách 44 px; va chạm cần mép trước vượt hẳn 380 px,
+        // tức 22 tick bay với 16 px/tick.
+        assert_eq!(first_hit, Some(18 + 22));
+        assert!(world.projectiles().is_empty());
+    }
+
+    #[test]
+    fn projectile_vanishes_at_max_range() {
+        let mut world = duel(700, -1);
+        world.step(&[(A, press(1, Buttons::SKILL1))]);
+        let events = run_idle(&mut world, 90);
+        assert!(hits(&events).is_empty());
+        assert!(world.projectiles().is_empty());
+    }
+
+    #[test]
+    fn projectile_is_blocked_only_from_the_front() {
+        for (b_facing, expect_block) in [(-1, true), (1, false)] {
+            let mut world = duel(200, b_facing);
+            let mut events = Vec::new();
+            for seq in 1..=60 {
+                let a_input = (
+                    A,
+                    press(
+                        seq,
+                        if seq == 20 {
+                            Buttons::SKILL1
+                        } else {
+                            Buttons::NONE
+                        },
+                    ),
+                );
+                events.extend(world.step(&[a_input, (B, hold(seq, Buttons::GUARD))]));
+            }
+            let blocked = events.iter().any(|e| matches!(e, Event::Blocked { .. }));
+            assert_eq!(blocked, expect_block, "B quay {b_facing}");
+            assert_eq!(hits(&events).is_empty(), expect_block);
+        }
+    }
+
+    #[test]
+    fn projectile_does_not_trigger_counter_stance() {
+        let mut world = duel(200, -1);
+        // Lưu Tiễn chạm B ở tick 27; B bấm Hồi Thế ở tick 13 nên tư thế active ở tick 23–40.
+        let mut events = Vec::new();
+        for seq in 1..=60 {
+            let mut inputs = Vec::new();
+            if seq == 1 {
+                inputs.push((A, press(seq, Buttons::SKILL1)));
+            }
+            if seq == 14 {
+                inputs.push((B, press(seq, Buttons::SKILL2)));
+            }
+            events.extend(world.step(&inputs));
+        }
+        assert!(!events.iter().any(|e| matches!(e, Event::Countered { .. })));
+        assert_eq!(hits(&events), [(B, 80)]);
+        assert_eq!(world.fighter(A).hp, MAX_HP);
     }
 }

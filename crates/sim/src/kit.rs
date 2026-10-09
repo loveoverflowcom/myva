@@ -23,6 +23,33 @@ pub enum Phase {
     Recovery,
 }
 
+/// Hộp va chạm chữ nhật, mili-pixel, trục y hướng lên.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct Rect {
+    pub x0: i32,
+    pub x1: i32,
+    pub y0: i32,
+    pub y1: i32,
+}
+
+impl Rect {
+    pub const fn overlaps(&self, other: &Rect) -> bool {
+        self.x0 < other.x1 && other.x0 < self.x1 && self.y0 < other.y1 && other.y0 < self.y1
+    }
+
+    pub const fn center_x(&self) -> i32 {
+        self.x0 + (self.x1 - self.x0) / 2
+    }
+
+    pub const fn shifted(self, dx: i32) -> Self {
+        Self {
+            x0: self.x0 + dx,
+            x1: self.x1 + dx,
+            ..self
+        }
+    }
+}
+
 /// Hộp đánh tính từ chân nhân vật theo hướng mặt, đơn vị mili-pixel.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Hitbox {
@@ -35,6 +62,22 @@ pub struct Hitbox {
 }
 
 impl Hitbox {
+    /// Đặt hộp vào thế giới cho nhân vật đứng tại `(x, y)` quay về `facing`.
+    pub const fn place(&self, x: i32, y: i32, facing: i8) -> Rect {
+        let (x0, x1) = if facing > 0 {
+            (x + self.front, x + self.front + self.width)
+        } else {
+            (x - self.front - self.width, x - self.front)
+        };
+        let y0 = y + self.bottom;
+        Rect {
+            x0,
+            x1,
+            y0,
+            y1: y0 + self.height,
+        }
+    }
+
     const fn px(front: i32, width: i32, bottom: i32, height: i32) -> Self {
         Self {
             front: front * PX,
@@ -43,6 +86,19 @@ impl Hitbox {
             height: height * PX,
         }
     }
+}
+
+/// Đạn bay thẳng, sinh ở tick active đầu tiên của đòn; không homing (combat.md §7).
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct ProjectileSpec {
+    /// Hộp va chạm lúc sinh, đặt như `Hitbox` từ chân người bắn.
+    pub hitbox: Hitbox,
+    /// Mili-pixel mỗi tick.
+    pub speed: i32,
+    /// Số tick tồn tại, tính cả tick sinh; giới hạn tầm bắn.
+    pub lifetime: u32,
+    /// `true`: xuyên qua, mỗi mục tiêu trúng một lần. `false`: biến mất ở mục tiêu đầu tiên.
+    pub pierce: bool,
 }
 
 /// Một đòn đã lượng tử hóa timing sang tick.
@@ -63,6 +119,8 @@ pub struct ActionSpec {
     /// Tư thế phản công: bắt một đòn phía trước trong active thì gây lượng damage này lên
     /// người đánh, với `hitstun` của chính đòn.
     pub counter_damage: Option<u32>,
+    /// Đòn bắn đạn: damage đi theo đạn, đòn không có hitbox cận chiến.
+    pub projectile: Option<ProjectileSpec>,
 }
 
 impl ActionSpec {
@@ -82,6 +140,7 @@ impl ActionSpec {
             knockback: 0,
             hitbox: Hitbox::px(0, 0, 0, 0),
             counter_damage: None,
+            projectile: None,
         }
     }
 
@@ -148,14 +207,19 @@ pub const LONG_LUU: Kit = Kit {
         ..ActionSpec::timed("Phá Lưu", 400, 130, 360)
     },
     skills: [
-        // Thiết kế là đạn thẳng; graybox tạm dùng hitbox dài cho tới khi có entity đạn.
+        // Đạn thẳng, một hit mỗi mục tiêu, tầm khoảng 500 px (GT).
         ActionSpec {
             energy_cost: 20,
             cooldown: ms_to_ticks(3_000),
             damage: 80,
             guard_pressure: 12,
             hitstun: ms_to_ticks(180),
-            hitbox: Hitbox::px(20, 400, 30, 30),
+            projectile: Some(ProjectileSpec {
+                hitbox: Hitbox::px(20, 24, 30, 24),
+                speed: 16 * PX,
+                lifetime: ms_to_ticks(500),
+                pierce: true,
+            }),
             ..ActionSpec::timed("Lưu Tiễn", 300, 100, 300)
         },
         ActionSpec {

@@ -2,7 +2,7 @@
 //! (combat.md §2–§5, §11).
 
 use crate::input::{Buttons, InputFrame, Intent};
-use crate::kit::{ActionKind, ActionSpec, Kit, PX, Phase};
+use crate::kit::{ActionKind, ActionSpec, Kit, PX, Phase, Rect};
 use crate::meter::Meter;
 use crate::tick::ms_to_ticks;
 use crate::world::Event;
@@ -74,21 +74,6 @@ pub enum State {
         remaining: u32,
     },
     Downed,
-}
-
-/// Hộp va chạm chữ nhật, mili-pixel, trục y hướng lên.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub struct Rect {
-    pub x0: i32,
-    pub x1: i32,
-    pub y0: i32,
-    pub y1: i32,
-}
-
-impl Rect {
-    pub const fn overlaps(&self, other: &Rect) -> bool {
-        self.x0 < other.x1 && other.x0 < self.x1 && self.y0 < other.y1 && other.y0 < self.y1
-    }
 }
 
 enum Outcome {
@@ -167,25 +152,13 @@ impl Fighter {
         }
     }
 
-    /// Hộp đánh khi đòn có damage đang ở pha active.
+    /// Hộp đánh cận chiến khi đòn có damage đang ở pha active.
     pub fn attack_box(&self) -> Option<Rect> {
         let (_, spec, phase) = self.action()?;
-        if phase != Phase::Active || spec.damage == 0 {
+        if phase != Phase::Active || spec.damage == 0 || spec.projectile.is_some() {
             return None;
         }
-        let hb = spec.hitbox;
-        let (x0, x1) = if self.facing > 0 {
-            (self.x + hb.front, self.x + hb.front + hb.width)
-        } else {
-            (self.x - hb.front - hb.width, self.x - hb.front)
-        };
-        let y0 = self.y + hb.bottom;
-        Some(Rect {
-            x0,
-            x1,
-            y0,
-            y1: y0 + hb.height,
-        })
+        Some(spec.hitbox.place(self.x, self.y, self.facing))
     }
 
     pub fn is_invulnerable(&self) -> bool {
