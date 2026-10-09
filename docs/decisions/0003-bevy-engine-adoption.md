@@ -40,7 +40,7 @@ Pin trực tiếp trong manifest và commit `Cargo.lock`; dùng `rust-toolchain.
 | Bevy client | `=0.20.0`, `default-features = false` | Version/feature xác nhận từ package; compile/run ghi trong báo cáo platform |
 | Leptos shell | `=0.8.22`, feature `csr` | D03 dùng CSR; chưa đưa SSR/hydration vào spike |
 | Pure core | `myva-sim`, `myva-economy`, không phụ thuộc Bevy | Giữ test CLI/headless; D04 mới bổ sung adapter/schema |
-| CMP/Kotlin | Chưa có pin tích hợp được xác nhận | Bản cache/toolchain có sẵn không phải matrix hỗ trợ; D02 phải pin khi chọn và build host thực |
+| CMP/Kotlin | CMP `1.12.0`, Kotlin/Compose compiler `2.4.20`, activity-compose `1.12.4` | D02 đã compile/package Android shell phương án B; runtime/device và iOS chưa được xác nhận |
 | Android/iOS tooling | Theo [báo cáo native](../reports/native-feasibility.md) và manifest prototype | Version build standalone không chứng minh CMP embedding |
 
 D03 bật nhóm feature web cần cho cảnh 2D nhỏ: `std`, `async_executor`, `bevy_asset`, `bevy_log`, `bevy_color`, `bevy_camera`, `bevy_core_pipeline`, `bevy_render`, `bevy_sprite`, `bevy_sprite_render`, `bevy_window`, `bevy_winit`, `webgl2`; feature input/format chỉ thêm khi source sử dụng. Manifest của `crates/web-game` là danh sách chính xác khi build. Không bật `default` (gồm 2D, 3D, UI, audio) hoặc umbrella `2d` chỉ vì tên phù hợp: chúng kéo thêm plugin/platform ngoài cảnh spike [S2]. WebGL2 là cấu hình D03 cần đo, không khóa backend mobile hay loại bỏ thử nghiệm WebGPU tương lai.

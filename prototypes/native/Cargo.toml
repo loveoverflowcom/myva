@@ -1,0 +1,33 @@
+[package]
+name = "myva-native-probe"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.97.1"
+publish = false
+
+# Independent experiment: do not make mobile toolchains a workspace requirement.
+[workspace]
+
+[lib]
+crate-type = ["lib", "cdylib"]
+
+[dependencies]
+bevy = { version = "=0.20.0", default-features = false, features = [
+  "std", "default_app", "multi_threaded", "bevy_winit",
+  "bevy_sprite_render", "bevy_core_pipeline",
+] }
+
+[target.'cfg(target_os = "android")'.dependencies]
+bevy = { version = "=0.20.0", default-features = false, features = ["android-game-activity"] }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+bevy = { version = "=0.20.0", default-features = false, features = ["x11"] }
+
+[profile.dev]
+debug = 0
+
+[profile.release]
+strip = "debuginfo"
+
+[lints.rust]
+unsafe_code = "forbid"

@@ -1,0 +1,14 @@
+[package]
+name = "myva-event-loop-probe"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.97.1"
+publish = false
+
+[workspace]
+
+[dependencies]
+winit = { version = "=0.30.13", default-features = false, features = ["x11", "rwh_06"] }
+
+[profile.dev]
+debug = 0

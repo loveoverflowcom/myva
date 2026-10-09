@@ -1,0 +1,37 @@
+Native build evidence — build-only, NOT device PASS
+Recorded UTC: 2026-10-09T14:39:41.925569+00:00
+Native source Git tree: 885248f60962cd074cd1b6b746803a2b853037fa (prototypes/native)
+
+$ rustc +1.97.1 --version
+rustc 1.97.1 (8bab26f4f 2026-07-14)
+
+$ adb devices -l
+List of devices attached
+
+$ prototypes/native/scripts/build-android.sh check
+PASS: aarch64-linux-android typecheck (1m 36s)
+$ prototypes/native/scripts/build-android.sh cmp
+PASS: Rust native link + CMP APK build
+$ prototypes/native/android/gradlew -p prototypes/native/android :app:assembleDebug :cmp-shell:assembleDebug
+BUILD SUCCESSFUL in 16s; 81 actionable tasks: 40 executed, 41 up-to-date
+
+prototypes/native/android/app/build/outputs/apk/debug/app-debug.apk
+bytes=87788760
+sha256=100cc4637612e91a78dd280d0c795724bdbdb5c0bb6388a78fff5d58db06f191
+zipalign -c -P 16 4: PASS
+lib/arm64-v8a/libmyva_native_probe.so: ELF LOAD alignment 0x4000, 0x4000, 0x4000, 0x4000
+
+prototypes/native/android/cmp-shell/build/outputs/apk/debug/cmp-shell-debug.apk
+bytes=218310441
+sha256=499e14bac3d0dc3704987e1746639e016c1f4cba2a053c9fb4d9cae8d83c4b72
+zipalign -c -P 16 4: PASS
+lib/arm64-v8a/libandroidx.graphics.path.so: ELF LOAD alignment 0x4000, 0x4000, 0x4000
+lib/arm64-v8a/libmyva_native_probe.so: ELF LOAD alignment 0x4000, 0x4000, 0x4000, 0x4000
+
+$ xvfb-run -a cargo +1.97.1 run --locked --manifest-path prototypes/native/probes/event-loop/Cargo.toml
+first_event_loop=created
+second_event_loop=RecreationAttempt (expected ownership constraint)
+
+iOS: xcodebuild unavailable; no build/device test.
+Android: no physical device; install/render/lifecycle/IME/audio/FPS/memory NOT RUN.
+Gradle emits deprecation and unused commonTest source-set warnings; build succeeds.

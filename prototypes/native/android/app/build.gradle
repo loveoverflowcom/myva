@@ -1,0 +1,22 @@
+plugins {
+    id 'com.android.application'
+}
+android {
+    namespace 'com.myva.nativeprobe'
+    compileSdk 37
+    buildToolsVersion '36.0.0'
+    ndkVersion '27.0.12077973'
+    defaultConfig {
+        applicationId 'com.myva.nativeprobe'
+        minSdk 26
+        targetSdk 37
+        versionCode 1
+        versionName '0.1.0'
+        ndk { abiFilters 'arm64-v8a' }
+    }
+}
+dependencies {
+    // Matches the official Bevy 0.20.0 mobile example / android-activity.
+    implementation 'androidx.games:games-activity:4.4.0'
+    implementation 'androidx.appcompat:appcompat:1.7.1'
+}

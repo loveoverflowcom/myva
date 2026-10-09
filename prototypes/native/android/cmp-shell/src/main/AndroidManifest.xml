@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application android:label="MyVa CMP native probe" android:theme="@style/Theme.AppCompat.NoActionBar" android:allowBackup="false">
+        <activity android:name=".ShellActivity" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".GameScreenActivity"
+            android:exported="false"
+            android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode">
+            <meta-data android:name="android.app.lib_name" android:value="myva_native_probe" />
+        </activity>
+    </application>
+</manifest>
