@@ -5,6 +5,7 @@
 // The headed comparison needs an available desktop display and opens a window.
 // Each scene has a 2-second warm-up and one 5-second observation. These are RAF
 // and Bevy Update rates, not presentation FPS or a production budget verdict.
+// The combat scene keeps running during the sample (boss AI included).
 
 import { chromium } from '@playwright/test';
 import fs from 'node:fs/promises';
@@ -28,7 +29,7 @@ for (const scenario of scenarios) {
         scenario,
         recorded_at: new Date().toISOString(),
         baseURL: baseURL.href,
-        measurement_note: 'One 5-second scene sample after 2-second warm-up; RAF and Bevy Update rates are not GPU presentation FPS. Input latency uses the exported set_input function, not keyboard hardware. A headed desktop may receive real user input; inspect observedInputEvents and before/after state for contamination.',
+        measurement_note: 'One 5-second scene sample after 2-second warm-up; RAF and Bevy Update rates are not GPU presentation FPS. Input latency is DOM keydown (Playwright CDP key events, not keyboard hardware) to the fixed tick that consumed the press, observed on RAF. A headed desktop may receive real user input; inspect observedInputEvents and before/after state for contamination.',
     };
     if (!scenario.headless && process.platform === 'linux' && !process.env.DISPLAY) {
         record.skipped = 'No DISPLAY is available for the headed Linux comparison.';
@@ -60,7 +61,7 @@ for (const scenario of scenarios) {
         await page.goto(baseURL.href);
         await page.locator('#enter-game').click();
         await page.waitForFunction(
-            () => document.querySelector('#shell-status').textContent.includes('Linh lực'),
+            () => document.querySelector('#shell-status').textContent.includes('Đánh boss'),
             null,
             { timeout: 30000 },
         );
@@ -110,31 +111,27 @@ for (const scenario of scenarios) {
             const end = performance.now();
             const after = JSON.parse(game.telemetry());
             inputObserver.abort();
-            const inputStart = performance.now();
-            // Move away from the right boundary if desktop input already moved us.
-            game.set_input(after.x > 250 ? -1 : 1, 0);
-            const inputStateMs = await new Promise(resolve => {
-                let request;
-                const finish = value => { clearTimeout(timer); cancelAnimationFrame(request); resolve(value); };
-                const timer = setTimeout(() => finish(null), 3000);
-                function next() {
-                    if (JSON.parse(game.telemetry()).x !== after.x) finish(performance.now() - inputStart);
-                    else request = requestAnimationFrame(next);
-                }
-                request = requestAnimationFrame(next);
-            });
-            game.set_input(0, 0);
             return {
                 renderer, before, after, elapsedMs: end - start,
                 rafCallbacks: raf,
                 rafRateHz: raf * 1000 / (end - start),
                 bevyUpdateRateHz: (after.updates - before.updates) * 1000 / (end - start),
-                inputStateMs, rafGaps, observedInputEvents,
+                // Tick luật đã chạy mỗi giây thực; 60 nếu khung hình không vượt max delta 250 ms.
+                simTickRateHz: (after.tick - before.tick) * 1000 / (end - start),
+                rafGaps, observedInputEvents,
                 visibility: document.visibilityState, focused: document.hasFocus(),
                 canvas: { width: gl.drawingBufferWidth, height: gl.drawingBufferHeight },
                 telemetry: window.__myvaMetrics.samples,
             };
         });
+        // Đòn nhẹ cách nhau đủ xa để mỗi lần nhấn vào một tick riêng.
+        const canvas = frame.locator('canvas');
+        await canvas.focus();
+        for (let press = 0; press < 6; press++) {
+            await page.keyboard.press('KeyJ');
+            await page.waitForTimeout(700);
+        }
+        record.inputSamplesMs = await frame.evaluate(() => window.__myvaMetrics.inputSamples);
     } catch (error) {
         record.error = String(error);
         process.exitCode = 1;

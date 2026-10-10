@@ -44,7 +44,7 @@ flowchart TD
 
 Simulation nhận trạng thái, command và tick rồi trả trạng thái/sự kiện; server mới xác nhận command và kết quả online. Core thuần Rust là bộ luật duy nhất; [D04 / #12](https://github.com/loveoverflowcom/myva/issues/12) đã thêm schema lệnh/sự kiện versioned, fixed schedule `input → movement → collision → combat → status → events` trong `World::step`, domain entity ID khác Bevy `Entity`, và adapter `myva-gameplay` chỉ dùng `bevy_app`/`bevy_ecs`/`bevy_time` `=0.20.0` (không renderer/Winit/asset). Ownership, schedule, component và bằng chứng ở [nền gameplay ECS](gameplay-foundation.md).
 
-`crates/graybox` dùng Macroquad là **implementation lịch sử chờ #12 rồi #2 chuyển đổi**. Không thêm công việc engine mới vào client legacy hoặc dùng nó làm bằng chứng Bevy đã hoàn thành.
+`crates/graybox` là client combat **Bevy** (#2): `Battle` của lõi chạy trong `FixedUpdate` 60 Hz; input thiết bị gom trước vòng fixed, presentation/HUD đọc trạng thái sau đó. `FighterId` là ID miền, `Entity` chỉ dùng để vẽ. Adapter này là tạm thời trong graybox cho tới khi foundation #12 chốt boundary dùng chung; nó không có server hay quyền authoritative.
 
 ## 3. Web: tách shell và game runtime
 

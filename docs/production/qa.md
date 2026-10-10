@@ -18,7 +18,7 @@ Kiểm tra rules và render độc lập vẫn cần một vòng tích hợp CMP
 
 Kết quả dùng `PASS`, `FAIL`, `BLOCKED`, `NOT_RUN`, `NOT_IMPLEMENTED`, `NOT_APPLICABLE`, ghi command/config/revision và phạm vi. Compile, browser interaction, screenshot captured/inspected, standalone executable và device-tested là các lớp bằng chứng khác nhau. Thiếu GPU/device/Xcode hoặc suite không chạy không được trả PASS. [ADR matrix](../decisions/0003-bevy-engine-adoption.md#compatibility-matrix-và-gate) dùng `KNOWN/UNKNOWN/BLOCKED` cho trạng thái kiến thức, không thay kết quả test.
 
-Graybox Macroquad lịch sử không chứng minh Bevy đã được kiểm chứng. #12 giữ unit/replay/invariant headless không GPU; #13 đo frame time/memory/build size trên platform đã qua #10/#11.
+Graybox Bevy (#2) có test E2E tự động trên Chromium SwiftShader; đó không phải playtest người thật hay số đo thiết bị mục tiêu. #12 giữ unit/replay/invariant headless không GPU; #13 đo frame time/memory/build size trên platform đã qua #10/#11.
 
 ## Combat scenarios
 

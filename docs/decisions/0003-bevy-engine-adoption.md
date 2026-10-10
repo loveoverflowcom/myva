@@ -11,7 +11,7 @@ MyVa cần mở rộng một game hành động 2D HD sang nhiều actor, trạn
 
 Leptos tiếp tục sở hữu web shell; Compose Multiplatform tiếp tục sở hữu mobile shell. Render game mobile phải native. Tên MyVa/Thần Mạch, nhánh `develop`, fairness, luật kinh tế, server authoritative và phạm vi GDD giữ nguyên. Không dùng WebView để hoàn thành gate native.
 
-`crates/graybox` vẫn là **mã Macroquad lịch sử đang chạy**. Nó giữ giá trị đối chiếu combat/replay; chưa được chuyển sang Bevy và không phải mẫu triển khai mới. [#12](https://github.com/loveoverflowcom/myva/issues/12) xây foundation ECS/headless, rồi [#2](https://github.com/loveoverflowcom/myva/issues/2) chuyển client combat lên foundation đó. D01/D02/D03 không tự mở rộng sang viết lại boss hoặc toàn bộ gameplay.
+Lúc chốt ADR, `crates/graybox` còn là **mã Macroquad lịch sử**. [#12](https://github.com/loveoverflowcom/myva/issues/12) xây foundation ECS/headless, còn [#2](https://github.com/loveoverflowcom/myva/issues/2) chuyển client combat. D01/D02/D03 không tự mở rộng sang viết lại boss hoặc toàn bộ gameplay. **Cập nhật 2026-10-10:** #2 đã chuyển graybox sang Bevy trước khi #12 hoàn thành, dùng adapter fixed tick tạm thời trong graybox; xem [báo cáo combat](../reports/combat-graybox.md).
 
 ## Ownership và boundary đã chốt
 
@@ -44,7 +44,7 @@ Pin trực tiếp trong manifest và commit `Cargo.lock`; dùng `rust-toolchain.
 | CMP/Kotlin | CMP `1.12.0`, Kotlin/Compose compiler `2.4.20`, activity-compose `1.12.4` | D02 đã compile/package Android shell phương án B; runtime/device và iOS chưa được xác nhận |
 | Android/iOS tooling | Theo [báo cáo native](../reports/native-feasibility.md) và manifest prototype | Version build standalone không chứng minh CMP embedding |
 
-D03 bật nhóm feature web cần cho cảnh 2D nhỏ: `std`, `async_executor`, `bevy_asset`, `bevy_log`, `bevy_color`, `bevy_camera`, `bevy_core_pipeline`, `bevy_render`, `bevy_sprite`, `bevy_sprite_render`, `bevy_window`, `bevy_winit`, `webgl2`; feature input/format chỉ thêm khi source sử dụng. Manifest của `crates/web-game` là danh sách chính xác khi build. Không bật `default` (gồm 2D, 3D, UI, audio) hoặc umbrella `2d` chỉ vì tên phù hợp: chúng kéo thêm plugin/platform ngoài cảnh spike [S2]. WebGL2 là cấu hình D03 cần đo, không khóa backend mobile hay loại bỏ thử nghiệm WebGPU tương lai.
+D03 bật nhóm feature web cần cho cảnh 2D nhỏ: `std`, `async_executor`, `bevy_asset`, `bevy_log`, `bevy_color`, `bevy_camera`, `bevy_core_pipeline`, `bevy_render`, `bevy_sprite`, `bevy_sprite_render`, `bevy_window`, `bevy_winit`, `webgl2`; feature input/format chỉ thêm khi source sử dụng. Manifest của `crates/web-game` là danh sách chính xác khi build. Từ #2, feature dùng chung nằm ở `crates/graybox/Cargo.toml` và thêm `bevy_text`, `bevy_ui`, `bevy_ui_render`, `default_font`, `keyboard`, `touch`, `gamepad`, `bevy_gilrs` vì HUD và ba loại input dùng chúng; bản native thêm `x11`, `multi_threaded`, `png`. Không bật `default` (gồm 2D, 3D, UI, audio) hoặc umbrella `2d` chỉ vì tên phù hợp: chúng kéo thêm plugin/platform ngoài cảnh spike [S2]. WebGL2 là cấu hình D03 cần đo, không khóa backend mobile hay loại bỏ thử nghiệm WebGPU tương lai.
 
 Plugin Bevy và runtime skeletal 2D cần kiểm phiên bản, license, target và ngân sách riêng; không kế thừa plugin bất kỳ vì có cùng tên major. Các feature native như `android-game-activity`, lựa chọn activity/backend và ABI không được suy từ feature web.
 
