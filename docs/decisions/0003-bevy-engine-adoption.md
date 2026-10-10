@@ -11,7 +11,7 @@ MyVa cần mở rộng một game hành động 2D HD sang nhiều actor, trạn
 
 Leptos tiếp tục sở hữu web shell; Compose Multiplatform tiếp tục sở hữu mobile shell. Render game mobile phải native. Tên MyVa/Thần Mạch, nhánh `develop`, fairness, luật kinh tế, server authoritative và phạm vi GDD giữ nguyên. Không dùng WebView để hoàn thành gate native.
 
-Lúc chốt ADR, `crates/graybox` còn là **mã Macroquad lịch sử**. [#12](https://github.com/loveoverflowcom/myva/issues/12) xây foundation ECS/headless, còn [#2](https://github.com/loveoverflowcom/myva/issues/2) chuyển client combat. D01/D02/D03 không tự mở rộng sang viết lại boss hoặc toàn bộ gameplay. **Cập nhật 2026-10-10:** #2 đã chuyển graybox sang Bevy trước khi #12 hoàn thành, dùng adapter fixed tick tạm thời trong graybox; xem [báo cáo combat](../reports/combat-graybox.md).
+Lúc chốt ADR, `crates/graybox` còn là **mã Macroquad lịch sử**. [#12](https://github.com/loveoverflowcom/myva/issues/12) xây foundation ECS/headless, còn [#2](https://github.com/loveoverflowcom/myva/issues/2) chuyển client combat. D01/D02/D03 không tự mở rộng sang viết lại boss hoặc toàn bộ gameplay. **Cập nhật 2026-10-10:** #2 đã chuyển graybox sang Bevy trước khi #12 hoàn thành, dùng adapter fixed tick tạm thời trong graybox. **2026-10-11:** adapter tạm bị gỡ; graybox chạy trên `GameplayPlugin` của #12. Xem [báo cáo combat](../reports/combat-graybox.md).
 
 ## Ownership và boundary đã chốt
 

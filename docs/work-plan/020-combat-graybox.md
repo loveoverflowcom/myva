@@ -16,7 +16,7 @@ Không làm PvP ranked, nhiều lục địa, guild, market hoặc asset thành 
 
 [Combat](../design/combat.md), [vertical slice](../production/vertical-slice.md) và [ADR 0003](../decisions/0003-bevy-engine-adoption.md); core/adapter ECS theo #12, web theo #11, mobile theo 010/#10 trên hệ tương ứng. Giữ simulation/headless độc lập renderer.
 
-**Trạng thái 2026-10-10:** `crates/graybox` đã chuyển sang Bevy (Macroquad bị gỡ; lịch sử còn trong git). Phiên đấu `myva_sim::battle::Battle` chạy trong `FixedUpdate` qua adapter mỏng của chính graybox vì foundation D04 chưa có; khi #12 xong, adapter chuyển sang boundary chung. Bước 1 và phần tự động của bước 2 có bằng chứng trong [báo cáo combat](../reports/combat-graybox.md); playtest người thật, đo sai thao tác trên thiết bị và bước 3 còn mở.
+**Trạng thái 2026-10-11:** `crates/graybox` đã chuyển sang Bevy (Macroquad bị gỡ; lịch sử còn trong git) và chạy trên boundary D04: `GameplayPlugin` giữ `Session`, boss/bot đấu tập là `Controller`, client đọc component mirror; adapter tạm của bản 2026-10-10 đã gỡ. Bước 1 và phần tự động của bước 2 có bằng chứng trong [báo cáo combat](../reports/combat-graybox.md); playtest người thật, đo sai thao tác trên thiết bị và bước 3 còn mở.
 
 ## Suggested sequence
 

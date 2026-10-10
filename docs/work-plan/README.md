@@ -1,6 +1,6 @@
 # Hàng đợi công việc MyVa
 
-Repository có simulation/economy Rust thuần và graybox chiến đấu **Bevy** theo [ADR 0003](../decisions/0003-bevy-engine-adoption.md): #2 đã chuyển client từ Macroquad, chơi được trên web và native desktop, chưa qua playtest người thật ([báo cáo](../reports/combat-graybox.md)). Nền ECS dùng chung #12 vẫn mở. Spike tích hợp không khẳng định gameplay hoặc native bridge production đã hoàn thành.
+Repository có simulation/economy Rust thuần và graybox chiến đấu **Bevy** theo [ADR 0003](../decisions/0003-bevy-engine-adoption.md): #2 đã chuyển client từ Macroquad và chạy trên nền ECS dùng chung #12, chơi được trên web và native desktop, chưa qua playtest người thật ([báo cáo](../reports/combat-graybox.md)). Spike tích hợp không khẳng định gameplay hoặc native bridge production đã hoàn thành.
 
 [Planning và Kanban](planning.md) liên kết các issue triển khai với project GitHub; trạng thái hiện tại được cập nhật trên board.
 
