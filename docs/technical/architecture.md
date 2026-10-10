@@ -42,7 +42,7 @@ flowchart TD
     Client --> Assets
 ```
 
-Simulation nhận trạng thái, command và tick rồi trả trạng thái/sự kiện; server mới xác nhận command và kết quả online. Giữ core thuần Rust hiện có; [D04 / #12](https://github.com/loveoverflowcom/myva/issues/12) bổ sung adapter ECS và schema versioned, fixed schedule `input → movement → collision → combat → status → events`, domain entity ID khác Bevy `Entity`. Nếu cần ECS headless, dùng `bevy_ecs`/`bevy_app` pin cùng version và kiểm chứng feature độc lập, không dùng renderer/Winit/asset trên server.
+Simulation nhận trạng thái, command và tick rồi trả trạng thái/sự kiện; server mới xác nhận command và kết quả online. Core thuần Rust là bộ luật duy nhất; [D04 / #12](https://github.com/loveoverflowcom/myva/issues/12) đã thêm schema lệnh/sự kiện versioned, fixed schedule `input → movement → collision → combat → status → events` trong `World::step`, domain entity ID khác Bevy `Entity`, và adapter `myva-gameplay` chỉ dùng `bevy_app`/`bevy_ecs`/`bevy_time` `=0.20.0` (không renderer/Winit/asset). Ownership, schedule, component và bằng chứng ở [nền gameplay ECS](gameplay-foundation.md).
 
 `crates/graybox` dùng Macroquad là **implementation lịch sử chờ #12 rồi #2 chuyển đổi**. Không thêm công việc engine mới vào client legacy hoặc dùng nó làm bằng chứng Bevy đã hoàn thành.
 
