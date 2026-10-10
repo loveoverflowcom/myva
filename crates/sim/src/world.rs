@@ -1,19 +1,30 @@
 //! Thế giới phòng thử: bước tick tất định nhận input và trả sự kiện (architecture.md §2).
 //!
-//! Thứ tự mỗi tick: nhận input → di chuyển → đạn bay và sinh đạn → xử lý trúng đòn → tiến
-//! bộ đếm.
+//! Mỗi tick chạy đúng thứ tự `input → movement → collision → combat → status → events`
+//! (ADR 0003). Adapter ECS và server gọi [`World::step`] chứ không tự chạy từng pha, nên chỉ có
+//! một bộ luật:
+//!
+//! 1. **input**: nhận tối đa một khung mỗi nhân vật, xử lý tương tác NPC, bắt đầu hành động.
+//! 2. **movement**: di chuyển nhân vật; đạn cũ bay rồi đạn mới sinh tại chỗ.
+//! 3. **collision**: gom mọi va chạm đòn/đạn từ cùng một trạng thái.
+//! 4. **combat**: áp dụng va chạm: đỡ, phản công, damage, hiệu ứng khi trúng.
+//! 5. **status**: tiến bộ đếm đòn, đỡ, lướt, hitstun, tài nguyên, hồi chiêu và hiệu ứng.
+//! 6. **events**: trả sự kiện theo thứ tự phát sinh; tăng tick.
 
 use std::hash::{Hash, Hasher};
 
-use crate::fighter::{Fighter, FighterId, State};
-use crate::input::InputFrame;
+use crate::fighter::{Fighter, FighterId, State, Team};
+use crate::input::{InputFrame, Intent};
 use crate::kit::{ActionKind, Kit};
 use crate::meter::SUB_PER_POINT;
-use crate::projectile::Projectile;
+use crate::npc::{Npc, NpcId, NpcSpec};
+use crate::projectile::{Projectile, ProjectileId};
+use crate::status::StatusKind;
 use crate::tick::Tick;
 
-/// Sự kiện do mô phỏng quyết định; client chỉ thể hiện, không tự tạo.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+/// Sự kiện do mô phỏng quyết định; client chỉ thể hiện, không tự tạo. `damage` là damage danh
+/// nghĩa của đòn, không bị cắt theo HP còn lại.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Event {
     InputRejected {
         fighter: FighterId,
@@ -46,6 +57,24 @@ pub enum Event {
     Downed {
         fighter: FighterId,
     },
+    /// Hiệu ứng mới hoặc được làm mạnh/làm mới; `ticks` là thời lượng còn lại.
+    StatusApplied {
+        target: FighterId,
+        source: FighterId,
+        kind: StatusKind,
+        percent: u8,
+        ticks: u32,
+    },
+    /// Hiệu ứng hết hạn tự nhiên. Bị hạ xóa mọi hiệu ứng mà không phát sự kiện này.
+    StatusEnded {
+        fighter: FighterId,
+        kind: StatusKind,
+    },
+    /// Mô phỏng xác nhận tương tác; nội dung hội thoại/nhiệm vụ do server nghiệp vụ quyết định.
+    Interacted {
+        fighter: FighterId,
+        npc: NpcId,
+    },
 }
 
 #[derive(Clone, Debug, Default, Hash)]
@@ -53,7 +82,9 @@ pub struct World {
     tick: Tick,
     fighters: Vec<Fighter>,
     projectiles: Vec<Projectile>,
+    npcs: Vec<Npc>,
     next_instance: u32,
+    next_projectile: u32,
 }
 
 /// Nguồn của một va chạm đang chờ áp dụng.
@@ -76,10 +107,26 @@ impl World {
         Self::default()
     }
 
-    /// Thêm nhân vật đứng trên nền tại `x` (mili-pixel).
+    /// Thêm nhân vật không phe đứng trên nền tại `x` (mili-pixel).
     pub fn spawn(&mut self, kit: &'static Kit, x: i32, facing: i8) -> FighterId {
+        self.spawn_in_team(kit, x, facing, None)
+    }
+
+    pub fn spawn_in_team(
+        &mut self,
+        kit: &'static Kit,
+        x: i32,
+        facing: i8,
+        team: Option<Team>,
+    ) -> FighterId {
         let id = FighterId(u16::try_from(self.fighters.len()).expect("quá nhiều nhân vật"));
-        self.fighters.push(Fighter::new(id, kit, x, facing));
+        self.fighters.push(Fighter::new(id, kit, x, facing, team));
+        id
+    }
+
+    pub fn spawn_npc(&mut self, spec: &'static NpcSpec, x: i32) -> NpcId {
+        let id = NpcId(u16::try_from(self.npcs.len()).expect("quá nhiều NPC"));
+        self.npcs.push(Npc { id, spec, x });
         id
     }
 
@@ -99,6 +146,10 @@ impl World {
         &self.projectiles
     }
 
+    pub fn npcs(&self) -> &[Npc] {
+        &self.npcs
+    }
+
     #[cfg(test)]
     pub(crate) fn fighters_mut(&mut self) -> &mut [Fighter] {
         &mut self.fighters
@@ -108,6 +159,23 @@ impl World {
     /// hoặc `seq` cũ bị từ chối.
     pub fn step(&mut self, inputs: &[(FighterId, InputFrame)]) -> Vec<Event> {
         let mut events = Vec::new();
+        self.input_phase(inputs, &mut events);
+        self.movement_phase();
+        let strikes = self.collision_phase();
+        self.combat_phase(strikes, &mut events);
+        self.status_phase(&mut events);
+        self.tick += 1;
+        events
+    }
+
+    /// Hash trạng thái để so replay trong cùng build; không dùng làm định dạng lưu trữ.
+    pub fn state_hash(&self) -> u64 {
+        let mut hasher = StableHasher::default();
+        self.hash(&mut hasher);
+        hasher.finish()
+    }
+
+    fn input_phase(&mut self, inputs: &[(FighterId, InputFrame)], events: &mut Vec<Event>) {
         let mut frames: Vec<Option<InputFrame>> = vec![None; self.fighters.len()];
         for &(id, frame) in inputs {
             let index = usize::from(id.0);
@@ -125,35 +193,42 @@ impl World {
             }
         }
 
-        for (fighter, frame) in self.fighters.iter_mut().zip(frames) {
-            fighter.apply_input(frame, &mut self.next_instance, &mut events);
+        for (fighter, frame) in self.fighters.iter().zip(&frames) {
+            let wants = frame.and_then(|f| f.intent()) == Some(Intent::Interact);
+            if wants
+                && fighter.can_interact()
+                && let Some(npc) = nearest_npc(&self.npcs, fighter)
+            {
+                events.push(Event::Interacted {
+                    fighter: fighter.id,
+                    npc,
+                });
+            }
         }
+        for (fighter, frame) in self.fighters.iter_mut().zip(frames) {
+            fighter.apply_input(frame, &mut self.next_instance, events);
+        }
+    }
+
+    fn movement_phase(&mut self) {
         for fighter in &mut self.fighters {
             fighter.integrate();
         }
         // Đạn cũ bay trước; đạn mới đứng tại chỗ sinh trong tick đầu tiên.
         self.projectiles.retain_mut(Projectile::fly);
-        self.projectiles
-            .extend(self.fighters.iter().filter_map(Projectile::launch));
-        self.resolve_hits(&mut events);
-        self.projectiles.retain(Projectile::is_alive);
-        for fighter in &mut self.fighters {
-            fighter.advance(&mut events);
+        for fighter in &self.fighters {
+            if let Some(projectile) =
+                Projectile::launch(fighter, ProjectileId(self.next_projectile))
+            {
+                self.next_projectile += 1;
+                self.projectiles.push(projectile);
+            }
         }
-        self.tick += 1;
-        events
     }
 
-    /// Hash trạng thái để so replay trong cùng build; không dùng làm định dạng lưu trữ.
-    pub fn state_hash(&self) -> u64 {
-        let mut hasher = StableHasher::default();
-        self.hash(&mut hasher);
-        hasher.finish()
-    }
-
-    fn resolve_hits(&mut self, events: &mut Vec<Event>) {
-        // Gom va chạm từ cùng một trạng thái rồi mới áp dụng, để hai đòn trúng nhau cùng tick
-        // đều được tính.
+    /// Gom va chạm từ cùng một trạng thái rồi mới áp dụng, để hai đòn trúng nhau cùng tick đều
+    /// được tính.
+    fn collision_phase(&self) -> Vec<Strike> {
         let mut pending = Vec::new();
         for attacker in &self.fighters {
             let (Some(attack_box), Some((action, ..))) = (attacker.attack_box(), attacker.action())
@@ -186,8 +261,19 @@ impl World {
                 }
             }
         }
-        for strike in pending {
+        pending
+    }
+
+    fn combat_phase(&mut self, strikes: Vec<Strike>, events: &mut Vec<Event>) {
+        for strike in strikes {
             self.apply_hit(strike, events);
+        }
+        self.projectiles.retain(Projectile::is_alive);
+    }
+
+    fn status_phase(&mut self, events: &mut Vec<Event>) {
+        for fighter in &mut self.fighters {
+            fighter.advance(events);
         }
     }
 
@@ -197,8 +283,12 @@ impl World {
         owner: FighterId,
         hit_set: &'a [FighterId],
     ) -> impl Iterator<Item = &'a Fighter> {
+        let owner = self.fighter(owner);
         self.fighters.iter().filter(move |target| {
-            target.id != owner && !hit_set.contains(&target.id) && !target.is_invulnerable()
+            target.id != owner.id
+                && !owner.is_ally(target)
+                && !hit_set.contains(&target.id)
+                && !target.is_invulnerable()
         })
     }
 
@@ -210,6 +300,11 @@ impl World {
             source,
         } = strike;
         let (ai, ti) = (usize::from(attacker_id.0), usize::from(target_id.0));
+        // Mục tiêu bị hạ bởi một va chạm trước đó trong cùng tick không nhận thêm đòn. Người đánh
+        // bị hạ cùng tick vẫn ra đòn: hai bên trúng nhau cùng lúc đều được tính.
+        if self.fighters[ti].state == State::Downed {
+            return;
+        }
         let kit: &'static Kit = self.fighters[ai].kit;
         let spec = kit.spec(action);
         // Một lần ra đòn hoặc một viên đạn chỉ trúng mỗi mục tiêu một lần.
@@ -272,6 +367,18 @@ impl World {
             damage: spec.damage,
         });
         target.take_hit(spec.damage, spec.hitstun, push_dir * spec.knockback, events);
+        if let Some(status) = spec.on_hit
+            && target.state != State::Downed
+            && let Some(effect) = target.statuses.apply(status, attacker_id)
+        {
+            events.push(Event::StatusApplied {
+                target: target_id,
+                source: attacker_id,
+                kind: effect.kind,
+                percent: effect.percent,
+                ticks: effect.remaining,
+            });
+        }
         let attacker = &mut self.fighters[ai];
         attacker.mach.gain(spec.damage / 10);
         // Chỉ hit cận chiến mở cửa nối thuật.
@@ -287,6 +394,15 @@ impl World {
             confirmed_at.get_or_insert(*elapsed);
         }
     }
+}
+
+/// NPC gần nhất trong tầm của nhân vật; hòa khoảng cách thì chọn ID nhỏ hơn.
+fn nearest_npc(npcs: &[Npc], fighter: &Fighter) -> Option<NpcId> {
+    npcs.iter()
+        .map(|npc| ((npc.x - fighter.x).abs(), npc))
+        .filter(|(distance, npc)| *distance <= npc.spec.reach)
+        .min_by_key(|(distance, npc)| (*distance, npc.id))
+        .map(|(_, npc)| npc.id)
 }
 
 /// FNV-1a 64-bit ghi số nguyên little-endian với độ rộng cố định, để cùng trạng thái cho cùng
@@ -336,7 +452,7 @@ impl Hasher for StableHasher {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::fighter::{GUARD_STARTUP, MAX_HP};
+    use crate::fighter::{GUARD_STARTUP, MAX_HP, Team};
     use crate::input::Buttons;
     use crate::kit::{LONG_LUU, PX};
     use crate::meter::Meter;
@@ -647,6 +763,96 @@ mod tests {
             assert_eq!(blocked, expect_block, "B quay {b_facing}");
             assert_eq!(hits(&events).is_empty(), expect_block);
         }
+    }
+
+    #[test]
+    fn simultaneous_lethal_hits_down_the_target_once() {
+        let mut world = World::new();
+        let a = world.spawn(&LONG_LUU, 400 * PX, 1);
+        let target = world.spawn(&LONG_LUU, 460 * PX, -1);
+        let c = world.spawn(&LONG_LUU, 520 * PX, -1);
+        world.fighters[1].hp = 10;
+        let mut events =
+            world.step(&[(a, press(1, Buttons::LIGHT)), (c, press(1, Buttons::LIGHT))]);
+        events.extend(run_idle(&mut world, 20));
+        let downed = events
+            .iter()
+            .filter(|e| **e == Event::Downed { fighter: target })
+            .count();
+        assert_eq!(downed, 1, "{events:?}");
+        let hits_on_target = events
+            .iter()
+            .filter(|e| matches!(e, Event::Hit { target: t, .. } if *t == target))
+            .count();
+        assert_eq!(hits_on_target, 1, "mục tiêu đã bị hạ không nhận thêm đòn");
+    }
+
+    #[test]
+    fn simultaneous_trades_still_land_both_hits() {
+        let mut world = duel(60, -1);
+        world.fighters[0].hp = 10;
+        world.fighters[1].hp = 10;
+        let mut events =
+            world.step(&[(A, press(1, Buttons::LIGHT)), (B, press(1, Buttons::LIGHT))]);
+        events.extend(run_idle(&mut world, 20));
+        assert!(events.contains(&Event::Downed { fighter: A }));
+        assert!(events.contains(&Event::Downed { fighter: B }));
+    }
+
+    #[test]
+    fn allies_do_not_hit_each_other() {
+        let team = Some(Team(1));
+        let mut world = World::new();
+        let a = world.spawn_in_team(&LONG_LUU, 400 * PX, 1, team);
+        world.spawn_in_team(&LONG_LUU, 460 * PX, -1, team);
+        let mut events = world.step(&[(a, press(1, Buttons::LIGHT))]);
+        events.extend(run_idle(&mut world, 30));
+        assert!(!events.iter().any(|e| matches!(e, Event::Hit { .. })));
+
+        let mut world = World::new();
+        let a = world.spawn_in_team(&LONG_LUU, 400 * PX, 1, team);
+        world.spawn_in_team(&LONG_LUU, 460 * PX, -1, Some(Team(2)));
+        let mut events = world.step(&[(a, press(1, Buttons::LIGHT))]);
+        events.extend(run_idle(&mut world, 30));
+        assert!(events.iter().any(|e| matches!(e, Event::Hit { .. })));
+    }
+
+    #[test]
+    fn interact_needs_reach_and_a_free_hand() {
+        use crate::npc::{GUIDE, NpcId};
+
+        let mut world = World::new();
+        let a = world.spawn(&LONG_LUU, 400 * PX, 1);
+        let npc = world.spawn_npc(&GUIDE, 400 * PX + GUIDE.reach);
+        world.spawn_npc(&GUIDE, 1_500 * PX);
+        let events = world.step(&[(a, press(1, Buttons::INTERACT))]);
+        assert_eq!(events, [Event::Interacted { fighter: a, npc }]);
+        assert_eq!(npc, NpcId(0));
+
+        // Đang ra đòn thì không tương tác, và tương tác không hủy đòn.
+        world.step(&[(a, press(2, Buttons::LIGHT))]);
+        let events = world.step(&[(a, press(3, Buttons::INTERACT))]);
+        assert!(events.is_empty());
+        assert!(matches!(world.fighter(a).state, State::Attack { .. }));
+
+        let mut far = World::new();
+        let b = far.spawn(&LONG_LUU, 400 * PX, 1);
+        far.spawn_npc(&GUIDE, 400 * PX + GUIDE.reach + 1);
+        assert!(far.step(&[(b, press(1, Buttons::INTERACT))]).is_empty());
+    }
+
+    #[test]
+    fn projectile_ids_are_never_reused() {
+        let mut world = duel(700, -1);
+        let mut ids = Vec::new();
+        for seq in 1..=600 {
+            world.fighters[0].energy = Meter::energy();
+            world.step(&[(A, press(seq, Buttons::SKILL1))]);
+            ids.extend(world.projectiles().iter().map(|p| p.id));
+        }
+        ids.dedup();
+        assert!(ids.len() >= 3, "phải bắn nhiều lượt: {ids:?}");
+        assert!(ids.windows(2).all(|w| w[0] < w[1]), "{ids:?}");
     }
 
     #[test]

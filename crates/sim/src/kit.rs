@@ -1,6 +1,7 @@
 //! Dữ liệu kit truyền thừa. Graybox chỉ có Long Lưu (combat.md §7); Sơn Cốt và Phong Vũ được thêm
 //! khi kit đầu đạt nhịp (work-plan 020). Mọi giá trị là giả thuyết (GT) ở phòng thử 1.000 HP.
 
+use crate::status::StatusSpec;
 use crate::tick::ms_to_ticks;
 
 /// Một pixel thiết kế tính bằng mili-pixel; vị trí và kích thước mô phỏng là số nguyên theo
@@ -121,6 +122,8 @@ pub struct ActionSpec {
     pub counter_damage: Option<u32>,
     /// Đòn bắn đạn: damage đi theo đạn, đòn không có hitbox cận chiến.
     pub projectile: Option<ProjectileSpec>,
+    /// Hiệu ứng áp lên mục tiêu khi trúng (cả cận chiến lẫn đạn); không áp khi bị đỡ.
+    pub on_hit: Option<StatusSpec>,
 }
 
 impl ActionSpec {
@@ -146,6 +149,7 @@ impl ActionSpec {
             hitbox: Hitbox::px(0, 0, 0, 0),
             counter_damage: None,
             projectile: None,
+            on_hit: None,
         }
     }
 
