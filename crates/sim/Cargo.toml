@@ -8,3 +8,11 @@ publish.workspace = true
 
 [lints]
 workspace = true
+
+# Fixture chạy trong WASM để đo sai lệch hash native/WASM (scripts/check-wasm-determinism.sh).
+[[example]]
+name = "wasm-fingerprint"
+crate-type = ["cdylib"]
+
+[target.'cfg(target_arch = "wasm32")'.dev-dependencies]
+wasm-bindgen = "=0.2.129"

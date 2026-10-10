@@ -4011,6 +4011,16 @@ name = "myva-economy"
 version = "0.1.0"
 
 [[package]]
+name = "myva-gameplay"
+version = "0.1.0"
+dependencies = [
+ "bevy_app",
+ "bevy_ecs",
+ "bevy_time",
+ "myva-sim",
+]
+
+[[package]]
 name = "myva-graybox"
 version = "0.1.0"
 dependencies = [
@@ -4021,6 +4031,9 @@ dependencies = [
 [[package]]
 name = "myva-sim"
 version = "0.1.0"
+dependencies = [
+ "wasm-bindgen",
+]
 
 [[package]]
 name = "myva-web-game"

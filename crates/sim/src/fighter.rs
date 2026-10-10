@@ -4,6 +4,7 @@
 use crate::input::{Buttons, InputFrame, Intent};
 use crate::kit::{ActionKind, ActionSpec, HUMAN, Kit, PX, Phase, Rect};
 use crate::meter::Meter;
+use crate::status::Statuses;
 use crate::tick::ms_to_ticks;
 use crate::world::Event;
 
@@ -41,8 +42,14 @@ pub const LIGHT_CHAIN_WINDOW: u32 = ms_to_ticks(100);
 /// Nhẹ xác nhận trúng → thuật trong 80 ms sau hit.
 pub const HIT_CANCEL_WINDOW: u32 = ms_to_ticks(80);
 
+/// ID miền của nhân vật: chỉ số theo thứ tự spawn, không tái sử dụng trong một `World`.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct FighterId(pub u16);
+
+/// Phe. Hai nhân vật cùng phe không đánh trúng nhau; nhân vật không phe (`None`) đánh được và bị
+/// đánh bởi mọi người, như phòng đấu tập.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct Team(pub u8);
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum State {
@@ -83,6 +90,7 @@ enum Outcome {
 pub struct Fighter {
     pub id: FighterId,
     pub kit: &'static Kit,
+    pub team: Option<Team>,
     pub x: i32,
     pub y: i32,
     pub vy: i32,
@@ -93,6 +101,7 @@ pub struct Fighter {
     pub mach: Meter,
     pub state: State,
     pub cooldowns: [u32; 3],
+    pub statuses: Statuses,
     pub(crate) move_x: i8,
     pub(crate) last_seq: Option<u32>,
     pub(crate) buffered: Option<(Intent, u32)>,
@@ -100,10 +109,17 @@ pub struct Fighter {
 }
 
 impl Fighter {
-    pub(crate) fn new(id: FighterId, kit: &'static Kit, x: i32, facing: i8) -> Self {
+    pub(crate) fn new(
+        id: FighterId,
+        kit: &'static Kit,
+        x: i32,
+        facing: i8,
+        team: Option<Team>,
+    ) -> Self {
         Self {
             id,
             kit,
+            team,
             x: clamp_x(kit, x),
             y: 0,
             vy: 0,
@@ -114,6 +130,7 @@ impl Fighter {
             mach: Meter::mach(),
             state: State::Neutral,
             cooldowns: [0; 3],
+            statuses: Statuses::default(),
             move_x: 0,
             last_seq: None,
             buffered: None,
@@ -123,6 +140,20 @@ impl Fighter {
 
     pub fn is_grounded(&self) -> bool {
         self.y == 0 && self.vy == 0
+    }
+
+    pub fn is_ally(&self, other: &Fighter) -> bool {
+        self.team.is_some() && self.team == other.team
+    }
+
+    /// `seq` lớn nhất đã được áp dụng; snapshot trả về để client hòa giải và tiếp tục sau reconnect.
+    pub fn last_seq(&self) -> Option<u32> {
+        self.last_seq
+    }
+
+    /// Tương tác chỉ từ trạng thái trung tính trên nền, đánh giá ở đầu tick.
+    pub fn can_interact(&self) -> bool {
+        self.state == State::Neutral && self.is_grounded()
     }
 
     /// Đòn đang thực hiện cùng pha hiện tại.
@@ -205,10 +236,15 @@ impl Fighter {
         knockback: i32,
         events: &mut Vec<Event>,
     ) {
+        // Đã bị hạ thì không nhận thêm đòn, nên `Downed` chỉ phát một lần.
+        if self.state == State::Downed {
+            return;
+        }
         self.hp = self.hp.saturating_sub(damage);
         if self.hp == 0 {
             self.state = State::Downed;
             self.buffered = None;
+            self.statuses.clear();
             events.push(Event::Downed { fighter: self.id });
             return;
         }
@@ -237,6 +273,8 @@ impl Fighter {
         let (move_x, held, intent) = frame.map_or((0, Buttons::NONE, None), |f| {
             (f.move_x.signum(), f.held, f.intent())
         });
+        // `World` xử lý tương tác; ý định này không bắt đầu hay xóa hành động trong buffer.
+        let intent = intent.filter(|&want| want != Intent::Interact);
         self.move_x = move_x;
         // Hướng chỉ đổi ở trạng thái trung tính, trước khi bắt đầu startup.
         if self.state == State::Neutral && move_x != 0 {
@@ -380,7 +418,7 @@ impl Fighter {
     pub(crate) fn integrate(&mut self) {
         let grounded = self.is_grounded();
         let move_x = i32::from(self.move_x);
-        let walk = self.kit.body.walk_speed;
+        let walk = self.kit.body.walk_speed * i32::from(100 - self.statuses.slow_percent()) / 100;
         let vx = match self.state {
             State::Neutral => move_x * walk,
             // Đỡ làm chậm di chuyển; đòn trên không chỉ trôi nhẹ.
@@ -464,6 +502,9 @@ impl Fighter {
         for cooldown in &mut self.cooldowns {
             *cooldown = cooldown.saturating_sub(1);
         }
+        let id = self.id;
+        self.statuses
+            .tick(|kind| events.push(Event::StatusEnded { fighter: id, kind }));
         self.buffered = self
             .buffered
             .and_then(|(intent, ttl)| (ttl > 1).then_some((intent, ttl - 1)));

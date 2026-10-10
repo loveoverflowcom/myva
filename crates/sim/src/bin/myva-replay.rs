@@ -2,7 +2,7 @@
 //!
 //! ```text
 //! myva-replay verify <file>   chạy lại và so mọi mốc hash
-//! myva-replay events <file>   in sự kiện theo tick: ra đòn, trúng, đỡ, phản công, bị hạ
+//! myva-replay events <file>   in sự kiện theo tick: ra đòn, trúng, đỡ, phản công, hiệu ứng, bị hạ
 //! myva-replay demo <file>     ghi trận bot B1 (phản ứng 250 ms) đánh Kẻ Giữ Đập
 //! ```
 //!
@@ -105,6 +105,23 @@ fn describe(world: &World, event: &Event) -> String {
         } => format!("{} phản công {}: -{damage}", who(counterer), who(attacker)),
         Event::GuardBroken { fighter } => format!("{} vỡ thế đỡ", who(fighter)),
         Event::Downed { fighter } => format!("{} bị hạ", who(fighter)),
+        Event::StatusApplied {
+            target,
+            source,
+            kind,
+            percent,
+            ticks,
+        } => format!(
+            "{} chịu {kind:?} {percent}% trong {ticks} tick từ {}",
+            who(target),
+            who(source)
+        ),
+        Event::StatusEnded { fighter, kind } => format!("{} hết {kind:?}", who(fighter)),
+        Event::Interacted { fighter, npc } => format!(
+            "{} tương tác {}",
+            who(fighter),
+            world.npcs()[usize::from(npc.0)].spec.name
+        ),
     }
 }
 
