@@ -1,6 +1,7 @@
 // v2: event mang tóm tắt trận thay cho điểm của spike; thêm lệnh trận và message replay.
 const VERSION = 2;
-const REPLAY_HEADER = 'myva-replay 1\n';
+// Lõi ghi bản 2 (thêm seed, phe, NPC); bản 1 vẫn đọc được nên shell nhận cả hai.
+const REPLAY_HEADER = /^myva-replay [12]\n/;
 let frame = null;
 let session = null;
 let deadline = null;
@@ -77,7 +78,7 @@ export function mountGame() {
                 lastOutcome = battle.outcome;
                 window.dispatchEvent(new CustomEvent('myva-outcome', { detail: battle.outcome ?? '' }));
             }
-        } else if (data.type === 'replay' && typeof data.text === 'string' && data.text.startsWith(REPLAY_HEADER) &&
+        } else if (data.type === 'replay' && typeof data.text === 'string' && REPLAY_HEADER.test(data.text) &&
             typeof data.name === 'string' && /^[a-z0-9-]+\.myva-replay$/.test(data.name)) {
             download(data.text, data.name);
             status(`Đã tải ${data.name}. Kiểm tra bằng: myva-replay verify ${data.name}`);
