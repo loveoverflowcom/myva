@@ -1,6 +1,6 @@
 [package]
 name = "myva-web-game"
-description = "Isolated Bevy WASM sprite spike embedded by the Leptos shell."
+description = "Bevy WASM entry for the MyVa combat graybox, embedded by the Leptos shell."
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -9,22 +9,10 @@ publish.workspace = true
 [lib]
 crate-type = ["cdylib", "rlib"]
 
+# Feature Bevy do myva-graybox chọn (thêm webgl2 trên wasm32); crate này chỉ dựng cửa sổ canvas.
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-bevy = { version = "=0.20.0", default-features = false, features = [
-    "std",
-    "async_executor",
-    "bevy_asset",
-    "bevy_log",
-    "bevy_color",
-    "bevy_camera",
-    "bevy_core_pipeline",
-    "bevy_render",
-    "bevy_sprite",
-    "bevy_sprite_render",
-    "bevy_window",
-    "bevy_winit",
-    "webgl2",
-] }
+bevy = { version = "=0.20.0", default-features = false, features = ["bevy_winit", "bevy_window"] }
+myva-graybox = { path = "../graybox" }
 wasm-bindgen = "=0.2.129"
 
 [lints]
