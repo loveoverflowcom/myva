@@ -1,6 +1,6 @@
 # Nền gameplay ECS và simulation headless — D04
 
-**Trạng thái:** draft đã có implementation, ngày **2026-10-10**. Issue [#12](https://github.com/loveoverflowcom/myva/issues/12), quyết định [ADR 0003](../decisions/0003-bevy-engine-adoption.md), nhánh `feat/bevy-gameplay-foundation`. Bằng chứng ở mục 9 chỉ phủ chạy headless native và lõi WASM qua Node; chưa có client Bevy render, mạng hai client hay thiết bị. Mọi thông số quái, Slow và tầm tương tác là giả thuyết (GT) để kiểm chứng boundary, chưa cân bằng.
+**Trạng thái:** draft đã có implementation, ngày **2026-10-10**. Issue [#12](https://github.com/loveoverflowcom/myva/issues/12), quyết định [ADR 0003](../decisions/0003-bevy-engine-adoption.md), nhánh `feat/bevy-gameplay-foundation`. Bằng chứng ở mục 9 phủ chạy headless native, lõi WASM qua Node và (từ 2026-10-11) client Bevy render của #2 chạy trên `GameplayPlugin`; chưa có mạng hai client hay thiết bị. Mọi thông số quái, Slow và tầm tương tác là giả thuyết (GT) để kiểm chứng boundary, chưa cân bằng.
 
 ## 1. Một bộ luật, hai lớp
 
@@ -14,7 +14,8 @@ Luật combat chỉ nằm trong `myva-sim`. `myva-gameplay` là adapter ECS: nh�
 | `myva-sim::monster`, `status`, `npc` | Quái bùn và `MonsterBrain`, Slow, NPC tương tác | Hội thoại, nhiệm vụ |
 | `myva-sim::snapshot` | Khung nhìn tối thiểu cho mirror/hòa giải | Khôi phục `World` |
 | `myva-sim::fixture` | Phòng thử dùng chung cho test, runner, WASM | Nội dung phát hành |
-| `myva-gameplay` | `GameplayPlugin`, mirror component, `LocalInput`, `Authority`, `RewardOutbox`, runner `myva-headless` | Renderer, window, asset, audio |
+| `myva-sim::battle` | Trận graybox #2: đội hình, boss/bot đấu tập là `Controller`, bot lái hộ, trọng tài, tự kiểm chứng replay | Vòng tick, luật |
+| `myva-gameplay` | `GameplayPlugin`, mirror component và khung nhìn đọc lại (`view`), `LocalInput`, `Authority`, `RewardOutbox`, `LoadSession`, runner `myva-headless` | Renderer, window, asset, audio |
 
 `myva-gameplay` chỉ phụ thuộc `bevy_app`, `bevy_ecs`, `bevy_time` `=0.20.0` với `default-features = false, features = ["std"]`; `cargo tree -p myva-gameplay` không có wgpu, winit, render, asset, audio hay window. Server dùng được crate này mà không kéo renderer. Lõi `myva-sim` vẫn không phụ thuộc Bevy.
 
@@ -38,13 +39,15 @@ Thiết bị chạy theo frame ở `Update` và chỉ ghi vào `LocalInput`: hư
 | Loại | Component |
 | --- | --- |
 | Mọi entity | `SimId(EntityRef)` |
-| Người chơi / quái | `Player` hoặc `Monster`, `KitRef`, `Faction`, `Position`, `Facing`, `Health`, `Stamina`, `Energy`, `Mach`, `Stance`, `CurrentAction`, `Cooldowns`, `StatusEffects`, `Hurtbox`, `AttackBox`, `Invulnerable`, `AckedSeq`; quái có thêm `Ai` |
+| Người chơi / quái | `Player` hoặc `Monster`, `KitRef`, `Faction`, `Position`, `Facing`, `Health`, `Stamina`, `Energy`, `Mach`, `Stance`, `CurrentAction`, `Cooldowns`, `StatusEffects`, `Hurtbox`, `AttackBox`, `Invulnerable`, `Grounded`, `GuardWindow`, `AckedSeq`; quái có thêm `Ai` |
 | Đạn | `Projectile`, `Owner`, `SourceAction`, `Heading`, `Position`, `Volume` |
 | NPC | `Npc`, `NpcKind`, `Position` |
 
 **Built-in và miền.** Adapter không dùng component built-in của Bevy. `Transform`, sprite, camera, animation và VFX thuộc client presentation, suy ra từ `Position` (mili-pixel, y hướng lên) ở `Update`. Component miền là mirror số nguyên của lõi, đều `#[component(immutable)]`: system khác không lấy được `&mut` để sửa luật qua ECS. Mirror chỉ thay component khi giá trị đổi, nên change detection phản ánh thay đổi thật của lõi. Đọc `SimEvent` bằng `MessageReader` để phát hiệu ứng; `EventId { tick, index }` là khóa bỏ bản lặp.
 
-Entity có ngay khi phiên được nạp (mirror ở `Startup`); phiên chèn muộn thì có từ tick đầu tiên. Một app giữ một `SimSession` suốt đời; vào instance khác thì dựng app mới, khớp boundary tháo runtime của web shell D03.
+Entity có ngay khi phiên được nạp (mirror ở `Startup`); phiên chèn muộn thì có từ tick đầu tiên. Vào instance khác trong cùng app (đấu lại, đổi chế độ) dùng lệnh `LoadSession`: xóa entity mirror cũ cùng component client gắn thêm, nạp phiên mới và mirror ngay. `SimSession::halt` dừng tick khi instance kết thúc, entity giữ trạng thái cuối. Rời game thì web shell vẫn tháo cả runtime như D03.
+
+Presentation đọc lại mirror qua `view::FighterMirror`/`ProjectileMirror` thành `FighterView`/`ProjectileView`, cùng kiểu với `Session::snapshot()`; test kiểm hai nguồn trùng nhau mỗi tick, nên hàm vẽ test được bằng snapshot không cần GPU.
 
 ## 4. Lệnh và sự kiện
 
@@ -60,7 +63,7 @@ Entity có ngay khi phiên được nạp (mirror ở `Startup`); phiên chèn m
 | Tick client dự đoán lệch quá `INPUT_WINDOW` = 30 tick | `Late` / `TooEarly` |
 | Lệnh dồn vượt `MAX_BACKLOG` = 8 tick | `Backlog` |
 
-Server tự gán `accepted_tick = max(tick hiện tại, tick trống kế tiếp của tác nhân)` và trả `CommandAck`; không lùi về tick client đề xuất (combat.md §6). Lệnh của một tick được lấy theo `FighterId`, nên thứ tự đến giữa các tác nhân không đổi kết quả. Bộ não quái dùng epoch `SessionEpoch::AI` và đi qua cùng cổng. Reconnect (`Session::rebind`) cấp epoch mới, hủy lệnh chưa chạy của epoch cũ; `seq` tiếp tục sau `last_seq` trong snapshot.
+Server tự gán `accepted_tick = max(tick hiện tại, tick trống kế tiếp của tác nhân)` và trả `CommandAck`; không lùi về tick client đề xuất (combat.md §6). Lệnh của một tick được lấy theo `FighterId`, nên thứ tự đến giữa các tác nhân không đổi kết quả. Bộ não quái dùng epoch `SessionEpoch::AI` và đi qua cùng cổng; phiên tự đánh số `seq` lệnh AI, nên tắt/chỉnh bộ não giữa trận (`Session::controller_mut`) không làm lệnh bị từ chối và replay vẫn ghi đủ lệnh đã áp dụng. Reconnect (`Session::rebind`) cấp epoch mới, hủy lệnh chưa chạy của epoch cũ; `seq` tiếp tục sau `last_seq` trong snapshot.
 
 Sự kiện lõi: `InputRejected`, `ActionStarted`, `Hit`, `Blocked`, `Countered`, `GuardBroken`, `Downed`, `StatusApplied`, `StatusEnded`, `Interacted`. `TickReport { protocol, tick, events: [EventRecord { id, event }], hash }` là kết quả một tick. `damage` trong sự kiện là damage danh nghĩa của đòn.
 
@@ -91,9 +94,11 @@ Client không có đường tạo claim: constructor là nội bộ crate, `Rewa
 | Quái mới | Kit + một `Controller`, spawn qua `Session::spawn_controlled` | Plugin, mirror |
 | Hiệu ứng mới | `StatusKind` + điểm áp dụng trong lõi | ECS |
 | Presentation, HUD, VFX | System `Update` đọc mirror component và `SimEvent` | Lõi |
-| Thiết bị input | Ghi `LocalInput` ở `Update` | Schema lệnh |
+| Thiết bị input | Ghi `LocalInput` trước vòng fixed | Schema lệnh |
+| Bot lái hộ người chơi | `LocalInput::set_frame` trước `GameplaySet::Input` | Cổng lệnh |
+| Đọc trạng thái riêng của bộ não (pha boss) | `Session::controller::<T>()` | Snapshot |
 
-#2 dựng client Bevy bằng `DefaultPlugins` (đã có `TimePlugin`) + `GameplayPlugin::new(Authority::Client)` cho bản offline/prediction, chuyển kit Long Lưu và boss hiện có sang `Controller`/presentation, rồi đối chiếu replay với graybox Macroquad lịch sử. Không ghi vào component mirror và không thêm luật vào system ECS.
+#2 đã dựng client Bevy theo đúng đường này (2026-10-11): `DefaultPlugins` + `GameplayPlugin::new(Authority::Client)` + `MatchPlugin` của graybox. Boss Kẻ Giữ Đập (`BossController`) và bot đấu tập B0 (`SparringBot`) là `Controller` của phiên; bot B1/B0 lái hộ người chơi chạy phía client và gửi lệnh qua `LocalInput`. Trọng tài (`Bout::observe`) đọc `TickReport` trong `GameplaySet::Events`; cảnh và HUD đọc khung nhìn từ mirror. Graybox không ghi component mirror và không có system tính luật. Test `crates/graybox/tests/parity.rs` chạy đúng các plugin đó không cửa sổ và so từng tick với `Battle` chạy thẳng trên lõi.
 
 ## 9. Bằng chứng
 
@@ -115,13 +120,14 @@ cargo run -p myva-sim --bin myva-replay -- verify d04.myva-replay
 | Adapter ECS | PASS | 6 seed × 1.800 tick: lõi server-only = ECS server = ECS client từng hash; mirror khớp snapshot mỗi tick; 30/60/144 FPS và jitter 5–48 ms cùng hash, tick = 60/giây mô phỏng ±1; chỉ server cấp claim, một claim mỗi quái bị hạ |
 | `myva-headless` seed 1, 7, 12 | PASS | 3.600 tick không cửa sổ/GPU/audio; ECS khớp lõi 3.600/3.600 hash; replay ghi ra được `myva-replay verify` khớp 60 mốc |
 | Native ECS (release) vs lõi WASM (release, Node) | PASS, 0 sai lệch | 3 seed × 3.600 hash; hash cuối trùng bản debug native. `target/wasm-determinism/report.json` |
-| Client Bevy render, prediction/rollback, hai client qua mạng, thiết bị | NOT_RUN | Thuộc #2, #5 và gate platform |
+| Client Bevy render trên `GameplayPlugin` (#2, 2026-10-11) | PASS | Hệ của client (không cửa sổ) = `Battle` trên lõi từng hash: bot B1 đánh boss tới thắng, 2.400 tick input thiết bị ngẫu nhiên, đổi chế độ/tắt bot giữa trận; replay giống hệt từng byte; E2E trình duyệt trong [báo cáo combat](../reports/combat-graybox.md) |
+| Prediction/rollback, hai client qua mạng, thiết bị | NOT_RUN | Thuộc #5 và gate platform |
 
-Native và WASM khớp vì lõi chỉ dùng số nguyên có độ rộng cố định, RNG SplitMix64 và hash FNV ghi little-endian độ rộng cố định; kết luận chỉ đúng cho fixture và build đã chạy, không suy ra cho code float sau này. Hash vẫn chỉ so được trong cùng build. Adapter ECS build được cho wasm32 nhưng chưa chạy trong browser ở PR này.
+Native và WASM khớp vì lõi chỉ dùng số nguyên có độ rộng cố định, RNG SplitMix64 và hash FNV ghi little-endian độ rộng cố định; kết luận chỉ đúng cho fixture và build đã chạy, không suy ra cho code float sau này. Hash vẫn chỉ so được trong cùng build. Adapter ECS build được cho wasm32; ở #12 nó chưa chạy trong browser, từ #2 nó chạy trong bản web graybox (xem báo cáo combat).
 
 ## 10. Giới hạn đã biết
 
 - Chưa có transport, snapshot mạng đầy đủ, prediction/rollback, spawn giữa trận, DR khống chế, persistence.
-- Boss Kẻ Giữ Đập và bot B1 chưa được bọc thành `Controller`; #2 làm khi chuyển client.
+- Pha boss chỉ đọc được qua `Session::controller::<BossController>()`, chưa có trong snapshot/mirror; client mạng sẽ cần trường riêng.
 - Interact chưa giới hạn tần suất; server nghiệp vụ phải rate-limit trước khi tin sự kiện.
 - `TickHistory` của app headless tăng theo số tick; chỉ dùng cho test/runner.

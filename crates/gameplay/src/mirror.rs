@@ -48,6 +48,17 @@ pub(crate) struct MirrorCache {
     projectiles: BTreeMap<ProjectileId, ProjectileView>,
 }
 
+/// Xóa mọi entity mirror và bộ nhớ đệm, trước khi nạp phiên khác.
+pub(crate) fn reset(world: &mut World) {
+    let entities: Vec<Entity> = std::mem::take(&mut world.resource_mut::<EntityIndex>().map)
+        .into_values()
+        .collect();
+    for entity in entities {
+        world.despawn(entity);
+    }
+    *world.resource_mut::<MirrorCache>() = MirrorCache::default();
+}
+
 pub(crate) fn mirror_world(
     mut commands: Commands,
     session: Res<SimSession>,
@@ -168,6 +179,8 @@ fn spawn_fighter(commands: &mut Commands, view: &FighterView) -> Entity {
             Hurtbox(view.hurtbox),
             AttackBox(view.attack_box),
             Invulnerable(view.invulnerable),
+            Grounded(view.grounded),
+            GuardWindow(view.guard),
             AckedSeq(view.last_seq),
         ),
     ));
@@ -202,6 +215,8 @@ fn update_fighter(entity: &mut EntityCommands, old: &FighterView, new: &FighterV
         old.hurtbox != new.hurtbox => Hurtbox(new.hurtbox),
         old.attack_box != new.attack_box => AttackBox(new.attack_box),
         old.invulnerable != new.invulnerable => Invulnerable(new.invulnerable),
+        old.grounded != new.grounded => Grounded(new.grounded),
+        old.guard != new.guard => GuardWindow(new.guard),
         old.last_seq != new.last_seq => AckedSeq(new.last_seq),
     }
     if old.ai != new.ai

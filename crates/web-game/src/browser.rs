@@ -1,15 +1,33 @@
 use std::cell::{Cell, RefCell};
 
-// Bevy 0.20 derives inspect top-level dependencies only. Our target-specific
-// dependency needs this documented alias for generated `bevy_ecs` paths.
-use bevy::{camera::ScalingMode, ecs as bevy_ecs, prelude::*, winit::WinitSettings};
+use bevy::prelude::*;
+use bevy::window::PrimaryWindow;
+use bevy::winit::WinitSettings;
+use myva_gameplay::SimSession;
+use myva_graybox::telemetry::{self, HostStatus};
+use myva_graybox::touch::{self, ShowTouchControls, TouchUi};
+use myva_graybox::{ArenaView, GraySet, GrayboxPlugin, HostCommand, Match};
 use wasm_bindgen::prelude::*;
 
-use crate::state::{ARENA_HEIGHT, ARENA_WIDTH, GameState};
+/// Hộp thư giữa JS và Bevy. JS chỉ xếp lệnh và đọc chuỗi đã chuẩn bị; mọi thay đổi trận xảy ra
+/// trong schedule của Bevy ở khung hình kế tiếp.
+#[derive(Default)]
+struct Bridge {
+    commands: Vec<HostCommand>,
+    show_touch: Option<bool>,
+    telemetry: String,
+    touch_layout: String,
+    replay_requested: bool,
+    replay: Option<String>,
+}
 
 thread_local! {
-    static STATE: RefCell<GameState> = RefCell::new(GameState::default());
+    static BRIDGE: RefCell<Bridge> = RefCell::new(Bridge::default());
     static STARTED: Cell<bool> = const { Cell::new(false) };
+}
+
+fn queue(command: HostCommand) {
+    BRIDGE.with_borrow_mut(|bridge| bridge.commands.push(command));
 }
 
 /// Start exactly once per iframe. The iframe owns teardown of the WASM runtime.
@@ -20,135 +38,117 @@ pub fn start_game() {
     }
 
     App::new()
-        .insert_resource(ClearColor(Color::srgb_u8(10, 17, 32)))
         .insert_resource(WinitSettings::continuous())
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
-                title: "MyVa · Bevy WASM spike".into(),
+                title: "MyVa · trận graybox".into(),
                 canvas: Some("#game-canvas".into()),
-                resolution: (640, 360).into(),
+                resolution: (1280, 720).into(),
                 fit_canvas_to_parent: true,
-                // JS prevents only movement keys; Tab and browser shortcuts stay usable.
+                // Tab, phím tắt trình duyệt và IME của shell vẫn hoạt động.
                 prevent_default_event_handling: false,
                 ..default()
             }),
             ..default()
         }))
-        .add_systems(Startup, setup)
-        .add_systems(Update, update)
+        .add_plugins(GrayboxPlugin::default())
+        .add_systems(RunFixedMainLoop, pull_bridge.in_set(GraySet::Shortcuts))
+        .add_systems(Last, push_bridge)
         .run();
-}
-
-/// Direction uses game coordinates: positive x is right, positive y is up.
-#[wasm_bindgen]
-pub fn set_input(x: f32, y: f32) {
-    STATE.with_borrow_mut(|state| state.set_input(x, y));
 }
 
 #[wasm_bindgen]
 pub fn set_paused(paused: bool) {
-    STATE.with_borrow_mut(|state| state.set_paused(paused));
+    queue(HostCommand::SetPaused(paused));
 }
 
 #[wasm_bindgen]
-pub fn reset_game() {
-    STATE.with_borrow_mut(GameState::reset);
+pub fn rematch() {
+    queue(HostCommand::Rematch);
 }
 
-/// A primitive JSON bridge keeps the prototype independent of shell internals.
+#[wasm_bindgen]
+pub fn switch_mode() {
+    queue(HostCommand::SwitchMode);
+}
+
+#[wasm_bindgen]
+pub fn toggle_hitboxes() {
+    queue(HostCommand::ToggleHitboxes);
+}
+
+/// Bot B1 lái người chơi để xem mẫu đánh boss; input tay bị bỏ qua khi bật.
+#[wasm_bindgen]
+pub fn set_autopilot(on: bool) {
+    queue(HostCommand::SetAutopilot(on));
+}
+
+#[wasm_bindgen]
+pub fn show_touch_controls(visible: bool) {
+    BRIDGE.with_borrow_mut(|bridge| bridge.show_touch = Some(visible));
+}
+
+/// JSON ASCII một dòng; xem `myva_graybox::telemetry`.
 #[wasm_bindgen]
 pub fn telemetry() -> String {
-    STATE.with_borrow(GameState::telemetry)
+    BRIDGE.with_borrow(|bridge| bridge.telemetry.clone())
 }
 
-#[derive(Component)]
-struct Player;
-
-#[derive(Component)]
-struct Target;
-
-fn setup(mut commands: Commands) {
-    commands.spawn((
-        Camera2d,
-        Projection::Orthographic(OrthographicProjection {
-            scaling_mode: ScalingMode::AutoMin {
-                min_width: ARENA_WIDTH,
-                min_height: ARENA_HEIGHT,
-            },
-            ..OrthographicProjection::default_2d()
-        }),
-        // Tonemapping is disabled because this sprite-only build needs no LUTs.
-        bevy::core_pipeline::tonemapping::Tonemapping::None,
-    ));
-
-    commands.spawn((
-        Sprite::from_color(Color::srgb_u8(63, 89, 120), Vec2::new(640.0, 360.0)),
-        Transform::from_xyz(0.0, 0.0, -3.0),
-    ));
-    commands.spawn((
-        Sprite::from_color(Color::srgb_u8(17, 31, 48), Vec2::new(624.0, 344.0)),
-        Transform::from_xyz(0.0, 0.0, -2.0),
-    ));
-    for x in (-280..=280).step_by(40) {
-        commands.spawn((
-            Sprite::from_color(Color::srgb_u8(25, 43, 61), Vec2::new(1.0, 344.0)),
-            Transform::from_xyz(x as f32, 0.0, -1.0),
-        ));
-    }
-    for y in (-160..=160).step_by(40) {
-        commands.spawn((
-            Sprite::from_color(Color::srgb_u8(25, 43, 61), Vec2::new(624.0, 1.0)),
-            Transform::from_xyz(0.0, y as f32, -1.0),
-        ));
-    }
-
-    commands
-        .spawn((
-            Player,
-            Sprite::from_color(Color::srgb_u8(65, 224, 188), Vec2::new(24.0, 28.0)),
-            Transform::from_xyz(-220.0, 0.0, 2.0),
-        ))
-        .with_children(|player| {
-            for x in [-5.0, 5.0] {
-                player.spawn((
-                    Sprite::from_color(Color::srgb_u8(7, 39, 47), Vec2::new(4.0, 5.0)),
-                    Transform::from_xyz(x, 5.0, 0.1),
-                ));
-                player.spawn((
-                    Sprite::from_color(Color::srgb_u8(27, 128, 139), Vec2::new(8.0, 6.0)),
-                    Transform::from_xyz(x, -11.0, 0.1),
-                ));
-            }
-        });
-
-    commands
-        .spawn((
-            Target,
-            Sprite::from_color(Color::srgb_u8(251, 184, 65), Vec2::splat(22.0)),
-            Transform::from_xyz(0.0, 0.0, 1.0),
-        ))
-        .with_children(|target| {
-            for size in [Vec2::new(8.0, 32.0), Vec2::new(32.0, 8.0)] {
-                target.spawn((
-                    Sprite::from_color(Color::srgb_u8(255, 220, 104), size),
-                    Transform::from_xyz(0.0, 0.0, 0.1),
-                ));
-            }
-        });
+/// Tọa độ nút cảm ứng theo px CSS của canvas.
+#[wasm_bindgen]
+pub fn touch_layout() -> String {
+    BRIDGE.with_borrow(|bridge| bridge.touch_layout.clone())
 }
 
-fn update(
-    time: Res<Time>,
-    mut player: Single<&mut Transform, (With<Player>, Without<Target>)>,
-    mut target: Single<&mut Transform, (With<Target>, Without<Player>)>,
+/// Yêu cầu replay của trận hiện tại; lấy bằng `take_replay` sau một khung hình.
+#[wasm_bindgen]
+pub fn request_replay() {
+    BRIDGE.with_borrow_mut(|bridge| bridge.replay_requested = true);
+}
+
+#[wasm_bindgen]
+pub fn take_replay() -> Option<String> {
+    BRIDGE.with_borrow_mut(|bridge| bridge.replay.take())
+}
+
+fn pull_bridge(
+    mut commands: MessageWriter<HostCommand>,
+    mut show_touch: MessageWriter<ShowTouchControls>,
 ) {
-    let state = STATE.with_borrow_mut(|state| {
-        state.step(time.delta_secs());
-        *state
+    BRIDGE.with_borrow_mut(|bridge| {
+        commands.write_batch(bridge.commands.drain(..));
+        if let Some(visible) = bridge.show_touch.take() {
+            show_touch.write(ShowTouchControls(visible));
+        }
     });
-    player.translation.x = state.x;
-    player.translation.y = state.y;
-    let position = state.target();
-    target.translation.x = position.0;
-    target.translation.y = position.1;
+}
+
+#[allow(clippy::too_many_arguments)]
+fn push_bridge(
+    game: Res<Match>,
+    arena: Res<ArenaView>,
+    sim: Res<SimSession>,
+    touch_ui: Res<TouchUi>,
+    time: Res<Time<Virtual>>,
+    gamepads: Query<(), With<Gamepad>>,
+    window: Single<&Window, With<PrimaryWindow>>,
+    mut updates: Local<u64>,
+) {
+    *updates = updates.saturating_add(1);
+    let status = HostStatus {
+        ready: true,
+        paused: time.is_paused(),
+        updates: *updates,
+        touch: touch_ui.visible,
+        gamepads: gamepads.iter().count(),
+    };
+    let json = telemetry::json(&game, &arena, status);
+    let layout = touch::layout(window.size()).to_json();
+    BRIDGE.with_borrow_mut(|bridge| {
+        bridge.telemetry = json;
+        bridge.touch_layout = layout;
+        if std::mem::take(&mut bridge.replay_requested) {
+            bridge.replay = Some(sim.get().replay().to_text());
+        }
+    });
 }

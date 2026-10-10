@@ -1,0 +1,424 @@
+{
+  "date": "2026-10-10",
+  "issue": "https://github.com/loveoverflowcom/myva/issues/2",
+  "revision": "ead6d36884d32589d9590ab66bcb264b09e55762",
+  "host": {
+    "os": "Linux 7.0.0-38-generic",
+    "cpu": "Intel Core Ultra 7 155H (22 logical CPUs)",
+    "ram": "22 GiB",
+    "gpu": "Intel Graphics (MTL), Mesa 26.0.8"
+  },
+  "browser": "153.0.8010.36",
+  "e2e": {
+    "stats": {
+      "duration": 254465.95899999997,
+      "expected": 6,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "renderer": "Chromium headless, WebGL2 via ANGLE SwiftShader (software)"
+  },
+  "bundle": {
+    "revision": "ead6d36884d32589d9590ab66bcb264b09e55762",
+    "dirty": false,
+    "profile": "web",
+    "rustc": "rustc 1.97.1 (8bab26f4f 2026-07-14)",
+    "total_bytes": 84563824,
+    "total_gzip_bytes": 11172327,
+    "files": [
+      {
+        "path": "game/pkg/myva_web_game.js",
+        "bytes": 106670,
+        "gzip_bytes": 15771
+      },
+      {
+        "path": "game/pkg/myva_web_game_bg.wasm",
+        "bytes": 83952708,
+        "gzip_bytes": 11064025
+      },
+      {
+        "path": "shell/myva_web_shell_bg.wasm",
+        "bytes": 440291,
+        "gzip_bytes": 75090
+      }
+    ]
+  },
+  "lifecycle": {
+    "cycles": 30,
+    "startupMs": [
+      1643,
+      1609.4,
+      1526.4,
+      1552.3,
+      1580.2,
+      1650.3,
+      1621.3,
+      1636.2,
+      1569.1,
+      1606.4,
+      1516.9,
+      1583.5,
+      1544.9,
+      1537.3,
+      1541.9,
+      1568.9,
+      1556.1,
+      1591.3,
+      1612.2,
+      1607.7,
+      1535.1,
+      1620.2,
+      1553.3,
+      1609.3,
+      1599.2,
+      1561.2,
+      1547.7,
+      1677.2,
+      1585.3,
+      1687.2
+    ],
+    "domAfterGc": {
+      "documents": [
+        2,
+        2
+      ],
+      "nodes": [
+        222,
+        222
+      ],
+      "jsEventListeners": [
+        42,
+        42
+      ]
+    },
+    "heapBytes": [
+      2691972,
+      2951600
+    ],
+    "errors": []
+  },
+  "keyboard": {
+    "disclaimer": "Latency = DOM keydown to the fixed tick that consumed the press, observed on requestAnimationFrame; not input-to-photon.",
+    "inputSamplesMs": [
+      482.20000000018626
+    ],
+    "final": {
+      "tick": 223,
+      "rival": {
+        "x": 1032,
+        "y": 0,
+        "facing": -1,
+        "hp": 2320,
+        "max_hp": 2400,
+        "stamina": 100,
+        "energy": 100,
+        "mach": 12,
+        "cooldowns": [
+          0,
+          0,
+          0
+        ],
+        "state": "neutral",
+        "action": null
+      },
+      "tally": {
+        "player": {
+          "actions": 1,
+          "hits": 1,
+          "damage_dealt": 80,
+          "damage_taken": 120,
+          "blocks": 0,
+          "perfect_blocks": 0,
+          "counters": 0,
+          "guard_breaks": 0
+        },
+        "rival": {
+          "actions": 1,
+          "hits": 1,
+          "damage_dealt": 120,
+          "damage_taken": 80,
+          "blocks": 0,
+          "perfect_blocks": 0,
+          "counters": 0,
+          "guard_breaks": 0
+        }
+      }
+    }
+  },
+  "gamepad": {
+    "disclaimer": "Mocked navigator.getGamepads() with Standard Gamepad mapping; verifies gilrs → Bevy → sim wiring, not a physical controller.",
+    "before": {
+      "x": 400,
+      "y": 0,
+      "facing": 1,
+      "hp": 1000,
+      "max_hp": 1000,
+      "stamina": 100,
+      "energy": 100,
+      "mach": 0,
+      "cooldowns": [
+        0,
+        0,
+        0
+      ],
+      "state": "neutral",
+      "action": null
+    },
+    "preSkill": {
+      "energy": 100,
+      "actions": 1
+    },
+    "after": {
+      "energy": 82,
+      "actions": 2,
+      "cooldowns": [
+        91,
+        0,
+        0
+      ]
+    }
+  },
+  "autopilot": {
+    "disclaimer": "Bot B1 (250 ms reaction) pilots the player through the same input path; the wasm32 replay is re-run by native myva-replay.",
+    "wallSeconds": 65.65,
+    "final": {
+      "tick": 3772,
+      "outcome": "victory",
+      "verified": true,
+      "verified_ticks": 3772,
+      "hash": "45df0d28a1c763f9",
+      "phase": 3,
+      "player": {
+        "x": 1072,
+        "y": 0,
+        "facing": -1,
+        "hp": 1000,
+        "max_hp": 1000,
+        "stamina": 100,
+        "energy": 100,
+        "mach": 100,
+        "cooldowns": [
+          0,
+          0,
+          0
+        ],
+        "state": "neutral",
+        "action": null
+      },
+      "rival": {
+        "x": 1002,
+        "y": 0,
+        "facing": 1,
+        "hp": 0,
+        "max_hp": 2400,
+        "stamina": 100,
+        "energy": 100,
+        "mach": 0,
+        "cooldowns": [
+          0,
+          0,
+          0
+        ],
+        "state": "downed",
+        "action": null
+      },
+      "tally": {
+        "player": {
+          "actions": 54,
+          "hits": 54,
+          "damage_dealt": 2430,
+          "damage_taken": 0,
+          "blocks": 0,
+          "perfect_blocks": 0,
+          "counters": 0,
+          "guard_breaks": 0
+        },
+        "rival": {
+          "actions": 27,
+          "hits": 0,
+          "damage_dealt": 0,
+          "damage_taken": 2430,
+          "blocks": 0,
+          "perfect_blocks": 0,
+          "counters": 0,
+          "guard_breaks": 0
+        }
+      }
+    },
+    "replay": "myva-boss-r1-t3772.myva-replay",
+    "nativeVerify": "khớp 63 mốc hash qua 3772 tick; hash cuối 45df0d28a1c763f9\n#0 Long Lưu: HP 1000/1000, Neutral\n#1 Kẻ Giữ Đập: HP 0/2400, Downed\n"
+  },
+  "touch": {
+    "disclaimer": "Chromium touch emulation, not a physical phone",
+    "portrait": {
+      "width": 357,
+      "height": 403,
+      "stick": {
+        "x": 76.9,
+        "y": 326.1,
+        "r": 60.4
+      },
+      "buttons": {
+        "light": {
+          "x": 306.5,
+          "y": 352.5,
+          "r": 34.1
+        },
+        "heavy": {
+          "x": 228.5,
+          "y": 352.5,
+          "r": 34.1
+        },
+        "skill1": {
+          "x": 183.4,
+          "y": 281.1,
+          "r": 27.5
+        },
+        "skill2": {
+          "x": 248.3,
+          "y": 281.1,
+          "r": 27.5
+        },
+        "skill3": {
+          "x": 313.1,
+          "y": 281.1,
+          "r": 27.5
+        },
+        "jump": {
+          "x": 183.4,
+          "y": 216.3,
+          "r": 27.5
+        },
+        "dash": {
+          "x": 248.3,
+          "y": 216.3,
+          "r": 27.5
+        },
+        "guard": {
+          "x": 313.1,
+          "y": 216.3,
+          "r": 27.5
+        }
+      }
+    },
+    "landscape": {
+      "width": 844,
+      "height": 390,
+      "stick": {
+        "x": 84,
+        "y": 306,
+        "r": 66
+      },
+      "buttons": {
+        "light": {
+          "x": 788.8,
+          "y": 334.8,
+          "r": 37.2
+        },
+        "heavy": {
+          "x": 703.6,
+          "y": 334.8,
+          "r": 37.2
+        },
+        "skill1": {
+          "x": 625.6,
+          "y": 256.8,
+          "r": 30
+        },
+        "skill2": {
+          "x": 703.6,
+          "y": 256.8,
+          "r": 30
+        },
+        "skill3": {
+          "x": 788.8,
+          "y": 256.8,
+          "r": 30
+        },
+        "jump": {
+          "x": 473.2,
+          "y": 342,
+          "r": 30
+        },
+        "dash": {
+          "x": 544,
+          "y": 342,
+          "r": 30
+        },
+        "guard": {
+          "x": 614.8,
+          "y": 342,
+          "r": 30
+        }
+      }
+    }
+  },
+  "rateDiagnostics": [
+    {
+      "scenario": "headless-forced-swiftshader",
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "rafRateHz": 4.7080979284372555,
+      "bevyUpdateRateHz": 4.7080979284372555,
+      "simTickRateHz": 62.578468298811856,
+      "canvas": {
+        "width": 1098,
+        "height": 556
+      },
+      "inputSamplesMs": [
+        409.6000000005588,
+        421.40000000037253,
+        450,
+        477.6000000005588,
+        264.29999999981374,
+        311.40000000037253
+      ],
+      "note": "One 5-second scene sample after 2-second warm-up; RAF and Bevy Update rates are not GPU presentation FPS. Input latency is DOM keydown (Playwright CDP key events, not keyboard hardware) to the fixed tick that consumed the press, observed on RAF. A headed desktop may receive real user input; inspect observedInputEvents and before/after state for contamination."
+    },
+    {
+      "scenario": "headless-default",
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "rafRateHz": 4.198873938352897,
+      "bevyUpdateRateHz": 4.198873938352897,
+      "simTickRateHz": 61.83796163756084,
+      "canvas": {
+        "width": 1098,
+        "height": 556
+      },
+      "inputSamplesMs": [
+        264.09999999962747,
+        257.5,
+        248.5,
+        253.30000000074506,
+        245.5,
+        236.20000000018626
+      ],
+      "note": "One 5-second scene sample after 2-second warm-up; RAF and Bevy Update rates are not GPU presentation FPS. Input latency is DOM keydown (Playwright CDP key events, not keyboard hardware) to the fixed tick that consumed the press, observed on RAF. A headed desktop may receive real user input; inspect observedInputEvents and before/after state for contamination."
+    },
+    {
+      "scenario": "headed-default",
+      "renderer": "ANGLE (Intel, Mesa Intel(R) Graphics (MTL), OpenGL 4.6)",
+      "rafRateHz": 60.145868718153665,
+      "bevyUpdateRateHz": 60.145868718153665,
+      "simTickRateHz": 59.94604855629933,
+      "canvas": {
+        "width": 1098,
+        "height": 556
+      },
+      "inputSamplesMs": [
+        37.299999999813735,
+        20.799999999813735,
+        26,
+        20.59999999962747,
+        27.5,
+        22.100000000558794
+      ],
+      "note": "One 5-second scene sample after 2-second warm-up; RAF and Bevy Update rates are not GPU presentation FPS. Input latency is DOM keydown (Playwright CDP key events, not keyboard hardware) to the fixed tick that consumed the press, observed on RAF. A headed desktop may receive real user input; inspect observedInputEvents and before/after state for contamination."
+    }
+  ],
+  "native": {
+    "command": "myva-graybox --screenshot combat-native.png (debug build, Vulkan)",
+    "adapter": "Intel(R) Graphics (MTL), Mesa, Vulkan",
+    "replayVerify": "khớp 16 mốc hash qua 952 tick; hash cuối cad6947feeefbf01\n#0 Long Lưu: HP 1000/1000, Attack { action: Light(0), elapsed: 2, instance: 14, confirmed_at: None }\n#1 Kẻ Giữ Đập: HP 2085/2400, Attack { action: Light(0), elapsed: 3, instance: 13, confirmed_at: None }\n"
+  }
+}
