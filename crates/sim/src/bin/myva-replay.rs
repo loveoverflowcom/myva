@@ -10,10 +10,9 @@
 
 use std::process::ExitCode;
 
-use myva_sim::boss::{BossBrain, KE_GIU_DAP};
-use myva_sim::bot::PatternReader;
-use myva_sim::replay::{Recorder, Replay};
-use myva_sim::{Event, FighterId, LONG_LUU, PX, State, World};
+use myva_sim::battle::{Battle, Mode};
+use myva_sim::replay::Replay;
+use myva_sim::{Event, FighterId, InputFrame, World};
 
 const USAGE: &str = "dùng: myva-replay <verify|events|demo> <file>";
 
@@ -126,30 +125,20 @@ fn describe(world: &World, event: &Event) -> String {
 }
 
 fn demo(path: &str) -> Result<(), String> {
-    let mut world = World::new();
-    let player = world.spawn(&LONG_LUU, 400 * PX, 1);
-    let boss = world.spawn(&KE_GIU_DAP, 1_100 * PX, -1);
-    let mut recorder = Recorder::new(&world, 60);
-    let (mut brain, mut reader) = (BossBrain::new(), PatternReader::with_reaction_ms(250));
+    let mut battle = Battle::new(Mode::Boss, 1);
+    battle.set_autopilot(true);
     let limit = 5 * 60 * 60;
-    while world.tick() < limit
-        && [player, boss]
-            .iter()
-            .all(|&id| world.fighter(id).state != State::Downed)
-    {
-        let inputs = [
-            (player, reader.next_frame(&world, player, boss)),
-            (boss, brain.next_frame(&world, boss, player)),
-        ];
-        recorder.step(&mut world, &inputs);
+    while !battle.is_settled() && battle.world().tick() < limit {
+        battle.step(InputFrame::default());
     }
-    let replay = recorder.snapshot(&world);
+    let replay = battle.replay();
     std::fs::write(path, replay.to_text()).map_err(|e| format!("{path}: {e}"))?;
+    let world = battle.world();
     println!(
         "đã ghi {} tick vào {path}; người chơi {} HP, boss {} HP",
         replay.ticks,
-        world.fighter(player).hp,
-        world.fighter(boss).hp
+        world.fighter(battle.player()).hp,
+        world.fighter(battle.rival()).hp
     );
     Ok(())
 }
