@@ -24,6 +24,17 @@ async function quietDuel(page, frame) {
     await expect.poll(async () => (await state(frame)).sparring).toBe(false);
 }
 
+// Vị trí người chơi không đổi qua `frames` khung Bevy liên tiếp.
+async function stillFor(frame, frames) {
+    const first = await state(frame);
+    let now = first;
+    while (now.updates < first.updates + frames) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        now = await state(frame);
+    }
+    return now.player.x === first.player.x;
+}
+
 test('30 document lifecycles, input ownership and runtime evidence', async ({ page, browser }) => {
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
@@ -82,13 +93,15 @@ test('30 document lifecycles, input ownership and runtime evidence', async ({ pa
             await expect.poll(async () => canvas.evaluate(el => el.width)).toBeGreaterThan(500);
             await page.setViewportSize({ width: 1280, height: 900 });
 
-            // Giữ phím rồi chuyển focus: Bevy nhả mọi phím khi canvas mất focus.
+            // Giữ phím rồi chuyển focus: Bevy nhả mọi phím khi canvas mất focus. Khung hình
+            // SwiftShader chậm và không đều, nên đợi vị trí đứng yên qua ba khung Bevy rồi mới
+            // kiểm tra nó tiếp tục đứng yên, thay vì giả định một khoảng chờ cố định.
             await canvas.click();
             await page.keyboard.down('ArrowRight');
             await page.waitForTimeout(400);
             await page.locator('#chat').focus();
             await page.keyboard.up('ArrowRight');
-            await page.waitForTimeout(600);
+            await expect.poll(() => stillFor(frame, 3), { timeout: 30000 }).toBe(true);
             const blurred = await state(frame);
             await page.waitForTimeout(600);
             expect((await state(frame)).player.x).toBe(blurred.player.x);
