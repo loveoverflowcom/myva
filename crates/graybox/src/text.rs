@@ -6,7 +6,7 @@
 
 use myva_sim::State;
 use myva_sim::boss::BossPhase;
-use myva_sim::fighter::Fighter;
+use myva_sim::snapshot::FighterView;
 
 /// Bỏ dấu tiếng Việt để hiển thị bằng font mặc định.
 pub fn ascii(text: &str) -> String {
@@ -45,19 +45,23 @@ pub fn phase_label(phase: BossPhase) -> &'static str {
 }
 
 /// Trạng thái hiện tại; đòn đang ra kèm pha và thời gian còn lại của pha đó.
-pub fn state_label(fighter: &Fighter) -> String {
-    match (fighter.state, fighter.action()) {
-        (State::Attack { elapsed, .. }, Some((_, spec, phase))) => {
-            let (word, end) = match phase {
+pub fn state_label(fighter: &FighterView) -> String {
+    match (fighter.state, fighter.action.zip(fighter.action_spec())) {
+        (State::Attack { .. }, Some((action, spec))) => {
+            let (word, end) = match action.phase {
                 myva_sim::Phase::Startup => ("bao", spec.startup),
                 myva_sim::Phase::Active => ("danh", spec.startup + spec.active),
                 myva_sim::Phase::Recovery => ("hoi", spec.total()),
             };
-            format!("{} - {word} {}", ascii(spec.name), seconds(end - elapsed))
+            format!(
+                "{} - {word} {}",
+                ascii(spec.name),
+                seconds(end - action.elapsed)
+            )
         }
-        (State::Neutral, _) if !fighter.is_grounded() => "Tren khong".to_owned(),
+        (State::Neutral, _) if !fighter.grounded => "Tren khong".to_owned(),
         (State::Neutral, _) => "Trung tinh".to_owned(),
-        (State::Guard { .. }, _) => match fighter.guard_active() {
+        (State::Guard { .. }, _) => match fighter.guard {
             Some(true) => "Do (hoan hao)".to_owned(),
             Some(false) => "Do".to_owned(),
             None => "Dang dua the do".to_owned(),

@@ -1,16 +1,23 @@
-//! Phiên đấu graybox (work-plan 020): ghép thế giới, nguồn input của từng bên, bản ghi replay và
-//! kết quả trận. Thuần Rust như phần còn lại của lõi, nên client Bevy native, bản web và test
-//! headless chạy cùng một vòng đấu.
+//! Trận graybox (work-plan 020) trên đường tick duy nhất của D04: [`Session`] giữ `World`, cổng
+//! nhận lệnh, bộ não AI và replay; module này thêm đội hình, bot lái hộ người chơi, trọng tài
+//! (kết quả, số liệu playtest, nhịp lắng) và tự kiểm chứng replay.
 //!
-//! Client chỉ đưa ý định của người chơi; bộ não boss, bot và số thứ tự input do phiên quyết định.
-//! Kết quả được kiểm chứng bằng cách chạy lại replay của chính trận đó ([`Battle::verify`]).
+//! [`Bout`] không giữ phiên, để adapter ECS (`myva-gameplay`) giữ `Session` trong resource còn
+//! client giữ `Bout`. [`Battle`] ghép hai thứ cho test, công cụ và runner headless. Cả hai gửi
+//! lệnh người chơi qua cùng cổng với cùng `seq`, nên cùng input cho cùng hash từng tick.
+//!
+//! Boss Kẻ Giữ Đập và bot đấu tập B0 là [`Controller`] của phiên như quái thường. Bot lái hộ
+//! người chơi ([`Pilot`]) chạy phía client và gửi lệnh như một người chơi; kết quả được kiểm
+//! chứng bằng cách chạy lại replay của chính trận đó ([`Bout::verify`]).
 
 use crate::boss::{BossBrain, BossPhase, KE_GIU_DAP};
 use crate::bot::{PatternReader, RandomBot};
 use crate::fighter::{FighterId, State};
 use crate::input::InputFrame;
 use crate::kit::{ActionKind, LONG_LUU, PX};
-use crate::replay::{Recorder, Replay, ReplayError};
+use crate::protocol::{CommandEnvelope, CommandFrame, SessionEpoch, TickReport};
+use crate::replay::{Replay, ReplayError};
+use crate::session::{Controller, Role, Session, SessionConfig};
 use crate::tick::{TICK_HZ, Tick};
 use crate::world::{Event, World};
 
@@ -21,6 +28,8 @@ pub const CHECKPOINT_EVERY: u32 = TICK_HZ;
 pub const SETTLE_TICKS: u32 = TICK_HZ;
 /// Bot B1 lái hộ người chơi phản ứng theo ngân sách combat.md §10.
 pub const AUTOPILOT_REACTION_MS: u32 = 250;
+/// Phiên điều khiển người chơi trong trận cục bộ.
+pub const PLAYER_EPOCH: SessionEpoch = SessionEpoch(1);
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Mode {
@@ -100,18 +109,98 @@ pub struct Tally {
     pub last_hit_by: Option<Cause>,
 }
 
+/// Boss Kẻ Giữ Đập làm bộ não AI của phiên, nhắm vào người chơi.
 #[derive(Clone, Debug)]
-enum Pilot {
-    Manual,
+pub struct BossController {
+    brain: BossBrain,
+    target: FighterId,
+}
+
+impl BossController {
+    pub fn new(target: FighterId) -> Self {
+        Self {
+            brain: BossBrain::new(),
+            target,
+        }
+    }
+
+    pub fn phase(&self) -> BossPhase {
+        self.brain.phase()
+    }
+}
+
+impl Controller for BossController {
+    fn next_frame(&mut self, world: &World, me: FighterId) -> InputFrame {
+        self.brain.next_frame(world, me, self.target)
+    }
+}
+
+/// Bot B0 của chế độ đấu tập; tắt thì đứng yên nhưng vẫn gửi khung rỗng qua cổng.
+#[derive(Clone, Debug)]
+pub struct SparringBot {
+    bot: RandomBot,
+    enabled: bool,
+}
+
+impl SparringBot {
+    pub fn new(seed: u64) -> Self {
+        Self {
+            bot: RandomBot::new(seed),
+            enabled: true,
+        }
+    }
+
+    pub fn enabled(&self) -> bool {
+        self.enabled
+    }
+
+    pub fn toggle(&mut self) {
+        self.enabled = !self.enabled;
+    }
+}
+
+impl Controller for SparringBot {
+    fn next_frame(&mut self, _: &World, _: FighterId) -> InputFrame {
+        if self.enabled {
+            self.bot.next_frame()
+        } else {
+            InputFrame::default()
+        }
+    }
+}
+
+/// Bot lái hộ người chơi phía client: B1 đọc tín hiệu khi đánh boss, B0 ngẫu nhiên khi đấu tập.
+/// Nó chỉ sinh lệnh; lệnh vẫn đi qua cổng như bàn phím.
+#[derive(Clone, Debug)]
+pub enum Pilot {
     Reader(PatternReader),
     Random(RandomBot),
 }
 
-#[derive(Clone, Debug)]
-enum RivalControl {
-    Boss(BossBrain),
-    Random(RandomBot),
-    Idle,
+impl Pilot {
+    pub fn for_mode(mode: Mode, round: u64) -> Self {
+        match mode {
+            Mode::Boss => Pilot::Reader(PatternReader::with_reaction_ms(AUTOPILOT_REACTION_MS)),
+            Mode::Duel => Pilot::Random(RandomBot::new(round ^ 0x5EED)),
+        }
+    }
+
+    pub fn command(&mut self, world: &World, me: FighterId, rival: FighterId) -> CommandFrame {
+        let frame = match self {
+            Pilot::Reader(reader) => reader.next_frame(world, me, rival),
+            Pilot::Random(bot) => bot.next_frame(),
+        };
+        CommandFrame::from_input(&frame)
+    }
+}
+
+/// Đội hình của một trận; `FighterId` là ID miền, không phải `Entity`.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Roster {
+    pub mode: Mode,
+    pub round: u64,
+    pub player: FighterId,
+    pub rival: FighterId,
 }
 
 /// Replay của trận chạy lại khớp trạng thái đang chơi.
@@ -147,78 +236,88 @@ impl std::fmt::Display for VerifyError {
 
 impl std::error::Error for VerifyError {}
 
+/// Trạng thái trận ngoài `Session`: đội hình, bot lái hộ, kết quả và số liệu từng bên.
 #[derive(Clone, Debug)]
-pub struct Battle {
-    mode: Mode,
-    round: u64,
-    world: World,
-    player: FighterId,
-    rival: FighterId,
-    pilot: Pilot,
-    rival_control: RivalControl,
-    recorder: Recorder,
-    /// Phiên tự đánh số input của cả hai bên, nên đổi người lái giữa trận (tay ↔ bot) không làm
-    /// khung mới bị từ chối vì `seq` cũ.
-    seqs: [u32; 2],
+pub struct Bout {
+    roster: Roster,
+    pilot: Option<Pilot>,
     outcome: Option<(Outcome, Tick)>,
     tallies: [Tally; 2],
 }
 
-impl Battle {
-    pub fn new(mode: Mode, round: u64) -> Self {
-        let mut world = World::new();
-        let (player, rival, rival_control) = match mode {
-            Mode::Boss => (
-                world.spawn(&LONG_LUU, 400 * PX, 1),
-                world.spawn(&KE_GIU_DAP, 1_100 * PX, -1),
-                RivalControl::Boss(BossBrain::new()),
-            ),
-            Mode::Duel => (
-                world.spawn(&LONG_LUU, 640 * PX, 1),
-                world.spawn(&LONG_LUU, 960 * PX, -1),
-                RivalControl::Random(RandomBot::new(round)),
-            ),
+impl Bout {
+    /// Dựng phiên cho trận `mode` ở vòng `round`: người chơi do [`PLAYER_EPOCH`] điều khiển, đối
+    /// thủ là bộ não AI của phiên.
+    pub fn start(mode: Mode, round: u64) -> (Self, Session) {
+        let mut session = Session::new(SessionConfig {
+            checkpoint_every: CHECKPOINT_EVERY,
+            ..SessionConfig::new(round, round)
+        });
+        let (player_x, rival_x) = match mode {
+            Mode::Boss => (400 * PX, 1_100 * PX),
+            Mode::Duel => (640 * PX, 960 * PX),
         };
-        Self {
-            mode,
-            round,
-            recorder: Recorder::new(&world, CHECKPOINT_EVERY),
-            world,
-            player,
-            rival,
-            pilot: Pilot::Manual,
-            rival_control,
-            seqs: [0; 2],
+        let player = session.spawn_player(&LONG_LUU, player_x, 1, None, PLAYER_EPOCH);
+        let rival = match mode {
+            Mode::Boss => session.spawn_controlled(
+                &KE_GIU_DAP,
+                rival_x,
+                -1,
+                None,
+                Role::Monster,
+                Box::new(BossController::new(player)),
+            ),
+            Mode::Duel => {
+                let seed = session.derive_seed(FighterId(player.0 + 1));
+                session.spawn_controlled(
+                    &LONG_LUU,
+                    rival_x,
+                    -1,
+                    None,
+                    Role::Monster,
+                    Box::new(SparringBot::new(seed)),
+                )
+            }
+        };
+        let bout = Self {
+            roster: Roster {
+                mode,
+                round,
+                player,
+                rival,
+            },
+            pilot: None,
             outcome: None,
             tallies: [Tally::default(); 2],
-        }
+        };
+        (bout, session)
     }
 
     /// Trận mới ở vòng kế tiếp, giữ chế độ lái của người chơi.
-    pub fn rematch(&self, mode: Mode) -> Self {
-        let mut next = Self::new(mode, self.round + 1);
+    pub fn rematch(&self, mode: Mode) -> (Self, Session) {
+        let (mut next, session) = Self::start(mode, self.roster.round + 1);
         next.set_autopilot(self.autopilot());
-        next
+        (next, session)
+    }
+
+    pub fn roster(&self) -> Roster {
+        self.roster
     }
 
     pub fn mode(&self) -> Mode {
-        self.mode
+        self.roster.mode
     }
 
     pub fn round(&self) -> u64 {
-        self.round
-    }
-
-    pub fn world(&self) -> &World {
-        &self.world
+        self.roster.round
     }
 
     pub fn player(&self) -> FighterId {
-        self.player
+        self.roster.player
     }
 
     pub fn rival(&self) -> FighterId {
-        self.rival
+        self.roster.rival
     }
 
     pub fn outcome(&self) -> Option<Outcome> {
@@ -229,91 +328,52 @@ impl Battle {
         &self.tallies[usize::from(id.0)]
     }
 
-    pub fn boss_phase(&self) -> Option<BossPhase> {
-        match &self.rival_control {
-            RivalControl::Boss(brain) => Some(brain.phase()),
-            _ => None,
-        }
+    pub fn boss_phase(&self, session: &Session) -> Option<BossPhase> {
+        session
+            .controller::<BossController>(self.rival())
+            .map(BossController::phase)
     }
 
     /// `Some(bật)` ở chế độ đấu tập, `None` khi đánh boss.
-    pub fn sparring_bot(&self) -> Option<bool> {
-        match self.rival_control {
-            RivalControl::Random(_) => Some(true),
-            RivalControl::Idle => Some(false),
-            RivalControl::Boss(_) => None,
-        }
+    pub fn sparring_bot(&self, session: &Session) -> Option<bool> {
+        session
+            .controller::<SparringBot>(self.rival())
+            .map(SparringBot::enabled)
     }
 
-    pub fn toggle_sparring_bot(&mut self) {
-        self.rival_control = match self.rival_control {
-            RivalControl::Random(_) => RivalControl::Idle,
-            RivalControl::Idle => RivalControl::Random(RandomBot::new(self.round)),
-            RivalControl::Boss(_) => return,
-        };
-    }
-
-    /// Bot lái người chơi: B1 đọc tín hiệu khi đánh boss, B0 ngẫu nhiên khi đấu tập.
     pub fn autopilot(&self) -> bool {
-        !matches!(self.pilot, Pilot::Manual)
+        self.pilot.is_some()
     }
 
     pub fn set_autopilot(&mut self, on: bool) {
-        if on == self.autopilot() {
-            return;
+        if on != self.autopilot() {
+            self.pilot = on.then(|| Pilot::for_mode(self.roster.mode, self.roster.round));
         }
-        self.pilot = match (on, self.mode) {
-            (false, _) => Pilot::Manual,
-            (true, Mode::Boss) => {
-                Pilot::Reader(PatternReader::with_reaction_ms(AUTOPILOT_REACTION_MS))
-            }
-            (true, Mode::Duel) => Pilot::Random(RandomBot::new(self.round ^ 0x5EED)),
-        };
     }
 
-    /// Trận đã có kết quả và đã chạy hết nhịp lắng; `step` không làm gì nữa.
-    pub fn is_settled(&self) -> bool {
-        self.outcome
-            .is_some_and(|(_, at)| self.world.tick() >= at + SETTLE_TICKS)
+    /// Lệnh bot lái hộ cho tick hiện tại của `world`; `None` khi người chơi tự lái.
+    pub fn autopilot_command(&mut self, world: &World) -> Option<CommandFrame> {
+        let Roster { player, rival, .. } = self.roster;
+        self.pilot
+            .as_mut()
+            .map(|pilot| pilot.command(world, player, rival))
     }
 
-    /// Chạy một tick. `manual` là ý định của người chơi; `seq` của nó bị bỏ qua và được đánh số
-    /// lại. Khi bot đang lái, `manual` bị bỏ qua.
-    pub fn step(&mut self, manual: InputFrame) -> Vec<Event> {
-        if self.is_settled() {
-            return Vec::new();
-        }
-        let world = &self.world;
-        let player_frame = match &mut self.pilot {
-            Pilot::Manual => manual,
-            Pilot::Reader(reader) => reader.next_frame(world, self.player, self.rival),
-            Pilot::Random(bot) => bot.next_frame(),
-        };
-        let rival_frame = match &mut self.rival_control {
-            RivalControl::Boss(brain) => Some(brain.next_frame(world, self.rival, self.player)),
-            RivalControl::Random(bot) => Some(bot.next_frame()),
-            RivalControl::Idle => None,
-        };
-        let mut inputs = vec![(self.player, self.stamp(self.player, player_frame))];
-        if let Some(frame) = rival_frame {
-            inputs.push((self.rival, self.stamp(self.rival, frame)));
-        }
-        let events = self.recorder.step(&mut self.world, &inputs);
-        for event in &events {
-            self.count(event);
+    /// Ghi nhận một tick vừa chạy: số liệu từ sự kiện và kết quả từ trạng thái sau tick.
+    pub fn observe(&mut self, world: &World, report: &TickReport) {
+        for record in &report.events {
+            self.count(&record.event);
         }
         if self.outcome.is_none()
-            && let Some(outcome) = Outcome::of(&self.world, self.player, self.rival)
+            && let Some(outcome) = Outcome::of(world, self.player(), self.rival())
         {
-            self.outcome = Some((outcome, self.world.tick()));
+            self.outcome = Some((outcome, world.tick()));
         }
-        events
     }
 
-    fn stamp(&mut self, id: FighterId, frame: InputFrame) -> InputFrame {
-        let seq = &mut self.seqs[usize::from(id.0)];
-        *seq += 1;
-        InputFrame { seq: *seq, ..frame }
+    /// Trận đã có kết quả và đã chạy hết nhịp lắng ở tick `now`; không chạy thêm tick nữa.
+    pub fn is_settled(&self, now: Tick) -> bool {
+        self.outcome.is_some_and(|(_, at)| now >= at + SETTLE_TICKS)
     }
 
     fn count(&mut self, event: &Event) {
@@ -357,19 +417,18 @@ impl Battle {
         }
     }
 
-    /// Replay của trận tới tick hiện tại, có mốc hash cuối.
-    pub fn replay(&self) -> Replay {
-        self.recorder.snapshot(&self.world)
+    /// Ghi replay của `session` ra văn bản, đọc lại và chạy lại không cần bộ não boss hay bot, rồi
+    /// so trạng thái cuối và kết quả với trận đang chơi. Đây là kiểm chứng cục bộ trên cùng build;
+    /// kết quả online vẫn chỉ do server quyết định.
+    pub fn verify(&self, session: &Session) -> Result<Verification, VerifyError> {
+        let replay = Replay::parse(&session.replay().to_text()).map_err(VerifyError::Replay)?;
+        self.check(&replay, session.world().state_hash())
     }
 
-    /// Ghi replay ra văn bản, đọc lại và chạy lại không cần bộ não boss hay bot, rồi so trạng
-    /// thái cuối và kết quả với trận đang chơi. Đây là kiểm chứng cục bộ trên cùng build; kết quả
-    /// online vẫn chỉ do server quyết định.
-    pub fn verify(&self) -> Result<Verification, VerifyError> {
-        let replay = Replay::parse(&self.replay().to_text()).map_err(VerifyError::Replay)?;
+    fn check(&self, replay: &Replay, live: u64) -> Result<Verification, VerifyError> {
         let playback = replay.play().map_err(VerifyError::Replay)?;
-        let (live, replayed) = (self.world.state_hash(), playback.world.state_hash());
-        let outcome = Outcome::of(&playback.world, self.player, self.rival);
+        let replayed = playback.world.state_hash();
+        let outcome = Outcome::of(&playback.world, self.player(), self.rival());
         if live != replayed || outcome != self.outcome() {
             return Err(VerifyError::Diverged { live, replayed });
         }
@@ -382,38 +441,127 @@ impl Battle {
     }
 }
 
+/// Trận chạy trực tiếp trên lõi, không ECS: test, công cụ `myva-replay` và đối chứng với client.
+pub struct Battle {
+    session: Session,
+    bout: Bout,
+    seq: u32,
+}
+
+impl Battle {
+    pub fn new(mode: Mode, round: u64) -> Self {
+        let (bout, session) = Bout::start(mode, round);
+        Self {
+            session,
+            bout,
+            seq: 0,
+        }
+    }
+
+    /// Trận mới ở vòng kế tiếp, giữ chế độ lái của người chơi.
+    pub fn rematch(&self, mode: Mode) -> Self {
+        let (bout, session) = self.bout.rematch(mode);
+        Self {
+            session,
+            bout,
+            seq: 0,
+        }
+    }
+
+    pub fn session(&self) -> &Session {
+        &self.session
+    }
+
+    pub fn world(&self) -> &World {
+        self.session.world()
+    }
+
+    pub fn bout(&self) -> &Bout {
+        &self.bout
+    }
+
+    pub fn bout_mut(&mut self) -> &mut Bout {
+        &mut self.bout
+    }
+
+    pub fn toggle_sparring_bot(&mut self) {
+        if let Some(bot) = self
+            .session
+            .controller_mut::<SparringBot>(self.bout.rival())
+        {
+            bot.toggle();
+        }
+    }
+
+    pub fn is_settled(&self) -> bool {
+        self.bout.is_settled(self.world().tick())
+    }
+
+    /// Chạy một tick với ý định `manual` của người chơi, bị bỏ qua khi bot đang lái. `None` khi
+    /// trận đã lắng.
+    pub fn step(&mut self, manual: CommandFrame) -> Option<TickReport> {
+        if self.is_settled() {
+            return None;
+        }
+        let world = self.session.world();
+        let frame = self.bout.autopilot_command(world).unwrap_or(manual);
+        self.seq += 1;
+        let command = CommandEnvelope::new(
+            PLAYER_EPOCH,
+            self.bout.player(),
+            self.seq,
+            world.tick(),
+            frame,
+        );
+        if let Err(rejection) = self.session.submit(command) {
+            panic!("lệnh người chơi bị từ chối: {rejection:?}");
+        }
+        let report = self.session.step();
+        self.bout.observe(self.session.world(), &report);
+        Some(report)
+    }
+
+    /// Replay của trận tới tick hiện tại, có mốc hash cuối.
+    pub fn replay(&self) -> Replay {
+        self.session.replay()
+    }
+
+    pub fn verify(&self) -> Result<Verification, VerifyError> {
+        self.bout.verify(&self.session)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::input::Buttons;
+    use crate::protocol::{Action, Attack};
 
-    fn idle() -> InputFrame {
-        InputFrame::default()
-    }
+    const LIGHT: Action = Action::Attack(Attack::Light);
 
-    fn press(pressed: Buttons) -> InputFrame {
-        InputFrame {
-            pressed,
-            ..InputFrame::default()
+    fn press(action: Action) -> CommandFrame {
+        CommandFrame {
+            action: Some(action),
+            ..CommandFrame::IDLE
         }
     }
 
     #[test]
     fn autopilot_beats_the_boss_and_the_replay_verifies() {
         let mut battle = Battle::new(Mode::Boss, 1);
-        battle.set_autopilot(true);
+        battle.bout_mut().set_autopilot(true);
         while !battle.is_settled() && battle.world().tick() < 5 * 60 * TICK_HZ {
-            battle.step(idle());
+            battle.step(CommandFrame::IDLE);
         }
-        assert_eq!(battle.outcome(), Some(Outcome::Victory));
-        let boss = battle.tally(battle.rival());
+        let bout = battle.bout();
+        assert_eq!(bout.outcome(), Some(Outcome::Victory));
         assert!(matches!(
-            boss.last_hit_by,
-            Some(Cause::Action(id, _)) if id == battle.player()
+            bout.tally(bout.rival()).last_hit_by,
+            Some(Cause::Action(id, _)) if id == bout.player()
         ));
         assert_eq!(
-            boss.damage_taken,
-            battle.tally(battle.player()).damage_dealt
+            bout.tally(bout.rival()).damage_taken,
+            bout.tally(bout.player()).damage_dealt
         );
         let verified = battle.verify().unwrap();
         assert_eq!(verified.outcome, Some(Outcome::Victory));
@@ -421,83 +569,108 @@ mod tests {
     }
 
     #[test]
+    fn boss_phases_advance_as_it_loses_hp() {
+        let mut battle = Battle::new(Mode::Boss, 1);
+        battle.bout_mut().set_autopilot(true);
+        let mut seen = vec![battle.bout().boss_phase(battle.session()).unwrap()];
+        while !battle.is_settled() {
+            battle.step(CommandFrame::IDLE);
+            let phase = battle.bout().boss_phase(battle.session()).unwrap();
+            if seen.last() != Some(&phase) {
+                seen.push(phase);
+            }
+        }
+        assert_eq!(
+            seen,
+            [BossPhase::Recognize, BossPhase::Terrain, BossPhase::Combine]
+        );
+    }
+
+    #[test]
     fn settled_battle_stops_and_keeps_a_finite_replay() {
         let mut battle = Battle::new(Mode::Boss, 1);
-        while battle.outcome().is_none() {
-            battle.step(idle());
+        while battle.bout().outcome().is_none() {
+            battle.step(CommandFrame::IDLE);
         }
-        assert_eq!(battle.outcome(), Some(Outcome::Defeat));
+        assert_eq!(battle.bout().outcome(), Some(Outcome::Defeat));
         let downed_at = battle.world().tick();
         for _ in 0..3 * SETTLE_TICKS {
-            battle.step(idle());
+            battle.step(CommandFrame::IDLE);
         }
         assert!(battle.is_settled());
+        assert!(battle.step(CommandFrame::IDLE).is_none());
         assert_eq!(battle.world().tick(), downed_at + SETTLE_TICKS);
         assert_eq!(battle.replay().ticks, downed_at + SETTLE_TICKS);
         assert!(battle.verify().is_ok());
     }
 
     #[test]
-    fn manual_seq_is_stamped_so_switching_pilots_keeps_inputs_valid() {
+    fn switching_pilots_and_sparring_bot_keeps_every_command_valid() {
         let mut battle = Battle::new(Mode::Duel, 3);
         battle.toggle_sparring_bot();
-        assert_eq!(battle.sparring_bot(), Some(false));
+        assert_eq!(battle.bout().sparring_bot(battle.session()), Some(false));
         let mut rejected = 0;
         let mut started = 0;
         for tick in 0..240 {
-            // Client gửi seq luôn bằng 0; phiên vẫn chấp nhận vì tự đánh số.
             let frame = if tick % 40 == 0 {
-                press(Buttons::LIGHT)
+                press(LIGHT)
             } else {
-                idle()
+                CommandFrame::IDLE
             };
             if tick == 100 {
-                battle.set_autopilot(true);
+                battle.bout_mut().set_autopilot(true);
             }
             if tick == 160 {
-                battle.set_autopilot(false);
+                battle.bout_mut().set_autopilot(false);
                 battle.toggle_sparring_bot();
             }
-            for event in battle.step(frame) {
-                match event {
+            let player = battle.bout().player();
+            for record in battle.step(frame).unwrap().events {
+                match record.event {
                     Event::InputRejected { .. } => rejected += 1,
-                    Event::ActionStarted { fighter, .. } if fighter == battle.player() => {
-                        started += 1;
-                    }
+                    Event::ActionStarted { fighter, .. } if fighter == player => started += 1,
                     _ => {}
                 }
             }
         }
         assert_eq!(rejected, 0);
         assert!(started >= 3, "đòn tay trước và sau khi bot lái vẫn ra");
-        assert_eq!(battle.sparring_bot(), Some(true));
+        assert_eq!(battle.bout().sparring_bot(battle.session()), Some(true));
         assert!(battle.verify().is_ok());
     }
 
     #[test]
     fn rematch_advances_round_and_keeps_the_pilot() {
         let mut battle = Battle::new(Mode::Boss, 1);
-        battle.set_autopilot(true);
-        battle.step(idle());
+        battle.bout_mut().set_autopilot(true);
+        battle.step(CommandFrame::IDLE);
         let next = battle.rematch(Mode::Duel);
-        assert_eq!((next.mode(), next.round()), (Mode::Duel, 2));
-        assert!(next.autopilot());
+        assert_eq!((next.bout().mode(), next.bout().round()), (Mode::Duel, 2));
+        assert!(next.bout().autopilot());
         assert_eq!(next.world().tick(), 0);
-        assert_eq!(next.boss_phase(), None);
+        assert_eq!(next.bout().boss_phase(next.session()), None);
+        assert_eq!(next.bout().sparring_bot(next.session()), Some(true));
     }
 
     #[test]
-    fn tampered_world_is_reported() {
+    fn tampered_replay_is_reported() {
         let mut battle = Battle::new(Mode::Boss, 1);
         for _ in 0..90 {
-            battle.step(press(Buttons::LIGHT));
+            battle.step(press(LIGHT));
         }
         assert!(battle.verify().is_ok());
-        // Mốc hash cuối lấy từ trạng thái đã bị sửa, nên chạy lại báo lệch ở tick cuối.
-        battle.world.fighters_mut()[0].hp -= 1;
+        // Bỏ cú bấm đầu tiên của người chơi: chạy lại lệch ở mốc hash đầu tiên.
+        let mut replay = battle.replay();
+        let player = battle.bout().player();
+        let first = replay
+            .inputs
+            .iter()
+            .position(|(_, id, frame)| *id == player && !frame.pressed.is_empty())
+            .unwrap();
+        replay.inputs[first].2.pressed = Buttons::NONE;
         assert!(matches!(
-            battle.verify(),
-            Err(VerifyError::Replay(ReplayError::Desync { tick: 90, .. }))
+            battle.bout().check(&replay, battle.world().state_hash()),
+            Err(VerifyError::Replay(ReplayError::Desync { tick: 60, .. }))
         ));
     }
 }

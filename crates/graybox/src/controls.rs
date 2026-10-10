@@ -8,7 +8,7 @@
 use bevy::prelude::*;
 use myva_sim::Buttons;
 
-use crate::session::{GraySet, HostCommand, Intent, Session};
+use crate::fight::{GraySet, HostCommand, Intent, Match};
 
 pub const MOVE_LEFT: [KeyCode; 2] = [KeyCode::KeyA, KeyCode::ArrowLeft];
 pub const MOVE_RIGHT: [KeyCode; 2] = [KeyCode::KeyD, KeyCode::ArrowRight];
@@ -120,7 +120,7 @@ fn gamepads(pads: Query<&Gamepad>, mut intent: ResMut<Intent>) {
 fn shortcuts(
     keys: Res<ButtonInput<KeyCode>>,
     pads: Query<&Gamepad>,
-    session: Res<Session>,
+    game: Res<Match>,
     mut commands: MessageWriter<HostCommand>,
 ) {
     for (key, command) in SHORTCUTS {
@@ -132,7 +132,7 @@ fn shortcuts(
     let start = pads
         .iter()
         .any(|pad| pad.just_pressed(GamepadButton::Start));
-    if start && session.battle.outcome().is_some() {
+    if start && game.bout.outcome().is_some() {
         commands.write(HostCommand::Rematch);
     }
     if pads

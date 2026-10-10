@@ -10,7 +10,8 @@
 
 use bevy::prelude::*;
 use bevy::render::view::screenshot::{Screenshot, save_to_disk};
-use myva_graybox::{CombatLog, GrayboxPlugin, Mode, Session};
+use myva_gameplay::SimSession;
+use myva_graybox::{ArenaView, CombatLog, GrayboxPlugin, Match, Mode};
 use myva_sim::Phase;
 
 /// Đợi qua nhịp mở màn và vài đòn để ảnh có HUD, log và vùng báo.
@@ -70,14 +71,14 @@ fn main() -> AppExit {
     app.run()
 }
 
-fn save_replay(session: &Session, log: &mut CombatLog) -> Option<String> {
-    let battle = &session.battle;
+fn save_replay(game: &Match, sim: &SimSession, log: &mut CombatLog) -> Option<String> {
+    let replay = sim.get().replay();
     let path = format!(
         "graybox-r{}-t{}.myva-replay",
-        battle.round(),
-        battle.world().tick()
+        game.bout.round(),
+        replay.ticks
     );
-    match std::fs::write(&path, battle.replay().to_text()) {
+    match std::fs::write(&path, replay.to_text()) {
         Ok(()) => {
             log.note(format!("Da luu replay: {path}"));
             Some(path)
@@ -91,7 +92,8 @@ fn save_replay(session: &Session, log: &mut CombatLog) -> Option<String> {
 
 fn native_keys(
     keys: Res<ButtonInput<KeyCode>>,
-    session: Res<Session>,
+    game: Res<Match>,
+    sim: Res<SimSession>,
     mut log: ResMut<CombatLog>,
     mut exit: MessageWriter<AppExit>,
 ) {
@@ -99,30 +101,33 @@ fn native_keys(
         exit.write(AppExit::Success);
     }
     if keys.just_pressed(KeyCode::F9) {
-        save_replay(&session, &mut log);
+        save_replay(&game, &sim, &mut log);
     }
 }
 
 fn take_screenshot(
     mut commands: Commands,
     mut capture: ResMut<Capture>,
-    session: Res<Session>,
+    arena: Res<ArenaView>,
+    game: Res<Match>,
+    sim: Res<SimSession>,
     mut log: ResMut<CombatLog>,
     mut exit: MessageWriter<AppExit>,
 ) {
-    let battle = &session.battle;
     match capture.taken_at {
         None => {
-            let boss = battle.world().fighter(battle.rival());
-            let winding_up = matches!(boss.action(), Some((_, _, Phase::Startup)));
-            if battle.world().tick() >= SCREENSHOT_AFTER_TICK && winding_up {
+            let winding_up = arena
+                .fighter(game.bout.rival())
+                .and_then(|boss| boss.action)
+                .is_some_and(|action| action.phase == Phase::Startup);
+            if arena.tick >= SCREENSHOT_AFTER_TICK && winding_up {
                 commands
                     .spawn(Screenshot::primary_window())
                     .observe(save_to_disk(capture.path.clone()));
-                if let Some(path) = save_replay(&session, &mut log) {
+                if let Some(path) = save_replay(&game, &sim, &mut log) {
                     println!("ảnh: {}; replay: {path}", capture.path);
                 }
-                capture.taken_at = Some(battle.world().tick());
+                capture.taken_at = Some(arena.tick);
             }
         }
         Some(_) => {

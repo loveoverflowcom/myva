@@ -1,14 +1,14 @@
 //! HUD bằng UI node: thanh sinh lực, sức bền, năng lượng và Mạch, hồi chiêu ba thuật, pha boss,
-//! kết quả trận cùng trạng thái kiểm chứng replay, log sự kiện và phím. HUD chỉ đọc `Session`;
-//! thanh HP là thể hiện, sát thương do lõi tính (combat.md §9).
+//! kết quả trận cùng trạng thái kiểm chứng replay, log sự kiện và phím. HUD chỉ đọc [`ArenaView`]
+//! (component mirror) và [`Match`]; thanh HP là thể hiện, sát thương do lõi tính (combat.md §9).
 
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
-use myva_sim::battle::{Battle, Cause, Mode, Outcome};
-use myva_sim::meter::Meter;
-use myva_sim::{Fighter, FighterId};
+use myva_sim::FighterId;
+use myva_sim::battle::{Cause, Mode, Outcome};
+use myva_sim::snapshot::{FighterView, Gauge};
 
-use crate::session::{CombatLog, Session};
+use crate::fight::{ArenaView, CombatLog, Match};
 use crate::text::{ascii, phase_label, seconds, state_label};
 use crate::touch::TouchUi;
 
@@ -240,29 +240,28 @@ fn spawn_hud(mut commands: Commands) {
         });
 }
 
-fn fill(meter: Meter) -> f32 {
-    meter.sub() as f32 / meter.max_sub().max(1) as f32
+fn fill(gauge: Gauge) -> f32 {
+    gauge.sub as f32 / gauge.max_sub.max(1) as f32
 }
 
-fn fighter_for(battle: &Battle, side: Side) -> &Fighter {
-    let id = match side {
-        Side::Player => battle.player(),
-        Side::Rival => battle.rival(),
-    };
-    battle.world().fighter(id)
+fn fighter_for<'a>(arena: &'a ArenaView, game: &Match, side: Side) -> Option<&'a FighterView> {
+    arena.fighter(match side {
+        Side::Player => game.bout.player(),
+        Side::Rival => game.bout.rival(),
+    })
 }
 
 #[allow(clippy::type_complexity)]
 fn update_bars(
-    session: Res<Session>,
+    arena: Res<ArenaView>,
+    game: Res<Match>,
     mut bars: Query<(&HudBar, &mut Node), (Without<HudFill>, Without<HudLabel>)>,
     mut fills: Query<(&HudFill, &mut Node), (Without<HudBar>, Without<HudLabel>)>,
     mut labels: Query<(&HudLabel, &mut Text)>,
 ) {
-    let battle = &session.battle;
     let shown = |side: Side, kind: BarKind| {
         // Boss không dùng sức bền, năng lượng hay Mạch.
-        kind == BarKind::Hp || !fighter_for(battle, side).kit.body.armored
+        kind == BarKind::Hp || fighter_for(&arena, &game, side).is_some_and(|f| !f.kit.body.armored)
     };
     for (bar, mut node) in &mut bars {
         let display = if shown(bar.0, bar.1) {
@@ -275,9 +274,11 @@ fn update_bars(
         }
     }
     for (bar, mut node) in &mut fills {
-        let fighter = fighter_for(battle, bar.0);
+        let Some(fighter) = fighter_for(&arena, &game, bar.0) else {
+            continue;
+        };
         let fraction = match bar.1 {
-            BarKind::Hp => fighter.hp as f32 / fighter.kit.body.max_hp as f32,
+            BarKind::Hp => fighter.hp as f32 / fighter.max_hp.max(1) as f32,
             BarKind::Stamina => fill(fighter.stamina),
             BarKind::Energy => fill(fighter.energy),
             BarKind::Mach => fill(fighter.mach),
@@ -285,9 +286,11 @@ fn update_bars(
         node.width = Val::Percent(fraction.clamp(0.0, 1.0) * 100.0);
     }
     for (label, mut text) in &mut labels {
-        let fighter = fighter_for(battle, label.0);
+        let Some(fighter) = fighter_for(&arena, &game, label.0) else {
+            continue;
+        };
         let value = match label.1 {
-            BarKind::Hp => format!("HP {}/{}", fighter.hp, fighter.kit.body.max_hp),
+            BarKind::Hp => format!("HP {}/{}", fighter.hp, fighter.max_hp),
             BarKind::Stamina => format!("Suc ben {}", fighter.stamina.points()),
             BarKind::Energy => format!("Nang luong {}", fighter.energy.points()),
             BarKind::Mach => format!(
@@ -302,7 +305,7 @@ fn update_bars(
     }
 }
 
-fn cooldowns(fighter: &Fighter) -> String {
+fn cooldowns(fighter: &FighterView) -> String {
     ["Q", "E", "R"]
         .iter()
         .zip(fighter.kit.skills.iter().zip(fighter.cooldowns))
@@ -320,32 +323,32 @@ fn cooldowns(fighter: &Fighter) -> String {
         .join("  ")
 }
 
-fn cause(session: &Session, id: FighterId) -> Option<String> {
-    let battle = &session.battle;
-    Some(match battle.tally(id).last_hit_by? {
+fn cause(arena: &ArenaView, game: &Match, id: FighterId) -> Option<String> {
+    Some(match game.bout.tally(id).last_hit_by? {
         Cause::Action(attacker, action) => format!(
             "{} cua {}",
-            ascii(battle.world().fighter(attacker).kit.spec(action).name),
-            session.name(attacker)
+            ascii(arena.fighter(attacker)?.kit.spec(action).name),
+            game.name(attacker)
         ),
-        Cause::Counter(counterer) => format!("phan cong cua {}", session.name(counterer)),
+        Cause::Counter(counterer) => format!("phan cong cua {}", game.name(counterer)),
     })
 }
 
-fn banner(session: &Session) -> Option<(String, String)> {
-    let battle = &session.battle;
-    let outcome = battle.outcome()?;
-    let title = match (outcome, battle.mode()) {
+fn banner(arena: &ArenaView, game: &Match) -> Option<(String, String)> {
+    let outcome = game.bout.outcome()?;
+    let title = match (outcome, game.bout.mode()) {
         (Outcome::Victory, Mode::Boss) => "THANG - Ke Giu Dap bi ha",
         (Outcome::Victory, Mode::Duel) => "THANG",
         (Outcome::Defeat, _) => "THUA",
         (Outcome::Draw, _) => "HOA",
     };
     let mut lines = Vec::new();
-    if let Some(cause) = cause(session, battle.player()).filter(|_| outcome != Outcome::Victory) {
+    if let Some(cause) =
+        cause(arena, game, game.bout.player()).filter(|_| outcome != Outcome::Victory)
+    {
         lines.push(format!("Bi ha boi {cause}"));
     }
-    lines.push(match &session.verification {
+    lines.push(match &game.verification {
         None => "Dang kiem chung replay...".to_owned(),
         Some(Ok(v)) => format!(
             "Replay da kiem chung: {} tick, {} moc hash, hash {:016x}",
@@ -364,20 +367,20 @@ fn set(text: &mut Text, value: String) {
 }
 
 fn update_texts(
-    session: Res<Session>,
+    arena: Res<ArenaView>,
+    game: Res<Match>,
     log: Res<CombatLog>,
     mut texts: Query<(&HudText, &mut Text)>,
     mut banner_box: Single<&mut Visibility, With<BannerBox>>,
     mut thresholds: Query<&mut Visibility, (With<Threshold>, Without<BannerBox>)>,
 ) {
-    let battle = &session.battle;
-    let banner = banner(&session);
+    let banner = banner(&arena, &game);
     **banner_box = if banner.is_some() {
         Visibility::Inherited
     } else {
         Visibility::Hidden
     };
-    let boss = battle.boss_phase().is_some();
+    let boss = arena.boss_phase.is_some();
     for mut visibility in &mut thresholds {
         *visibility = if boss {
             Visibility::Inherited
@@ -388,33 +391,33 @@ fn update_texts(
     for (slot, mut text) in &mut texts {
         let value = match slot.0 {
             Slot::Header(side) => {
-                let fighter = fighter_for(battle, side);
-                let mut header = format!(
-                    "{}  {}",
-                    session.name(fighter.id),
-                    ascii(fighter.kit.lineage)
-                );
-                if side == Side::Player && battle.autopilot() {
+                let Some(fighter) = fighter_for(&arena, &game, side) else {
+                    continue;
+                };
+                let mut header =
+                    format!("{}  {}", game.name(fighter.id), ascii(fighter.kit.lineage));
+                if side == Side::Player && game.bout.autopilot() {
                     header.push_str("  [bot B1 lai]");
                 }
-                if side == Side::Rival && battle.sparring_bot() == Some(false) {
+                if side == Side::Rival && arena.sparring == Some(false) {
                     header.push_str("  [dung yen]");
                 }
                 header
             }
-            Slot::Detail(side) => {
-                let fighter = fighter_for(battle, side);
-                match (side, battle.boss_phase()) {
-                    (Side::Rival, Some(phase)) => phase_label(phase).to_owned(),
-                    _ => cooldowns(fighter),
-                }
-            }
-            Slot::State(side) => state_label(fighter_for(battle, side)),
+            Slot::Detail(side) => match (side, arena.boss_phase) {
+                (Side::Rival, Some(phase)) => phase_label(phase).to_owned(),
+                _ => fighter_for(&arena, &game, side)
+                    .map(cooldowns)
+                    .unwrap_or_default(),
+            },
+            Slot::State(side) => fighter_for(&arena, &game, side)
+                .map(state_label)
+                .unwrap_or_default(),
             Slot::Banner => banner.as_ref().map(|b| b.0.clone()).unwrap_or_default(),
             Slot::BannerDetail => banner.as_ref().map(|b| b.1.clone()).unwrap_or_default(),
             Slot::Log => log.lines.iter().cloned().collect::<Vec<_>>().join("\n"),
             Slot::Legend => {
-                let mode = match battle.sparring_bot() {
+                let mode = match arena.sparring {
                     None => "M dau tap".to_owned(),
                     Some(on) => {
                         format!("M danh boss  B bot ({})", if on { "bat" } else { "tat" })
@@ -428,9 +431,9 @@ fn update_texts(
             }
             Slot::Meta => format!(
                 "Vong {}  tick {}  hash {:016x}",
-                battle.round(),
-                battle.world().tick(),
-                battle.world().state_hash()
+                game.bout.round(),
+                arena.tick,
+                arena.hash
             ),
         };
         set(&mut text, value);
@@ -443,14 +446,14 @@ fn update_texts(
 fn update_layout(
     window: Single<&Window, With<PrimaryWindow>>,
     touch: Res<TouchUi>,
-    session: Res<Session>,
+    arena: Res<ArenaView>,
     mut desktop: Query<&mut Visibility, With<DesktopOnly>>,
     mut bars: Query<(&HudBar, &mut Node)>,
     mut labels: Query<(&HudLabel, &mut Visibility), Without<DesktopOnly>>,
     mut lines: Query<(&HudText, &mut Node), Without<HudBar>>,
 ) {
     let compact = touch.visible || window.height() < COMPACT_HEIGHT;
-    let boss = session.battle.boss_phase().is_some();
+    let boss = arena.boss_phase.is_some();
     for (slot, mut node) in &mut lines {
         let hidden = compact
             && match slot.0 {

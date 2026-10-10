@@ -12,6 +12,7 @@ default = ["gamepad"]
 gamepad = ["bevy/bevy_gilrs"]
 
 [dependencies]
+myva-gameplay = { path = "../gameplay" }
 myva-sim = { path = "../sim" }
 # Tập feature tối thiểu cho cảnh 2D hình khối, HUD chữ ASCII và ba loại input (ADR 0003).
 bevy = { version = "=0.20.0", default-features = false, features = [

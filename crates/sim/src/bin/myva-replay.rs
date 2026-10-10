@@ -12,7 +12,7 @@ use std::process::ExitCode;
 
 use myva_sim::battle::{Battle, Mode};
 use myva_sim::replay::Replay;
-use myva_sim::{Event, FighterId, InputFrame, World};
+use myva_sim::{CommandFrame, Event, FighterId, World};
 
 const USAGE: &str = "dùng: myva-replay <verify|events|demo> <file>";
 
@@ -126,10 +126,10 @@ fn describe(world: &World, event: &Event) -> String {
 
 fn demo(path: &str) -> Result<(), String> {
     let mut battle = Battle::new(Mode::Boss, 1);
-    battle.set_autopilot(true);
+    battle.bout_mut().set_autopilot(true);
     let limit = 5 * 60 * 60;
     while !battle.is_settled() && battle.world().tick() < limit {
-        battle.step(InputFrame::default());
+        battle.step(CommandFrame::IDLE);
     }
     let replay = battle.replay();
     std::fs::write(path, replay.to_text()).map_err(|e| format!("{path}: {e}"))?;
@@ -137,8 +137,8 @@ fn demo(path: &str) -> Result<(), String> {
     println!(
         "đã ghi {} tick vào {path}; người chơi {} HP, boss {} HP",
         replay.ticks,
-        world.fighter(battle.player()).hp,
-        world.fighter(battle.rival()).hp
+        world.fighter(battle.bout().player()).hp,
+        world.fighter(battle.bout().rival()).hp
     );
     Ok(())
 }

@@ -3,9 +3,10 @@ use std::cell::{Cell, RefCell};
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use bevy::winit::WinitSettings;
+use myva_gameplay::SimSession;
 use myva_graybox::telemetry::{self, HostStatus};
 use myva_graybox::touch::{self, ShowTouchControls, TouchUi};
-use myva_graybox::{GraySet, GrayboxPlugin, HostCommand, Session};
+use myva_graybox::{ArenaView, GraySet, GrayboxPlugin, HostCommand, Match};
 use wasm_bindgen::prelude::*;
 
 /// Hộp thư giữa JS và Bevy. JS chỉ xếp lệnh và đọc chuỗi đã chuẩn bị; mọi thay đổi trận xảy ra
@@ -122,8 +123,11 @@ fn pull_bridge(
     });
 }
 
+#[allow(clippy::too_many_arguments)]
 fn push_bridge(
-    session: Res<Session>,
+    game: Res<Match>,
+    arena: Res<ArenaView>,
+    sim: Res<SimSession>,
     touch_ui: Res<TouchUi>,
     time: Res<Time<Virtual>>,
     gamepads: Query<(), With<Gamepad>>,
@@ -138,13 +142,13 @@ fn push_bridge(
         touch: touch_ui.visible,
         gamepads: gamepads.iter().count(),
     };
-    let json = telemetry::json(&session, status);
+    let json = telemetry::json(&game, &arena, status);
     let layout = touch::layout(window.size()).to_json();
     BRIDGE.with_borrow_mut(|bridge| {
         bridge.telemetry = json;
         bridge.touch_layout = layout;
         if std::mem::take(&mut bridge.replay_requested) {
-            bridge.replay = Some(session.battle.replay().to_text());
+            bridge.replay = Some(sim.get().replay().to_text());
         }
     });
 }

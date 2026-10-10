@@ -10,7 +10,7 @@ use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use myva_sim::Buttons;
 
-use crate::session::{GraySet, HostCommand, Intent, Session};
+use crate::fight::{ArenaView, GraySet, HostCommand, Intent, Match};
 
 /// Đường kính vùng chạm tối thiểu, px logic.
 pub const MIN_TARGET: f32 = 48.0;
@@ -473,11 +473,12 @@ fn place(node: &mut Node, pad: Pad) {
     node.height = Val::Px(pad.radius * 2.0);
 }
 
-#[allow(clippy::type_complexity)]
+#[allow(clippy::type_complexity, clippy::too_many_arguments)]
 fn draw_controls(
     ui: Res<TouchUi>,
     pad: Res<TouchPad>,
-    session: Res<Session>,
+    arena: Res<ArenaView>,
+    game: Res<Match>,
     mut root: Single<&mut Visibility, With<TouchRoot>>,
     mut keys: Query<(&TouchKey, &mut Node, &mut BackgroundColor), Without<StickPart>>,
     mut sticks: Query<(&StickPart, &mut Node, &mut BackgroundColor), Without<TouchKey>>,
@@ -488,7 +489,9 @@ fn draw_controls(
         return;
     };
     **root = Visibility::Inherited;
-    let fighter = session.battle.world().fighter(session.battle.player());
+    let Some(fighter) = arena.fighter(game.bout.player()) else {
+        return;
+    };
     for (key, mut node, mut background) in &mut keys {
         place(&mut node, layout.pad(key.0));
         let blocked = match key.0 {

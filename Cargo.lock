@@ -4041,6 +4041,7 @@ name = "myva-graybox"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "myva-gameplay",
  "myva-sim",
 ]
 
@@ -4056,6 +4057,7 @@ name = "myva-web-game"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "myva-gameplay",
  "myva-graybox",
  "wasm-bindgen",
 ]

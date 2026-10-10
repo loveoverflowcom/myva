@@ -1,5 +1,6 @@
-//! Thể hiện arena bằng hình khối. [`shapes`] là hàm thuần từ trạng thái trận ra danh sách hình,
-//! nên test được không cần GPU; Bevy chỉ chép danh sách vào một pool sprite mỗi khung hình.
+//! Thể hiện arena bằng hình khối. [`shapes`] là hàm thuần từ [`ArenaView`] (khung nhìn đọc từ
+//! component mirror) ra danh sách hình, nên test được không cần GPU bằng snapshot của lõi; Bevy
+//! chỉ chép danh sách vào một pool sprite mỗi khung hình. Popup trúng đòn đọc `SimEvent`.
 //!
 //! Đơn vị thế giới là pixel thiết kế (mili-pixel của lõi chia 1.000), trục y hướng lên, nền ở
 //! y = 0. Vùng đòn của boss luôn hiện trong lúc báo và khi đánh: không có hitbox ẩn (combat.md
@@ -7,12 +8,13 @@
 
 use bevy::camera::ScalingMode;
 use bevy::prelude::*;
-use myva_sim::battle::Battle;
+use myva_gameplay::SimEvent;
 use myva_sim::fighter::ARENA_WIDTH;
 use myva_sim::kit::Rect as SimRect;
-use myva_sim::{Event, Fighter, FighterId, PX, Phase, State};
+use myva_sim::snapshot::FighterView;
+use myva_sim::{Event, FighterId, PX, Phase, State};
 
-use crate::session::{CombatLog, Session};
+use crate::fight::{ArenaView, Match};
 
 pub const BACKGROUND: Color = Color::srgb(0.11, 0.12, 0.15);
 const FLOOR: Color = Color::srgb(0.17, 0.18, 0.22);
@@ -122,12 +124,10 @@ fn world(rect: SimRect) -> (Vec2, Vec2) {
 
 /// Vùng một đòn đang báo hoặc đang đánh: hộp đòn cận chiến, hoặc với đòn bắn đạn là chỗ đạn sinh
 /// ra kéo dài hết tầm bay. `None` khi đòn không gây damage (ví dụ tư thế phản công).
-pub fn threat_zone(fighter: &Fighter) -> Option<(SimRect, Phase, f32)> {
-    let (_, spec, phase) = fighter.action()?;
-    let State::Attack { elapsed, .. } = fighter.state else {
-        return None;
-    };
-    let progress = (elapsed as f32 / spec.startup.max(1) as f32).min(1.0);
+pub fn threat_zone(fighter: &FighterView) -> Option<(SimRect, Phase, f32)> {
+    let (action, spec) = fighter.action.zip(fighter.action_spec())?;
+    let phase = action.phase;
+    let progress = (action.elapsed as f32 / spec.startup.max(1) as f32).min(1.0);
     match spec.projectile {
         Some(projectile) if phase == Phase::Startup => {
             let spawn = projectile
@@ -157,8 +157,8 @@ pub fn threat_zone(fighter: &Fighter) -> Option<(SimRect, Phase, f32)> {
     }
 }
 
-/// Toàn bộ hình của một khung hình.
-pub fn shapes(battle: &Battle, show_boxes: bool, canvas: &mut Canvas) {
+/// Toàn bộ hình của một khung hình; `player` là nhân vật người chơi điều khiển.
+pub fn shapes(arena: &ArenaView, player: FighterId, show_boxes: bool, canvas: &mut Canvas) {
     let width = px(ARENA_WIDTH);
     canvas.fill(
         Layer::Arena,
@@ -185,15 +185,14 @@ pub fn shapes(battle: &Battle, show_boxes: bool, canvas: &mut Canvas) {
         GROUND_LINE,
     );
 
-    let world = battle.world();
-    for fighter in world.fighters() {
+    for fighter in &arena.fighters {
         // Boss luôn báo vùng đòn; đòn của người chơi chỉ hiện khi bật hitbox.
         if fighter.kit.body.armored || show_boxes {
             telegraph(canvas, fighter);
         }
     }
-    for projectile in world.projectiles() {
-        let color = if projectile.owner == battle.player() {
+    for projectile in &arena.projectiles {
+        let color = if projectile.owner == player {
             PLAYER
         } else {
             STARTUP
@@ -201,12 +200,12 @@ pub fn shapes(battle: &Battle, show_boxes: bool, canvas: &mut Canvas) {
         canvas.rect(Layer::Projectile, projectile.rect, color);
         canvas.outline(Layer::Projectile, projectile.rect, Color::WHITE);
     }
-    for fighter in world.fighters() {
-        body(canvas, fighter, base_color(battle, fighter.id), show_boxes);
+    for fighter in &arena.fighters {
+        body(canvas, fighter, base_color(player, fighter), show_boxes);
     }
 }
 
-fn telegraph(canvas: &mut Canvas, fighter: &Fighter) {
+fn telegraph(canvas: &mut Canvas, fighter: &FighterView) {
     let Some((zone, phase, progress)) = threat_zone(fighter) else {
         return;
     };
@@ -232,35 +231,34 @@ fn telegraph(canvas: &mut Canvas, fighter: &Fighter) {
     }
 }
 
-fn base_color(battle: &Battle, id: FighterId) -> Color {
-    let fighter = battle.world().fighter(id);
-    match (id == battle.player(), fighter.kit.body.armored) {
+fn base_color(player: FighterId, fighter: &FighterView) -> Color {
+    match (fighter.id == player, fighter.kit.body.armored) {
         (true, _) => PLAYER,
         (false, true) => BOSS,
         (false, false) => RIVAL,
     }
 }
 
-fn body(canvas: &mut Canvas, fighter: &Fighter, base: Color, show_boxes: bool) {
-    let mut color = match (fighter.state, fighter.action()) {
-        (_, Some((_, _, Phase::Startup))) => STARTUP,
-        (_, Some((_, _, Phase::Active))) => ACTIVE,
-        (_, Some((_, _, Phase::Recovery))) => RECOVERY,
+fn body(canvas: &mut Canvas, fighter: &FighterView, base: Color, show_boxes: bool) {
+    let mut color = match (fighter.state, fighter.action.map(|a| a.phase)) {
+        (_, Some(Phase::Startup)) => STARTUP,
+        (_, Some(Phase::Active)) => ACTIVE,
+        (_, Some(Phase::Recovery)) => RECOVERY,
         (State::Guard { .. }, _) => GUARD,
         (State::Hitstun { .. }, _) => HITSTUN,
         (State::GuardBreak { .. }, _) => GUARD_BREAK,
         (State::Downed, _) => DOWNED,
         _ => base,
     };
-    if fighter.is_invulnerable() && fighter.state != State::Downed {
+    if fighter.invulnerable && fighter.state != State::Downed {
         color = color.with_alpha(0.35);
     }
-    let hurtbox = fighter.hurtbox();
+    let hurtbox = fighter.hurtbox;
     canvas.rect(Layer::Body, hurtbox, color);
     // Dải màu riêng ở chân giữ nhận diện hai bên khi cùng ra đòn.
     let (min, max) = world(hurtbox);
     canvas.fill(Layer::Detail, min, Vec2::new(max.x, min.y + 8.0), base);
-    if let Some(perfect) = fighter.guard_active() {
+    if let Some(perfect) = fighter.guard {
         let outline = if perfect { Color::WHITE } else { GUARD };
         let pad = 4 * PX;
         canvas.outline(
@@ -288,7 +286,7 @@ fn body(canvas: &mut Canvas, fighter: &Fighter, base: Color, show_boxes: bool) {
     );
     if show_boxes {
         canvas.outline(Layer::Debug, hurtbox, HURTBOX);
-        if let Some(attack) = fighter.attack_box() {
+        if let Some(attack) = fighter.attack_box {
             canvas.rect(Layer::Debug, attack, ACTIVE.with_alpha(0.35));
             canvas.outline(Layer::Debug, attack, ACTIVE);
         }
@@ -307,7 +305,7 @@ pub fn plugin(app: &mut App) {
 #[derive(Component)]
 pub struct ArenaCamera;
 
-fn spawn_camera(mut commands: Commands, session: Res<Session>) {
+fn spawn_camera(mut commands: Commands) {
     commands.spawn((
         ArenaCamera,
         Camera2d,
@@ -322,9 +320,10 @@ fn spawn_camera(mut commands: Commands, session: Res<Session>) {
         // Cảnh chỉ có sprite màu phẳng, không cần LUT tonemapping.
         bevy::core_pipeline::tonemapping::Tonemapping::None,
     ));
-    for fighter in session.battle.world().fighters() {
+    // Trận graybox luôn có hai bên: người chơi và đối thủ.
+    for id in 0..2 {
         commands.spawn((
-            NameTag(fighter.id),
+            NameTag(FighterId(id)),
             Text2d::new(""),
             TextFont::from_font_size(22.0),
             TextColor(Color::WHITE),
@@ -342,13 +341,14 @@ struct ShapePool {
 
 fn draw_shapes(
     mut commands: Commands,
-    session: Res<Session>,
+    arena: Res<ArenaView>,
+    game: Res<Match>,
     mut pool: ResMut<ShapePool>,
     mut sprites: Query<(&mut Sprite, &mut Transform, &mut Visibility)>,
     mut canvas: Local<Canvas>,
 ) {
     canvas.shapes.clear();
-    shapes(&session.battle, session.show_boxes, &mut canvas);
+    shapes(&arena, game.bout.player(), game.show_boxes, &mut canvas);
     while pool.sprites.len() < canvas.shapes.len() {
         let entity = commands
             .spawn((Sprite::default(), Transform::default(), Visibility::Hidden))
@@ -378,24 +378,22 @@ fn draw_shapes(
 struct NameTag(FighterId);
 
 fn name_tags(
-    session: Res<Session>,
+    arena: Res<ArenaView>,
+    game: Res<Match>,
     mut tags: Query<(&NameTag, &mut Text2d, &mut Transform, &mut TextColor)>,
 ) {
-    let world = session.battle.world();
     for (tag, mut text, mut transform, mut color) in &mut tags {
-        // Đổi chế độ có thể đổi số nhân vật; tag thừa bị ẩn bằng chuỗi rỗng.
-        let Some(fighter) = world.fighters().get(usize::from(tag.0.0)) else {
+        let Some(fighter) = arena.fighter(tag.0) else {
             text.0.clear();
             continue;
         };
         // Tên ngắn để hai tag không chồng nhau khi đứng sát; HUD ghi đủ truyền thừa.
-        let label = session.name(fighter.id);
+        let label = game.name(fighter.id);
         if text.0 != label {
             text.0 = label.to_owned();
         }
-        let top = fighter.hurtbox();
-        transform.translation = Vec3::new(px(fighter.x), px(top.y1) + 10.0, 5.0);
-        color.0 = base_color(&session.battle, fighter.id);
+        transform.translation = Vec3::new(px(fighter.x), px(fighter.hurtbox.y1) + 10.0, 5.0);
+        color.0 = base_color(game.bout.player(), fighter);
     }
 }
 
@@ -404,10 +402,13 @@ struct Popup {
     age: f32,
 }
 
-fn spawn_popups(mut commands: Commands, session: Res<Session>, mut log: ResMut<CombatLog>) {
-    let world = session.battle.world();
-    for (_, event) in log.fresh.drain(..) {
-        let (target, label, color) = match event {
+fn spawn_popups(
+    mut commands: Commands,
+    arena: Res<ArenaView>,
+    mut events: MessageReader<SimEvent>,
+) {
+    for SimEvent(record) in events.read() {
+        let (target, label, color) = match record.event {
             Event::Hit { target, damage, .. } => (target, format!("-{damage}"), Color::WHITE),
             Event::Blocked {
                 target, perfect, ..
@@ -427,16 +428,15 @@ fn spawn_popups(mut commands: Commands, session: Res<Session>, mut log: ResMut<C
             | Event::StatusEnded { .. }
             | Event::Interacted { .. } => continue,
         };
-        let Some(fighter) = world.fighters().get(usize::from(target.0)) else {
+        let Some(fighter) = arena.fighter(target) else {
             continue;
         };
-        let top = px(fighter.hurtbox().y1);
         commands.spawn((
             Popup { age: 0.0 },
             Text2d::new(label),
             TextFont::from_font_size(28.0),
             TextColor(color),
-            Transform::from_xyz(px(fighter.x), top + 40.0, 6.0),
+            Transform::from_xyz(px(fighter.x), px(fighter.hurtbox.y1) + 40.0, 6.0),
         ));
     }
 }
@@ -461,24 +461,44 @@ fn animate_popups(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use myva_sim::battle::Mode;
-    use myva_sim::{Buttons, InputFrame};
+    use myva_sim::battle::{Battle, Mode};
+    use myva_sim::protocol::{Action, Attack, CommandFrame};
 
     fn layers(battle: &Battle, show_boxes: bool) -> Vec<Layer> {
         let mut canvas = Canvas::default();
-        shapes(battle, show_boxes, &mut canvas);
+        shapes(
+            &ArenaView::of(battle),
+            battle.bout().player(),
+            show_boxes,
+            &mut canvas,
+        );
         canvas.shapes.iter().map(|(layer, _)| *layer).collect()
+    }
+
+    fn rival(battle: &Battle) -> FighterView {
+        ArenaView::of(battle)
+            .fighter(battle.bout().rival())
+            .unwrap()
+            .clone()
+    }
+
+    fn rival_phase(battle: &Battle) -> Option<Phase> {
+        rival(battle).action.map(|a| a.phase)
+    }
+
+    fn press(action: Action) -> CommandFrame {
+        CommandFrame {
+            action: Some(action),
+            ..CommandFrame::IDLE
+        }
     }
 
     /// Chạy tới khi boss bắt đầu đòn đầu tiên.
     fn boss_winding_up() -> Battle {
         let mut battle = Battle::new(Mode::Boss, 1);
-        battle.set_autopilot(true);
-        while !matches!(
-            battle.world().fighter(battle.rival()).action(),
-            Some((_, _, Phase::Startup))
-        ) {
-            battle.step(InputFrame::default());
+        battle.bout_mut().set_autopilot(true);
+        while rival_phase(&battle) != Some(Phase::Startup) {
+            battle.step(CommandFrame::IDLE);
         }
         battle
     }
@@ -490,7 +510,7 @@ mod tests {
         assert!(drawn.contains(&Layer::Telegraph));
         assert!(drawn.contains(&Layer::TelegraphProgress));
         assert!(!drawn.contains(&Layer::Debug), "hitbox debug tắt mặc định");
-        let (zone, phase, progress) = threat_zone(battle.world().fighter(battle.rival())).unwrap();
+        let (zone, phase, progress) = threat_zone(&rival(&battle)).unwrap();
         assert_eq!(phase, Phase::Startup);
         assert!(progress < 0.1);
         assert!(zone.x1 > zone.x0);
@@ -499,17 +519,12 @@ mod tests {
     #[test]
     fn telegraph_zone_matches_the_hitbox_that_lands() {
         let mut battle = boss_winding_up();
-        let boss = battle.world().fighter(battle.rival()).clone();
-        let (zone, ..) = threat_zone(&boss).unwrap();
-        while !matches!(
-            battle.world().fighter(battle.rival()).action(),
-            Some((_, _, Phase::Active))
-        ) {
-            battle.step(InputFrame::default());
+        let (zone, ..) = threat_zone(&rival(&battle)).unwrap();
+        while rival_phase(&battle) != Some(Phase::Active) {
+            battle.step(CommandFrame::IDLE);
         }
-        let active = battle.world().fighter(battle.rival());
         assert_eq!(
-            active.attack_box(),
+            rival(&battle).attack_box,
             Some(zone),
             "vùng báo trùng hộp đòn thật"
         );
@@ -520,10 +535,7 @@ mod tests {
     fn player_attack_boxes_only_show_with_debug() {
         let mut battle = Battle::new(Mode::Duel, 1);
         battle.toggle_sparring_bot();
-        battle.step(InputFrame {
-            pressed: Buttons::LIGHT,
-            ..InputFrame::default()
-        });
+        battle.step(press(Action::Attack(Attack::Light)));
         assert!(!layers(&battle, false).contains(&Layer::Telegraph));
         let debug = layers(&battle, true);
         assert!(debug.contains(&Layer::Telegraph));
@@ -534,11 +546,9 @@ mod tests {
     fn projectile_telegraph_covers_its_flight_lane() {
         let mut battle = Battle::new(Mode::Duel, 1);
         battle.toggle_sparring_bot();
-        battle.step(InputFrame {
-            pressed: Buttons::SKILL1,
-            ..InputFrame::default()
-        });
-        let player = battle.world().fighter(battle.player());
+        battle.step(press(Action::Skill(0)));
+        let arena = ArenaView::of(&battle);
+        let player = arena.fighter(battle.bout().player()).unwrap();
         let (lane, phase, _) = threat_zone(player).unwrap();
         assert_eq!(phase, Phase::Startup);
         let spec = player.kit.skills[0].projectile.unwrap();

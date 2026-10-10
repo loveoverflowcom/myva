@@ -12,6 +12,7 @@ crate-type = ["cdylib", "rlib"]
 # Feature Bevy do myva-graybox chọn (thêm webgl2 trên wasm32); crate này chỉ dựng cửa sổ canvas.
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 bevy = { version = "=0.20.0", default-features = false, features = ["bevy_winit", "bevy_window"] }
+myva-gameplay = { path = "../gameplay" }
 myva-graybox = { path = "../graybox" }
 wasm-bindgen = "=0.2.129"
 
