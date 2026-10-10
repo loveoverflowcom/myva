@@ -115,6 +115,16 @@ pub struct AttackBox(pub Option<Rect>);
 #[component(immutable)]
 pub struct Invulnerable(pub bool);
 
+/// Đứng trên nền (không nhảy, không rơi).
+#[derive(Component, Clone, Copy, Debug, PartialEq, Eq)]
+#[component(immutable)]
+pub struct Grounded(pub bool);
+
+/// Thế đỡ đã có hiệu lực: `Some(true)` trong cửa sổ đỡ hoàn hảo.
+#[derive(Component, Clone, Copy, Debug, PartialEq, Eq)]
+#[component(immutable)]
+pub struct GuardWindow(pub Option<bool>);
+
 /// `seq` lớn nhất lõi đã áp dụng, để client hòa giải input dự đoán.
 #[derive(Component, Clone, Copy, Debug, PartialEq, Eq)]
 #[component(immutable)]
