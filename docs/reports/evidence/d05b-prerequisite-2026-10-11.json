@@ -1,0 +1,55 @@
+{
+  "status": "PASS",
+  "removed_scopes": {
+    "cantos/target/debug/.fingerprint": 16920576,
+    "cantos/target/debug/build": 58507264,
+    "cantos/target/debug/deps": 2526601216,
+    "cantos/target/debug/examples": 0,
+    "cantos/target/debug/incremental": 1574404096,
+    "cantos/target/wasm32-unknown-unknown/debug": 865951744
+  },
+  "disk_before": {
+    "total_bytes": 245107195904,
+    "used_bytes": 243604684800,
+    "free_bytes": 1502511104
+  },
+  "disk_after": {
+    "total_bytes": 245107195904,
+    "used_bytes": 238644318208,
+    "free_bytes": 6462877696
+  },
+  "preservation_metadata_and_small_file_hashes_match": true,
+  "git_status_unchanged": true,
+  "active_open_files": 0,
+  "ollama": "NOT_FOUND",
+  "no_source_assets_docs_git_lockfiles_or_volumes_removed": true,
+  "whole_target_clean": false,
+  "date": "2026-10-11",
+  "kind": "prerequisite_cleanup_merge_checkpoint",
+  "repository": "https://github.com/loveoverflowcom/myva",
+  "pr15": {
+    "url": "https://github.com/loveoverflowcom/myva/pull/15",
+    "head_sha": "a34e6d7f71882f5c2399ca2a41b5e7209d462048",
+    "merge_sha": "50772e0f76f0f41fd2d3b61e39c40ad0ddd305d7",
+    "method": "merge",
+    "premerge_rust_check": "PASS",
+    "run_id": 38070151488
+  },
+  "pr16": {
+    "url": "https://github.com/loveoverflowcom/myva/pull/16",
+    "head_sha": "6687677bb27c7bc9b1084d33a049f2f885859ea6",
+    "merge_sha": "33c77e1e7e507c8a76723c14fa9731f4b5b45875",
+    "method": "merge",
+    "base_retargeted_to": "develop",
+    "premerge_rust_check": "PASS",
+    "run_id": 38077147163
+  },
+  "develop_sha": "33c77e1e7e507c8a76723c14fa9731f4b5b45875",
+  "issues_10_11_12_13": "OPEN_verified_after_merges",
+  "d05a": "BLOCKED_missing",
+  "parent_execution_window": "CANTOS_GRANTED_MYVA_LIGHT_ONLY_UNTIL_FURTHER_NOTICE",
+  "heavy_builds_benchmarks_soak": "NOT_RUN",
+  "user_local_changes_preserved": true,
+  "coordination": "Parent granted Cantos its installation/build/benchmark window. MyVa may finish the independent draft PR using light work only; no heavy build/soak/capture until parent authorizes a later window. D05-A predecessor remains outside approved scope.",
+  "process_checkpoint": "No matching MyVa/Cantos/Rust/Ollama/curl/wget build/download processes at post-cleanup snapshot; not continuous monitoring."
+}

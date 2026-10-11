@@ -12,7 +12,7 @@ Số `010`, `020`, ... biểu thị **thứ tự khuyến nghị hiện tại**,
 | D02 / [010](010-native-feasibility.md) / [#10](https://github.com/loveoverflowcom/myva/issues/10) | Bevy native trong CMP | Android/iOS thật; surface, shell navigation, input, lifecycle, packaging | D01; thay #1 cũ |
 | D03 / [#11](https://github.com/loveoverflowcom/myva/issues/11) | Bevy WASM + Leptos | Load, resize/focus, bridge, route teardown và browser evidence | D01; song song D02 |
 | D04 / [#12](https://github.com/loveoverflowcom/myva/issues/12) | ECS + simulation headless | Adapter core, schedule/schema, replay/invariant không GPU | Boundary D01; không chờ mobile production |
-| D05 / [#13](https://github.com/loveoverflowcom/myva/issues/13) | 2D pipeline + performance/QA | Assets, memory/build size/frame time đo thật | D02/D03 theo platform đã qua gate |
+| D05 / [015](015-bevy-asset-baseline.md) / [#13](https://github.com/loveoverflowcom/myva/issues/13) | 2D pipeline + performance/QA | Assets, memory/build size/frame time đo thật | D05-A chưa triển khai; D02/D03 theo platform đã qua gate |
 | [020](020-combat-graybox.md) / #2 | Combat và boss graybox Bevy | Một kit, một arena, replay và điều khiển touch | D04; web qua D03, mobile qua D02 tương ứng |
 | [030](030-economy-simulator.md) / #3 | Simulator tài nguyên | Invariant, công thức, demand shocks và ledger được đo | Độc lập engine; có thể song song |
 | [040](040-vertical-slice.md) / #4 | Slice Bến Lau | Vòng chơi 20–30 phút, 3 kit, tải asset và solo progress | 020/030 và D02/D03/D05 cho platform tương ứng |
