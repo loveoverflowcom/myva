@@ -13,6 +13,8 @@ Leptos tiếp tục sở hữu web shell; Compose Multiplatform tiếp tục s�
 
 Lúc chốt ADR, `crates/graybox` còn là **mã Macroquad lịch sử**. [#12](https://github.com/loveoverflowcom/myva/issues/12) xây foundation ECS/headless, còn [#2](https://github.com/loveoverflowcom/myva/issues/2) chuyển client combat. D01/D02/D03 không tự mở rộng sang viết lại boss hoặc toàn bộ gameplay. **Cập nhật 2026-10-10:** #2 đã chuyển graybox sang Bevy trước khi #12 hoàn thành, dùng adapter fixed tick tạm thời trong graybox. **2026-10-11:** adapter tạm bị gỡ; graybox chạy trên `GameplayPlugin` của #12. Xem [báo cáo combat](../reports/combat-graybox.md).
 
+Sau [refactor repository](../technical/repository-layout.md), graybox và pure core hiện ở `packages`, entry web ở `apps/web`. Đường dẫn lịch sử trên và evidence theo revision cũ giữ nguyên; vị trí hiện hành bên dưới không đổi quyết định engine hoặc gate platform.
+
 ## Ownership và boundary đã chốt
 
 ```mermaid
@@ -44,7 +46,7 @@ Pin trực tiếp trong manifest và commit `Cargo.lock`; dùng `rust-toolchain.
 | CMP/Kotlin | CMP `1.12.0`, Kotlin/Compose compiler `2.4.20`, activity-compose `1.12.4` | D02 đã compile/package Android shell phương án B; runtime/device và iOS chưa được xác nhận |
 | Android/iOS tooling | Theo [báo cáo native](../reports/native-feasibility.md) và manifest prototype | Version build standalone không chứng minh CMP embedding |
 
-D03 bật nhóm feature web cần cho cảnh 2D nhỏ: `std`, `async_executor`, `bevy_asset`, `bevy_log`, `bevy_color`, `bevy_camera`, `bevy_core_pipeline`, `bevy_render`, `bevy_sprite`, `bevy_sprite_render`, `bevy_window`, `bevy_winit`, `webgl2`; feature input/format chỉ thêm khi source sử dụng. Manifest của `crates/web-game` là danh sách chính xác khi build. Từ #2, feature dùng chung nằm ở `crates/graybox/Cargo.toml` và thêm `bevy_text`, `bevy_ui`, `bevy_ui_render`, `default_font`, `keyboard`, `touch`, `gamepad`, `bevy_gilrs` vì HUD và ba loại input dùng chúng; bản native thêm `x11`, `multi_threaded`. Từ D05-A, `png` dùng chung cho native và web để giải mã atlas ([asset-pipeline](../technical/asset-pipeline.md)). Không bật `default` (gồm 2D, 3D, UI, audio) hoặc umbrella `2d` chỉ vì tên phù hợp: chúng kéo thêm plugin/platform ngoài cảnh spike [S2]. WebGL2 là cấu hình D03 cần đo, không khóa backend mobile hay loại bỏ thử nghiệm WebGPU tương lai.
+D03 bật nhóm feature web cần cho cảnh 2D nhỏ: `std`, `async_executor`, `bevy_asset`, `bevy_log`, `bevy_color`, `bevy_camera`, `bevy_core_pipeline`, `bevy_render`, `bevy_sprite`, `bevy_sprite_render`, `bevy_window`, `bevy_winit`, `webgl2`; feature input/format chỉ thêm khi source sử dụng. Manifest của `apps/web/game` là danh sách chính xác khi build. Từ #2, feature dùng chung nằm ở `packages/graybox/Cargo.toml` và thêm `bevy_text`, `bevy_ui`, `bevy_ui_render`, `default_font`, `keyboard`, `touch`, `gamepad`, `bevy_gilrs` vì HUD và ba loại input dùng chúng; bản native thêm `x11`, `multi_threaded`. Từ D05-A, `png` dùng chung cho native và web để giải mã atlas ([asset-pipeline](../technical/asset-pipeline.md)). Không bật `default` (gồm 2D, 3D, UI, audio) hoặc umbrella `2d` chỉ vì tên phù hợp: chúng kéo thêm plugin/platform ngoài cảnh spike [S2]. WebGL2 là cấu hình D03 cần đo, không khóa backend mobile hay loại bỏ thử nghiệm WebGPU tương lai.
 
 Plugin Bevy và runtime skeletal 2D cần kiểm phiên bản, license, target và ngân sách riêng; không kế thừa plugin bất kỳ vì có cùng tên major. Các feature native như `android-game-activity`, lựa chọn activity/backend và ABI không được suy từ feature web.
 
@@ -65,7 +67,7 @@ Source audit D02 tìm blocker cụ thể ở winit `0.30.13`: runner iOS kiểm 
 | Hạng mục | Trạng thái | Bằng chứng / phần chưa chứng minh | Owner tiếp theo |
 | --- | --- | --- | --- |
 | Bevy 0.20 và feature/MSRV | KNOWN | Manifest registry và source tag `v0.20.0` [S1–S4] | D01, người nâng dependency |
-| Pure Rust simulation/economy hiện hữu | KNOWN về boundary | `crates/sim`, `crates/economy` | #2 và #3 |
+| Pure Rust simulation/economy hiện hữu | KNOWN về boundary | `packages/sim`, `packages/economy` | #2 và #3 |
 | ECS headless + core adapter | KNOWN headless; client render UNKNOWN | Fixed tick, mirror, authority và replay chạy không GPU; native ECS và lõi WASM cùng hash trên fixture ([D04](../technical/gameplay-foundation.md#9-bằng-chứng)). Client Bevy, prediction và mạng chưa chạy | D04 / #12, #2 |
 | Web canvas API và CSR | KNOWN về API | Bevy `Window.canvas`, `fit_canvas_to_parent`; Leptos CSR [S7–S8] | D03 / #11 |
 | Web shell + Bevy end-to-end | KNOWN trong Chrome desktop; matrix còn thiếu | 30 vòng navigation, focus/touch emulation và lỗi tải đã kiểm tra; browser mobile thật, presentation FPS/GPU và audio còn thiếu trong [báo cáo D03](../reports/web-feasibility.md) | D03 / #11 |

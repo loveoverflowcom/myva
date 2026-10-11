@@ -1,6 +1,14 @@
 [workspace]
 resolver = "3"
-members = ["crates/*"]
+members = [
+    "apps/web/shell",
+    "apps/web/game",
+    "packages/sim",
+    "packages/gameplay",
+    "packages/economy",
+    "packages/assets",
+    "packages/graybox",
+]
 
 [workspace.package]
 version = "0.1.0"

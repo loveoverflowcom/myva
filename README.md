@@ -30,17 +30,40 @@ Các con số trong tài liệu là giả thuyết thiết kế cần đo bằng
 
 ## Mã nguồn
 
+[Cấu trúc repository](docs/technical/repository-layout.md) là nguồn đúng về đường dẫn, ownership và dependency boundaries; [báo cáo refactor](docs/reports/repository-layout.md) ghi mapping, kiểm chứng và giới hạn của lần di chuyển.
+
+```text
+apps/web/
+├── shell/      # Leptos: DOM, navigation, IME
+├── game/       # Bevy WASM: canvas, runtime, input
+└── public/     # HTML, CSS, bootstrap và game document
+packages/
+├── sim/        # luật combat, session, protocol, replay
+├── gameplay/   # adapter Bevy ECS headless
+├── assets/     # format/validator 2D thuần Rust, CLI
+├── economy/    # ledger, budget và mô phỏng kinh tế
+└── graybox/    # client library và entry desktop hiện hữu
+assets/fixture/     # PNG, atlas/layout/manifest và provenance D05-A
+prototypes/native/  # Bevy/Winit và CMP feasibility
+docs/               # thiết kế, quyết định, báo cáo và work-plan
+benchmarks/         # cấu hình budget; không tự là phép đo
+scripts/            # build, serve và kiểm chứng
+tests/              # E2E web và report contract tests
+```
+
+`apps` chứa entry theo platform; `packages` chứa luật hoặc thư viện dùng chung. Bảy member Rust gồm năm package và hai entry web. CLI kiểm chứng và desktop graybox hiện đi cùng package của mình; native vẫn là prototype đến khi có bằng chứng Android/iOS thật. Contract types tiếp tục thuộc SSOT hiện có trong `sim`; việc tách contracts cần consumer/ABI cụ thể. `packages/assets` sở hữu format/validator, root `assets/fixture` giữ nội dung D05-A đã có; streaming/performance tiếp tục theo gate D05-B.
+
 Workspace Rust dùng toolchain `1.97.1` theo `rust-toolchain.toml`; Bevy `0.20.0` yêu cầu phiên bản này. Lõi simulation và economy được giữ độc lập renderer. Graybox combat đã chuyển từ Macroquad sang **Bevy** ở [#2](https://github.com/loveoverflowcom/myva/issues/2) và chạy trên nền ECS dùng chung của [#12](https://github.com/loveoverflowcom/myva/issues/12): `GameplayPlugin` gọi `Session::step` trong `FixedUpdate` 60 Hz, boss là `Controller` của phiên, cảnh và HUD đọc component mirror. Bằng chứng tự động không thay playtest người thật; xem [báo cáo combat](docs/reports/combat-graybox.md).
 
-| Crate | Vai trò |
+| Đường dẫn / crate | Vai trò |
 | --- | --- |
-| `crates/sim` (`myva-sim`) | Mô phỏng combat thuần Rust, bộ luật duy nhất: tick 60 Hz, số nguyên, kit Long Lưu, đạn, Slow, quái bùn có AI, NPC, boss Kẻ Giữ Đập, bot B0/B1, schema lệnh/sự kiện có version, phiên authoritative, replay và công cụ `myva-replay`. Không phụ thuộc Bevy hay renderer; build được cho wasm32. |
-| `crates/gameplay` (`myva-gameplay`) | Adapter Bevy ECS headless (`bevy_app`/`bevy_ecs`/`bevy_time` `=0.20.0`): `FixedUpdate` 60 Hz, mirror component bất biến, authority client/server, runner `myva-headless`. Không renderer/window/asset/audio. Xem [D04](docs/technical/gameplay-foundation.md). |
-| `crates/assets` (`myva-assets`) | Schema manifest/sprite sheet/bản đồ format v1 và validator asset 2D (hash, PNG, frame, pivot, clip, bundle, budget, provenance), CLI `myva-assets validate`. Không phụ thuộc Bevy; client dùng chung luật tài liệu. Xem [D05-A](docs/technical/asset-pipeline.md). |
-| `crates/economy` (`myva-economy`) | Sổ cái R/N/I/X/Q/Z, ngân sách theo giờ và bộ chạy headless `myva-econ-sim`. |
-| `crates/graybox` (`myva-graybox`) | Client graybox **Bevy** trên `GameplayPlugin`: đánh boss Kẻ Giữ Đập (mặc định) hoặc đấu tập với bot; fixture art D05-A qua `AssetServer` (phím G bật/tắt, lỗi tải giữ hình khối), vùng cảnh báo boss, HUD HP/sức bền/năng lượng/Mạch/hồi chiêu; bàn phím, gamepad và nút cảm ứng theo [combat.md §12](docs/design/combat.md#12-điều-khiển-và-khả-năng-tiếp-cận). Lib dùng chung cho web, bin cho native desktop; test đối chứng từng tick với lõi. |
-| `crates/web-shell` (`myva-web-shell`) | Leptos CSR shell: tên local, vào/rời trận, tạm dừng, đấu lại, đổi chế độ, bot đánh mẫu, tải replay, trạng thái tiếng Việt, chat/IME. Chưa có tài khoản hoặc server. |
-| `crates/web-game` (`myva-web-game`) | Entry WASM của graybox trong game document cùng origin; bridge v2 có version/session, canvas/runtime được hủy cùng iframe. |
+| `packages/sim` (`myva-sim`) | Mô phỏng combat thuần Rust, bộ luật duy nhất: tick 60 Hz, số nguyên, kit Long Lưu, đạn, Slow, quái bùn có AI, NPC, boss Kẻ Giữ Đập, bot B0/B1, schema lệnh/sự kiện có version, phiên authoritative, replay và công cụ `myva-replay`. Không phụ thuộc Bevy hay renderer; build được cho wasm32. |
+| `packages/gameplay` (`myva-gameplay`) | Adapter Bevy ECS headless (`bevy_app`/`bevy_ecs`/`bevy_time` `=0.20.0`): `FixedUpdate` 60 Hz, mirror component bất biến, authority client/server, runner `myva-headless`. Không renderer/window/asset/audio. Xem [D04](docs/technical/gameplay-foundation.md). |
+| `packages/assets` (`myva-assets`) | Schema manifest/sprite sheet/bản đồ format v1 và validator asset 2D (hash, PNG, frame, pivot, clip, bundle, budget, provenance), CLI `myva-assets validate`. Không phụ thuộc Bevy; client dùng chung luật tài liệu. Xem [D05-A](docs/technical/asset-pipeline.md). |
+| `packages/economy` (`myva-economy`) | Sổ cái R/N/I/X/Q/Z, ngân sách theo giờ và bộ chạy headless `myva-econ-sim`. |
+| `packages/graybox` (`myva-graybox`) | Client graybox **Bevy** trên `GameplayPlugin`: đánh boss Kẻ Giữ Đập (mặc định) hoặc đấu tập với bot; fixture art D05-A qua `AssetServer` (phím G bật/tắt, lỗi tải giữ hình khối), vùng cảnh báo boss, HUD HP/sức bền/năng lượng/Mạch/hồi chiêu; bàn phím, gamepad và nút cảm ứng theo [combat.md §12](docs/design/combat.md#12-điều-khiển-và-khả-năng-tiếp-cận). Lib dùng chung cho web, bin cho native desktop; test đối chứng từng tick với lõi. |
+| `apps/web/shell` (`myva-web-shell`) | Leptos CSR shell: tên local, vào/rời trận, tạm dừng, đấu lại, đổi chế độ, bot đánh mẫu, tải replay, trạng thái tiếng Việt, chat/IME. Chưa có tài khoản hoặc server. |
+| `apps/web/game` (`myva-web-game`) | Entry WASM của graybox trong game document cùng origin; bridge v2 có version/session, canvas/runtime được hủy cùng iframe. |
 
 ```bash
 cargo test --workspace

@@ -20,6 +20,8 @@ Bevy có sample native Android/iOS chính thức tại tag `v0.20.0`. Sample dù
 
 Các tên bên dưới là **vai trò logic**, không phải yêu cầu tạo sẵn mọi crate/service.
 
+Vị trí implementation và hướng dependency hiện có nằm trong [cấu trúc repository](repository-layout.md): entry web ở `apps/web`, core/adapter/client dùng chung ở `packages`, native feasibility ở `prototypes/native`.
+
 | Thành phần | Sở hữu | Không sở hữu |
 | --- | --- | --- |
 | Mô phỏng Rust thuần (`myva-sim`) | Luật di chuyển, collision, combat, cooldown, RNG có seed, AI, replay/headless | Window, texture, audio, truy cập DB |
@@ -44,7 +46,7 @@ flowchart TD
 
 Simulation nhận trạng thái, command và tick rồi trả trạng thái/sự kiện; server mới xác nhận command và kết quả online. Core thuần Rust là bộ luật duy nhất; [D04 / #12](https://github.com/loveoverflowcom/myva/issues/12) đã thêm schema lệnh/sự kiện versioned, fixed schedule `input → movement → collision → combat → status → events` trong `World::step`, domain entity ID khác Bevy `Entity`, và adapter `myva-gameplay` chỉ dùng `bevy_app`/`bevy_ecs`/`bevy_time` `=0.20.0` (không renderer/Winit/asset). Ownership, schedule, component và bằng chứng ở [nền gameplay ECS](gameplay-foundation.md).
 
-`crates/graybox` là client combat **Bevy** (#2) trên boundary của #12: `GameplayPlugin::new(Authority::Client)` chạy `Session::step` trong `FixedUpdate` 60 Hz; boss và bot đấu tập là `Controller` của phiên; input thiết bị vào `LocalInput` trước vòng fixed; cảnh/HUD đọc component mirror sau đó. `FighterId` là ID miền, `Entity` chỉ dùng trong process. Client không có server hay quyền authoritative; test đối chứng chạy cùng plugin không cửa sổ và so từng tick với lõi.
+`packages/graybox` là client combat **Bevy** (#2) trên boundary của #12: `GameplayPlugin::new(Authority::Client)` chạy `Session::step` trong `FixedUpdate` 60 Hz; boss và bot đấu tập là `Controller` của phiên; input thiết bị vào `LocalInput` trước vòng fixed; cảnh/HUD đọc component mirror sau đó. `FighterId` là ID miền, `Entity` chỉ dùng trong process. Client không có server hay quyền authoritative; test đối chứng chạy cùng plugin không cửa sổ và so từng tick với lõi.
 
 ## 3. Web: tách shell và game runtime
 

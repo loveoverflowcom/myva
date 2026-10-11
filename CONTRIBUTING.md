@@ -20,6 +20,8 @@
 
 Triển khai công việc ưu tiên trong [work-plan](docs/work-plan/README.md). Chọn ranh giới module từ prototype thực tế; giữ gameplay simulation không phụ thuộc renderer và client không sở hữu kinh tế online. Không mở rộng roster hoặc service ngoài consumer đang được kiểm chứng.
 
+Theo [cấu trúc repository](docs/technical/repository-layout.md), đặt entry platform trong `apps`, luật và thư viện dùng chung trong `packages`. `sim` giữ combat/session/protocol/replay; `gameplay` chỉ adapter ECS gọi core; `economy` giữ ledger/budget, reward online do server xác nhận. Shell web sở hữu DOM/navigation/IME, Bevy sở hữu canvas/render/game input. Giữ `prototypes/native` đến gate Android/iOS thật; chỉ tách desktop app, contract hoặc asset package khi có consumer và bằng chứng cần thiết trong [backlog boundaries](docs/work-plan/backlog/repository-boundaries.md).
+
 Các test nên bảo vệ luật hoặc lỗi có thể gây mất state, nhân đôi reward, sai budget và trải nghiệm điều khiển. Không chạy benchmark trên placeholder rồi gọi đó là năng lực của game thành phẩm.
 
 ## Kiểm tra tài liệu

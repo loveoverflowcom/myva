@@ -4,15 +4,17 @@
 
 Pipeline hiện thực hóa đường `nguồn có provenance → export → validate → pack → hash → manifest` của [assets-performance §4](assets-performance.md#4-pipeline-nội-dung-đề-xuất). Asset chỉ thể hiện trạng thái của lõi: hitbox, thời gian đòn, replay và giao thức không đọc file asset nào.
 
+Đường dẫn hiện hành theo [repository layout](repository-layout.md): schema/validator ở `packages/assets`, loader ở `packages/graybox`; nội dung `assets/fixture` và URL `game/assets/` giữ nguyên. Báo cáo/evidence D05-A vẫn mô tả named run revision và các command của run đó.
+
 ## 1. Thành phần
 
 | Phần | Vị trí | Vai trò |
 | --- | --- | --- |
 | Bộ sinh fixture | [`scripts/generate-asset-fixture.py`](../../scripts/generate-asset-fixture.py) | Vẽ placeholder bằng SDF (chỉ thư viện chuẩn Python), đóng gói atlas, ghi PNG, sheet/layout JSON và manifest có hash. `--check` vẽ lại và so pixel với file đã commit |
 | Fixture | [`assets/fixture/`](../../assets/fixture/README.md) | Long Lưu, boss Kẻ Giữ Đập, bản đồ Đập Cổ, VFX combat cơ bản; 4 bundle, 11 asset |
-| Schema + validator | `crates/assets` (`myva-assets`) | Kiểu dữ liệu format v1, luật không cần file (dùng chung với client) và kiểm thư mục (feature `fs`). Không phụ thuộc Bevy |
+| Schema + validator | `packages/assets` (`myva-assets`) | Kiểu dữ liệu format v1, luật không cần file (dùng chung với client) và kiểm thư mục (feature `fs`). Không phụ thuộc Bevy |
 | CLI | `myva-assets validate <manifest>` | In budget theo bundle và từng lỗi; mã thoát 1 khi có lỗi |
-| Loader Bevy | `crates/graybox/src/art.rs` | `AssetLoader` đọc manifest và từng file qua `AssetServer`, kiểm size + SHA-256 rồi mới parse/giải mã, chạy lại luật tài liệu; fallback hình khối khi lỗi |
+| Loader Bevy | `packages/graybox/src/art.rs` | `AssetLoader` đọc manifest và từng file qua `AssetServer`, kiểm size + SHA-256 rồi mới parse/giải mã, chạy lại luật tài liệu; fallback hình khối khi lỗi |
 
 ```bash
 python3 scripts/generate-asset-fixture.py           # ghi lại assets/fixture
@@ -74,7 +76,7 @@ Hash xác nhận toàn vẹn, không xác nhận nguồn: fixture được tải
 
 ## 5. Luật validator
 
-Mã lỗi ổn định (`myva_assets::Code`). Test asset lỗi trong `crates/assets/tests/validator.rs` phủ phần lớn mã; `bad_id`, `texture_format`, `sheet_texture`, `bundle_unknown_asset` và `bundle_duplicate_asset` chưa có test riêng.
+Mã lỗi ổn định (`myva_assets::Code`). Test asset lỗi trong `packages/assets/tests/validator.rs` phủ phần lớn mã; `bad_id`, `texture_format`, `sheet_texture`, `bundle_unknown_asset` và `bundle_duplicate_asset` chưa có test riêng.
 
 | Nhóm | Mã | Kiểm |
 | --- | --- | --- |
