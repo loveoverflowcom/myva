@@ -18,9 +18,12 @@ jobs:
       # gilrs (gamepad của graybox Bevy native) liên kết libudev trên Linux.
       - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libudev-dev
       - run: python3 scripts/check-docs.py
+      # Fixture asset D05-A: tái lập được từ script và qua validator (hash, frame, budget, provenance).
+      - run: python3 scripts/generate-asset-fixture.py --check
+      - run: cargo run --locked -p myva-assets -- validate assets/fixture/manifest.json
       - run: cargo fmt --all -- --check
       - run: cargo clippy --workspace --all-targets -- -D warnings
-      - run: cargo clippy --locked -p myva-web-shell -p myva-web-game -p myva-sim -p myva-gameplay --target wasm32-unknown-unknown -- -D warnings
+      - run: cargo clippy --locked -p myva-web-shell -p myva-web-game -p myva-sim -p myva-gameplay -p myva-assets --target wasm32-unknown-unknown -- -D warnings
       - run: cargo test --workspace
       # Lõi mô phỏng phải build được cho web mà không kéo theo renderer.
       - run: cargo build -p myva-sim --target wasm32-unknown-unknown

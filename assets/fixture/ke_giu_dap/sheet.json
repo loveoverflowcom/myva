@@ -1,0 +1,227 @@
+{
+  "format": "myva.sprite-sheet",
+  "format_version": 1,
+  "id": "ke_giu_dap.sheet",
+  "texture": "ke_giu_dap.atlas",
+  "role": "boss",
+  "plane": "gameplay",
+  "texels_per_unit": 2.0,
+  "padding": 4,
+  "extrude": 0,
+  "frames": [
+    {
+      "name": "idle.0",
+      "rect": [
+        4,
+        4,
+        400,
+        384
+      ],
+      "pivot": [
+        200,
+        368
+      ]
+    },
+    {
+      "name": "idle.1",
+      "rect": [
+        408,
+        4,
+        400,
+        384
+      ],
+      "pivot": [
+        200,
+        368
+      ]
+    },
+    {
+      "name": "idle.2",
+      "rect": [
+        812,
+        4,
+        400,
+        384
+      ],
+      "pivot": [
+        200,
+        368
+      ]
+    },
+    {
+      "name": "idle.3",
+      "rect": [
+        1216,
+        4,
+        400,
+        384
+      ],
+      "pivot": [
+        200,
+        368
+      ]
+    },
+    {
+      "name": "run.0",
+      "rect": [
+        4,
+        392,
+        400,
+        384
+      ],
+      "pivot": [
+        200,
+        368
+      ]
+    },
+    {
+      "name": "run.1",
+      "rect": [
+        408,
+        392,
+        400,
+        384
+      ],
+      "pivot": [
+        200,
+        368
+      ]
+    },
+    {
+      "name": "run.2",
+      "rect": [
+        812,
+        392,
+        400,
+        384
+      ],
+      "pivot": [
+        200,
+        368
+      ]
+    },
+    {
+      "name": "run.3",
+      "rect": [
+        1216,
+        392,
+        400,
+        384
+      ],
+      "pivot": [
+        200,
+        368
+      ]
+    },
+    {
+      "name": "attack.0",
+      "rect": [
+        4,
+        780,
+        400,
+        384
+      ],
+      "pivot": [
+        200,
+        368
+      ]
+    },
+    {
+      "name": "attack.1",
+      "rect": [
+        408,
+        780,
+        400,
+        384
+      ],
+      "pivot": [
+        200,
+        368
+      ]
+    },
+    {
+      "name": "attack.2",
+      "rect": [
+        812,
+        780,
+        400,
+        384
+      ],
+      "pivot": [
+        200,
+        368
+      ]
+    },
+    {
+      "name": "attack.3",
+      "rect": [
+        1216,
+        780,
+        400,
+        384
+      ],
+      "pivot": [
+        200,
+        368
+      ]
+    },
+    {
+      "name": "attack.4",
+      "rect": [
+        1620,
+        780,
+        400,
+        384
+      ],
+      "pivot": [
+        200,
+        368
+      ]
+    }
+  ],
+  "clips": [
+    {
+      "name": "idle",
+      "frames": [
+        "idle.0",
+        "idle.1",
+        "idle.2",
+        "idle.3"
+      ],
+      "frame_ms": 240,
+      "loop": true,
+      "events": []
+    },
+    {
+      "name": "run",
+      "frames": [
+        "run.0",
+        "run.1",
+        "run.2",
+        "run.3"
+      ],
+      "frame_ms": 200,
+      "loop": true,
+      "events": []
+    },
+    {
+      "name": "attack",
+      "frames": [
+        "attack.0",
+        "attack.1",
+        "attack.2",
+        "attack.3",
+        "attack.4"
+      ],
+      "frame_ms": 120,
+      "loop": false,
+      "events": [
+        {
+          "frame": 2,
+          "name": "hit"
+        }
+      ]
+    }
+  ],
+  "subject": "ke-giu-dap"
+}

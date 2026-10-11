@@ -12,9 +12,11 @@ default = ["gamepad"]
 gamepad = ["bevy/bevy_gilrs"]
 
 [dependencies]
+myva-assets = { path = "../assets", default-features = false }
 myva-gameplay = { path = "../gameplay" }
 myva-sim = { path = "../sim" }
-# Tập feature tối thiểu cho cảnh 2D hình khối, HUD chữ ASCII và ba loại input (ADR 0003).
+# Tập feature tối thiểu cho cảnh 2D, HUD chữ ASCII và ba loại input (ADR 0003); `png` giải mã
+# atlas của fixture art D05-A trên cả native và web.
 bevy = { version = "=0.20.0", default-features = false, features = [
     "std",
     "async_executor",
@@ -35,14 +37,14 @@ bevy = { version = "=0.20.0", default-features = false, features = [
     "keyboard",
     "touch",
     "gamepad",
+    "png",
 ] }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 bevy = { version = "=0.20.0", default-features = false, features = ["webgl2"] }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-# PNG chỉ dùng cho `--screenshot` của bản native.
-bevy = { version = "=0.20.0", default-features = false, features = ["multi_threaded", "png", "x11"] }
+bevy = { version = "=0.20.0", default-features = false, features = ["multi_threaded", "x11"] }
 
 [lints]
 workspace = true

@@ -1,0 +1,310 @@
+{
+  "format": "myva.sprite-sheet",
+  "format_version": 1,
+  "id": "long_luu.sheet",
+  "texture": "long_luu.atlas",
+  "role": "character",
+  "plane": "gameplay",
+  "texels_per_unit": 2.0,
+  "padding": 4,
+  "extrude": 0,
+  "frames": [
+    {
+      "name": "idle.0",
+      "rect": [
+        4,
+        4,
+        304,
+        256
+      ],
+      "pivot": [
+        144,
+        244
+      ]
+    },
+    {
+      "name": "idle.1",
+      "rect": [
+        312,
+        4,
+        304,
+        256
+      ],
+      "pivot": [
+        144,
+        244
+      ]
+    },
+    {
+      "name": "idle.2",
+      "rect": [
+        620,
+        4,
+        304,
+        256
+      ],
+      "pivot": [
+        144,
+        244
+      ]
+    },
+    {
+      "name": "idle.3",
+      "rect": [
+        928,
+        4,
+        304,
+        256
+      ],
+      "pivot": [
+        144,
+        244
+      ]
+    },
+    {
+      "name": "run.0",
+      "rect": [
+        4,
+        264,
+        304,
+        256
+      ],
+      "pivot": [
+        144,
+        244
+      ]
+    },
+    {
+      "name": "run.1",
+      "rect": [
+        312,
+        264,
+        304,
+        256
+      ],
+      "pivot": [
+        144,
+        244
+      ]
+    },
+    {
+      "name": "run.2",
+      "rect": [
+        620,
+        264,
+        304,
+        256
+      ],
+      "pivot": [
+        144,
+        244
+      ]
+    },
+    {
+      "name": "run.3",
+      "rect": [
+        928,
+        264,
+        304,
+        256
+      ],
+      "pivot": [
+        144,
+        244
+      ]
+    },
+    {
+      "name": "run.4",
+      "rect": [
+        1236,
+        264,
+        304,
+        256
+      ],
+      "pivot": [
+        144,
+        244
+      ]
+    },
+    {
+      "name": "run.5",
+      "rect": [
+        1544,
+        264,
+        304,
+        256
+      ],
+      "pivot": [
+        144,
+        244
+      ]
+    },
+    {
+      "name": "jump.0",
+      "rect": [
+        4,
+        524,
+        304,
+        256
+      ],
+      "pivot": [
+        144,
+        244
+      ]
+    },
+    {
+      "name": "jump.1",
+      "rect": [
+        312,
+        524,
+        304,
+        256
+      ],
+      "pivot": [
+        144,
+        244
+      ]
+    },
+    {
+      "name": "jump.2",
+      "rect": [
+        620,
+        524,
+        304,
+        256
+      ],
+      "pivot": [
+        144,
+        244
+      ]
+    },
+    {
+      "name": "attack.0",
+      "rect": [
+        4,
+        784,
+        304,
+        256
+      ],
+      "pivot": [
+        144,
+        244
+      ]
+    },
+    {
+      "name": "attack.1",
+      "rect": [
+        312,
+        784,
+        304,
+        256
+      ],
+      "pivot": [
+        144,
+        244
+      ]
+    },
+    {
+      "name": "attack.2",
+      "rect": [
+        620,
+        784,
+        304,
+        256
+      ],
+      "pivot": [
+        144,
+        244
+      ]
+    },
+    {
+      "name": "attack.3",
+      "rect": [
+        928,
+        784,
+        304,
+        256
+      ],
+      "pivot": [
+        144,
+        244
+      ]
+    },
+    {
+      "name": "attack.4",
+      "rect": [
+        1236,
+        784,
+        304,
+        256
+      ],
+      "pivot": [
+        144,
+        244
+      ]
+    }
+  ],
+  "clips": [
+    {
+      "name": "idle",
+      "frames": [
+        "idle.0",
+        "idle.1",
+        "idle.2",
+        "idle.3"
+      ],
+      "frame_ms": 180,
+      "loop": true,
+      "events": []
+    },
+    {
+      "name": "run",
+      "frames": [
+        "run.0",
+        "run.1",
+        "run.2",
+        "run.3",
+        "run.4",
+        "run.5"
+      ],
+      "frame_ms": 90,
+      "loop": true,
+      "events": []
+    },
+    {
+      "name": "jump",
+      "frames": [
+        "jump.0",
+        "jump.1",
+        "jump.2"
+      ],
+      "frame_ms": 120,
+      "loop": false,
+      "events": [
+        {
+          "frame": 1,
+          "name": "apex"
+        }
+      ]
+    },
+    {
+      "name": "attack",
+      "frames": [
+        "attack.0",
+        "attack.1",
+        "attack.2",
+        "attack.3",
+        "attack.4"
+      ],
+      "frame_ms": 80,
+      "loop": false,
+      "events": [
+        {
+          "frame": 2,
+          "name": "hit"
+        }
+      ]
+    }
+  ],
+  "subject": "long-luu"
+}

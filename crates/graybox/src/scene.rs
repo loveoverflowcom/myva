@@ -14,6 +14,7 @@ use myva_sim::kit::Rect as SimRect;
 use myva_sim::snapshot::FighterView;
 use myva_sim::{Event, FighterId, PX, Phase, State};
 
+use crate::art::{Art, ArtTables};
 use crate::fight::{ArenaView, Match};
 
 pub const BACKGROUND: Color = Color::srgb(0.11, 0.12, 0.15);
@@ -76,6 +77,18 @@ impl Layer {
             Layer::Debug => 4.0,
         }
     }
+}
+
+/// Phần hình khối đang được art thay (`art::cover`). Vùng báo, hitbox debug, viền đỡ và tường
+/// không bao giờ bị thay.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct Cover {
+    /// Nền và vạch nền do tile của bản đồ vẽ.
+    pub floor: bool,
+    /// Fighter có sprite: bỏ khối thân, dải chân và mắt.
+    pub bodies: Vec<FighterId>,
+    /// Đạn của fighter này do sprite vẽ.
+    pub projectiles_of: Option<FighterId>,
 }
 
 #[derive(Default)]
@@ -158,7 +171,13 @@ pub fn threat_zone(fighter: &FighterView) -> Option<(SimRect, Phase, f32)> {
 }
 
 /// Toàn bộ hình của một khung hình; `player` là nhân vật người chơi điều khiển.
-pub fn shapes(arena: &ArenaView, player: FighterId, show_boxes: bool, canvas: &mut Canvas) {
+pub fn shapes(
+    arena: &ArenaView,
+    player: FighterId,
+    show_boxes: bool,
+    cover: &Cover,
+    canvas: &mut Canvas,
+) {
     let width = px(ARENA_WIDTH);
     canvas.fill(
         Layer::Arena,
@@ -172,18 +191,20 @@ pub fn shapes(arena: &ArenaView, player: FighterId, show_boxes: bool, canvas: &m
         Vec2::new(width + VIEW_WIDTH, VIEW_HEIGHT * 2.0),
         WALL,
     );
-    canvas.fill(
-        Layer::Arena,
-        Vec2::new(0.0, -FLOOR_DEPTH),
-        Vec2::new(width, 0.0),
-        FLOOR,
-    );
-    canvas.fill(
-        Layer::Arena,
-        Vec2::new(0.0, -2.0),
-        Vec2::new(width, 0.0),
-        GROUND_LINE,
-    );
+    if !cover.floor {
+        canvas.fill(
+            Layer::Arena,
+            Vec2::new(0.0, -FLOOR_DEPTH),
+            Vec2::new(width, 0.0),
+            FLOOR,
+        );
+        canvas.fill(
+            Layer::Arena,
+            Vec2::new(0.0, -2.0),
+            Vec2::new(width, 0.0),
+            GROUND_LINE,
+        );
+    }
 
     for fighter in &arena.fighters {
         // Boss luôn báo vùng đòn; đòn của người chơi chỉ hiện khi bật hitbox.
@@ -192,6 +213,9 @@ pub fn shapes(arena: &ArenaView, player: FighterId, show_boxes: bool, canvas: &m
         }
     }
     for projectile in &arena.projectiles {
+        if cover.projectiles_of == Some(projectile.owner) {
+            continue;
+        }
         let color = if projectile.owner == player {
             PLAYER
         } else {
@@ -201,7 +225,14 @@ pub fn shapes(arena: &ArenaView, player: FighterId, show_boxes: bool, canvas: &m
         canvas.outline(Layer::Projectile, projectile.rect, Color::WHITE);
     }
     for fighter in &arena.fighters {
-        body(canvas, fighter, base_color(player, fighter), show_boxes);
+        let drawn = cover.bodies.contains(&fighter.id);
+        body(
+            canvas,
+            fighter,
+            base_color(player, fighter),
+            show_boxes,
+            drawn,
+        );
     }
 }
 
@@ -239,7 +270,8 @@ fn base_color(player: FighterId, fighter: &FighterView) -> Color {
     }
 }
 
-fn body(canvas: &mut Canvas, fighter: &FighterView, base: Color, show_boxes: bool) {
+/// `drawn`: sprite đã vẽ thân; chỉ giữ viền đỡ và hộp debug.
+fn body(canvas: &mut Canvas, fighter: &FighterView, base: Color, show_boxes: bool, drawn: bool) {
     let mut color = match (fighter.state, fighter.action.map(|a| a.phase)) {
         (_, Some(Phase::Startup)) => STARTUP,
         (_, Some(Phase::Active)) => ACTIVE,
@@ -254,10 +286,12 @@ fn body(canvas: &mut Canvas, fighter: &FighterView, base: Color, show_boxes: boo
         color = color.with_alpha(0.35);
     }
     let hurtbox = fighter.hurtbox;
-    canvas.rect(Layer::Body, hurtbox, color);
-    // Dải màu riêng ở chân giữ nhận diện hai bên khi cùng ra đòn.
     let (min, max) = world(hurtbox);
-    canvas.fill(Layer::Detail, min, Vec2::new(max.x, min.y + 8.0), base);
+    if !drawn {
+        canvas.rect(Layer::Body, hurtbox, color);
+        // Dải màu riêng ở chân giữ nhận diện hai bên khi cùng ra đòn.
+        canvas.fill(Layer::Detail, min, Vec2::new(max.x, min.y + 8.0), base);
+    }
     if let Some(perfect) = fighter.guard {
         let outline = if perfect { Color::WHITE } else { GUARD };
         let pad = 4 * PX;
@@ -278,12 +312,14 @@ fn body(canvas: &mut Canvas, fighter: &FighterView, base: Color, show_boxes: boo
     } else {
         min.x + 4.0
     };
-    canvas.fill(
-        Layer::Detail,
-        Vec2::new(eye_x, max.y - 18.0),
-        Vec2::new(eye_x + 8.0, max.y - 10.0),
-        BACKGROUND,
-    );
+    if !drawn {
+        canvas.fill(
+            Layer::Detail,
+            Vec2::new(eye_x, max.y - 18.0),
+            Vec2::new(eye_x + 8.0, max.y - 10.0),
+            BACKGROUND,
+        );
+    }
     if show_boxes {
         canvas.outline(Layer::Debug, hurtbox, HURTBOX);
         if let Some(attack) = fighter.attack_box {
@@ -339,16 +375,29 @@ struct ShapePool {
     sprites: Vec<Entity>,
 }
 
+#[allow(clippy::too_many_arguments)]
 fn draw_shapes(
     mut commands: Commands,
     arena: Res<ArenaView>,
     game: Res<Match>,
+    art: Option<Res<Art>>,
+    tables: Option<Res<ArtTables>>,
     mut pool: ResMut<ShapePool>,
     mut sprites: Query<(&mut Sprite, &mut Transform, &mut Visibility)>,
     mut canvas: Local<Canvas>,
 ) {
     canvas.shapes.clear();
-    shapes(&arena, game.bout.player(), game.show_boxes, &mut canvas);
+    let cover = match (art, tables) {
+        (Some(art), Some(tables)) => crate::art::cover(&art, &tables, &arena, game.bout.player()),
+        _ => Cover::default(),
+    };
+    shapes(
+        &arena,
+        game.bout.player(),
+        game.show_boxes,
+        &cover,
+        &mut canvas,
+    );
     while pool.sprites.len() < canvas.shapes.len() {
         let entity = commands
             .spawn((Sprite::default(), Transform::default(), Visibility::Hidden))
@@ -380,6 +429,7 @@ struct NameTag(FighterId);
 fn name_tags(
     arena: Res<ArenaView>,
     game: Res<Match>,
+    art: Option<Res<Art>>,
     mut tags: Query<(&NameTag, &mut Text2d, &mut Transform, &mut TextColor)>,
 ) {
     for (tag, mut text, mut transform, mut color) in &mut tags {
@@ -392,7 +442,8 @@ fn name_tags(
         if text.0 != label {
             text.0 = label.to_owned();
         }
-        transform.translation = Vec3::new(px(fighter.x), px(fighter.hurtbox.y1) + 10.0, 5.0);
+        let lift = art.as_deref().map_or(0.0, crate::art::tag_lift);
+        transform.translation = Vec3::new(px(fighter.x), px(fighter.hurtbox.y1) + 10.0 + lift, 5.0);
         color.0 = base_color(game.bout.player(), fighter);
     }
 }
@@ -470,6 +521,7 @@ mod tests {
             &ArenaView::of(battle),
             battle.bout().player(),
             show_boxes,
+            &Cover::default(),
             &mut canvas,
         );
         canvas.shapes.iter().map(|(layer, _)| *layer).collect()
@@ -540,6 +592,35 @@ mod tests {
         let debug = layers(&battle, true);
         assert!(debug.contains(&Layer::Telegraph));
         assert!(debug.contains(&Layer::Debug));
+    }
+
+    #[test]
+    fn art_cover_replaces_bodies_and_floor_but_keeps_telegraphs() {
+        let battle = boss_winding_up();
+        let arena = ArenaView::of(&battle);
+        let player = battle.bout().player();
+        let cover = Cover {
+            floor: true,
+            bodies: arena.fighters.iter().map(|f| f.id).collect(),
+            projectiles_of: Some(player),
+        };
+        let mut plain = Canvas::default();
+        shapes(&arena, player, false, &Cover::default(), &mut plain);
+        let mut covered = Canvas::default();
+        shapes(&arena, player, false, &cover, &mut covered);
+        let count =
+            |canvas: &Canvas, layer| canvas.shapes.iter().filter(|(l, _)| *l == layer).count();
+        assert_eq!(count(&covered, Layer::Body), 0, "sprite thay khối thân");
+        assert!(count(&plain, Layer::Body) > 0);
+        // Tường hai bên vẫn còn; nền và vạch nền do tile vẽ.
+        assert_eq!(count(&covered, Layer::Arena), 2);
+        for layer in [Layer::Telegraph, Layer::TelegraphProgress] {
+            assert_eq!(
+                count(&covered, layer),
+                count(&plain, layer),
+                "vùng báo không đổi"
+            );
+        }
     }
 
     #[test]

@@ -10,6 +10,7 @@ Người chơi trưởng thành từ một linh vực, học cách chiến đấ
 
 - **Giai đoạn:** thiết kế tiền sản xuất; tài liệu draft v0.1, ngày 2026-10-09.
 - **Hiện có:** review ý tưởng, GDD, World Bible, luật chiến đấu, kinh tế, kiến trúc đề xuất và kế hoạch kiểm chứng; lõi mô phỏng combat và kinh tế headless, nền ECS Bevy headless dùng chung luật lõi ([D04](docs/technical/gameplay-foundation.md)), graybox chiến đấu Bevy chơi được trên trình duyệt và native desktop (chưa qua playtest người thật), shell Leptos web và prototype native standalone. Phạm vi bằng chứng nằm trong báo cáo từng platform.
+- **Pipeline asset (D05-A):** fixture placeholder có provenance cho Long Lưu, Kẻ Giữ Đập, bản đồ Đập Cổ và VFX; manifest có hash/budget, validator và loader `AssetServer` trên native/web ([đặc tả](docs/technical/asset-pipeline.md), [báo cáo](docs/reports/asset-pipeline.md)).
 - **Chưa có:** gameplay hoàn chỉnh, server, asset thành phẩm hoặc tích hợp Bevy native vào CMP đã được xác nhận trên Android/iOS thật.
 - **Nhánh đầu tiên và mặc định:** `develop`. Các nhánh công việc và PR sau này lấy `develop` làm base.
 - **Tên tiếng Anh:** MyVa. **Tên tiếng Việt:** Thần Mạch.
@@ -35,8 +36,9 @@ Workspace Rust dùng toolchain `1.97.1` theo `rust-toolchain.toml`; Bevy `0.20.0
 | --- | --- |
 | `crates/sim` (`myva-sim`) | Mô phỏng combat thuần Rust, bộ luật duy nhất: tick 60 Hz, số nguyên, kit Long Lưu, đạn, Slow, quái bùn có AI, NPC, boss Kẻ Giữ Đập, bot B0/B1, schema lệnh/sự kiện có version, phiên authoritative, replay và công cụ `myva-replay`. Không phụ thuộc Bevy hay renderer; build được cho wasm32. |
 | `crates/gameplay` (`myva-gameplay`) | Adapter Bevy ECS headless (`bevy_app`/`bevy_ecs`/`bevy_time` `=0.20.0`): `FixedUpdate` 60 Hz, mirror component bất biến, authority client/server, runner `myva-headless`. Không renderer/window/asset/audio. Xem [D04](docs/technical/gameplay-foundation.md). |
+| `crates/assets` (`myva-assets`) | Schema manifest/sprite sheet/bản đồ format v1 và validator asset 2D (hash, PNG, frame, pivot, clip, bundle, budget, provenance), CLI `myva-assets validate`. Không phụ thuộc Bevy; client dùng chung luật tài liệu. Xem [D05-A](docs/technical/asset-pipeline.md). |
 | `crates/economy` (`myva-economy`) | Sổ cái R/N/I/X/Q/Z, ngân sách theo giờ và bộ chạy headless `myva-econ-sim`. |
-| `crates/graybox` (`myva-graybox`) | Client graybox **Bevy** trên `GameplayPlugin`: đánh boss Kẻ Giữ Đập (mặc định) hoặc đấu tập với bot; hình khối, vùng cảnh báo boss, HUD HP/sức bền/năng lượng/Mạch/hồi chiêu; bàn phím, gamepad và nút cảm ứng theo [combat.md §12](docs/design/combat.md#12-điều-khiển-và-khả-năng-tiếp-cận). Lib dùng chung cho web, bin cho native desktop; test đối chứng từng tick với lõi. |
+| `crates/graybox` (`myva-graybox`) | Client graybox **Bevy** trên `GameplayPlugin`: đánh boss Kẻ Giữ Đập (mặc định) hoặc đấu tập với bot; fixture art D05-A qua `AssetServer` (phím G bật/tắt, lỗi tải giữ hình khối), vùng cảnh báo boss, HUD HP/sức bền/năng lượng/Mạch/hồi chiêu; bàn phím, gamepad và nút cảm ứng theo [combat.md §12](docs/design/combat.md#12-điều-khiển-và-khả-năng-tiếp-cận). Lib dùng chung cho web, bin cho native desktop; test đối chứng từng tick với lõi. |
 | `crates/web-shell` (`myva-web-shell`) | Leptos CSR shell: tên local, vào/rời trận, tạm dừng, đấu lại, đổi chế độ, bot đánh mẫu, tải replay, trạng thái tiếng Việt, chat/IME. Chưa có tài khoản hoặc server. |
 | `crates/web-game` (`myva-web-game`) | Entry WASM của graybox trong game document cùng origin; bridge v2 có version/session, canvas/runtime được hủy cùng iframe. |
 
@@ -45,6 +47,8 @@ cargo test --workspace
 cargo run -p myva-gameplay --bin myva-headless -- --seed 7 --ticks 3600
 cargo run -p myva-sim --bin myva-replay -- verify myva-boss-r1-t3766.myva-replay
 cargo run -p myva-economy --bin myva-econ-sim -- --seed 7 --days 90 > econ.csv
+cargo run -p myva-assets -- validate assets/fixture/manifest.json
+python3 scripts/generate-asset-fixture.py --check
 ```
 
 `myva-headless` chạy phòng thử qua app ECS không cửa sổ/GPU và thoát lỗi nếu hash từng tick lệch lõi server-only. `./scripts/check-wasm-determinism.sh` (cần wasm-bindgen CLI `0.2.129` và Node) so cùng fixture giữa native và WASM.
@@ -69,10 +73,10 @@ CHROME_PATH=/usr/bin/google-chrome npm run test:web
 Chơi **native desktop** (Linux cần `libudev-dev` để build gamepad; `--no-default-features` bỏ gamepad):
 
 ```bash
-cargo run -p myva-graybox            # thêm --duel, --demo, --screenshot <file.png>
+cargo run -p myva-graybox            # thêm --duel, --demo, --no-art, --screenshot <file.png>
 ```
 
-Phím: A/D di chuyển, Space nhảy, Shift lướt, giữ L đỡ, J/K nhẹ/nặng, Q/E/R thuật; Enter đấu lại, M đổi chế độ, H hitbox. Bản native lưu replay bằng F9, bản web bằng nút “Tải replay”. Khi trận kết thúc, client tự chạy lại replay và hiện kết quả kiểm chứng; `myva-replay verify <file>` chạy lại ngoài client, `myva-replay events <file>` in từng đòn ra, trúng, đỡ theo tick. Replay ghi trên WASM kiểm chứng được bằng bản native cùng revision.
+Phím: A/D di chuyển, Space nhảy, Shift lướt, giữ L đỡ, J/K nhẹ/nặng, Q/E/R thuật; Enter đấu lại, M đổi chế độ, H hitbox, G bật/tắt art. Bản native lưu replay bằng F9, bản web bằng nút “Tải replay”. Khi trận kết thúc, client tự chạy lại replay và hiện kết quả kiểm chứng; `myva-replay verify <file>` chạy lại ngoài client, `myva-replay events <file>` in từng đòn ra, trúng, đỡ theo tick. Replay ghi trên WASM kiểm chứng được bằng bản native cùng revision.
 
 ## Đọc tài liệu
 

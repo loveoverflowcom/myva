@@ -1,0 +1,46 @@
+{
+  "format": "myva.map-layout",
+  "format_version": 1,
+  "id": "dap_co.layout",
+  "name": "Đập Cổ — đấu trường",
+  "ground": {
+    "sheet": "dap_co.ground",
+    "top": "ground.top",
+    "fill": "ground.fill",
+    "surface_y": 0,
+    "depth": 384
+  },
+  "layers": [
+    {
+      "sheet": "dap_co.backdrop",
+      "frame": "sky",
+      "z": -40,
+      "y": 0,
+      "stretch": [
+        1800,
+        560
+      ]
+    },
+    {
+      "sheet": "dap_co.backdrop",
+      "frame": "hills",
+      "z": -30,
+      "y": 150,
+      "repeat": true
+    },
+    {
+      "sheet": "dap_co.backdrop",
+      "frame": "dam",
+      "z": -20,
+      "y": 0,
+      "repeat": true
+    },
+    {
+      "sheet": "dap_co.backdrop",
+      "frame": "reeds",
+      "z": -10,
+      "y": 0,
+      "repeat": true
+    }
+  ]
+}
