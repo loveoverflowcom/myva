@@ -48,10 +48,11 @@ prototypes/native/  # Bevy/Winit và CMP feasibility
 docs/               # thiết kế, quyết định, báo cáo và work-plan
 benchmarks/         # cấu hình budget; không tự là phép đo
 scripts/            # build, serve và kiểm chứng
+xtask/              # entrypoint development, orchestration và lifecycle
 tests/              # E2E web và report contract tests
 ```
 
-`apps` chứa entry theo platform; `packages` chứa luật hoặc thư viện dùng chung. Bảy member Rust gồm năm package và hai entry web. CLI kiểm chứng và desktop graybox hiện đi cùng package của mình; native vẫn là prototype đến khi có bằng chứng Android/iOS thật. Contract types tiếp tục thuộc SSOT hiện có trong `sim`; việc tách contracts cần consumer/ABI cụ thể. `packages/assets` sở hữu format/validator, root `assets/fixture` giữ nội dung D05-A đã có; streaming/performance tiếp tục theo gate D05-B.
+`apps` chứa entry theo platform; `packages` chứa luật hoặc thư viện dùng chung. Tám member Rust gồm năm package, hai entry web và `xtask`. CLI kiểm chứng và desktop graybox hiện đi cùng package của mình; native vẫn là prototype đến khi có bằng chứng Android/iOS thật. Contract types tiếp tục thuộc SSOT hiện có trong `sim`; việc tách contracts cần consumer/ABI cụ thể. `packages/assets` sở hữu format/validator, root `assets/fixture` giữ nội dung D05-A đã có; streaming/performance tiếp tục theo gate D05-B.
 
 Workspace Rust dùng toolchain `1.97.1` theo `rust-toolchain.toml`; Bevy `0.20.0` yêu cầu phiên bản này. Lõi simulation và economy được giữ độc lập renderer. Graybox combat đã chuyển từ Macroquad sang **Bevy** ở [#2](https://github.com/loveoverflowcom/myva/issues/2) và chạy trên nền ECS dùng chung của [#12](https://github.com/loveoverflowcom/myva/issues/12): `GameplayPlugin` gọi `Session::step` trong `FixedUpdate` 60 Hz, boss là `Controller` của phiên, cảnh và HUD đọc component mirror. Bằng chứng tự động không thay playtest người thật; xem [báo cáo combat](docs/reports/combat-graybox.md).
 
@@ -66,29 +67,32 @@ Workspace Rust dùng toolchain `1.97.1` theo `rust-toolchain.toml`; Bevy `0.20.0
 | `apps/web/game` (`myva-web-game`) | Entry WASM của graybox trong game document cùng origin; bridge v2 có version/session, canvas/runtime được hủy cùng iframe. |
 
 ```bash
-cargo test --workspace
-cargo run -p myva-gameplay --bin myva-headless -- --seed 7 --ticks 3600
-cargo run -p myva-sim --bin myva-replay -- verify myva-boss-r1-t3766.myva-replay
-cargo run -p myva-economy --bin myva-econ-sim -- --seed 7 --days 90 > econ.csv
-cargo run -p myva-assets -- validate assets/fixture/manifest.json
-python3 scripts/generate-asset-fixture.py --check
+cargo xtask doctor
+cargo xtask verify repository
+cargo xtask run headless -- --seed 7 --ticks 3600
+cargo xtask run replay -- verify myva-boss-r1-t3766.myva-replay
+cargo xtask run economy -- --seed 7 --days 90 > econ.csv
+cargo xtask verify assets
+cargo xtask verify determinism
+cargo xtask preflight --changed-only
 ```
 
-`myva-headless` chạy phòng thử qua app ECS không cửa sổ/GPU và thoát lỗi nếu hash từng tick lệch lõi server-only. `./scripts/check-wasm-determinism.sh` (cần wasm-bindgen CLI `0.2.129` và Node) so cùng fixture giữa native và WASM.
+[`cargo xtask`](xtask/README.md) là entrypoint development theo [Single Surface Rule và build contract](docs/architecture/xtask-build-contract.md); scripts hiện hữu là primitives. `myva-headless` chạy phòng thử qua app ECS không cửa sổ/GPU và thoát lỗi nếu hash từng tick lệch lõi server-only. `verify determinism` (cần wasm-bindgen CLI `0.2.129` và Node) so cùng fixture giữa native và WASM. `preflight` đầy đủ và `ci` dùng chung planner; `--changed-only` chọn theo Git/dependency impact. `--dry-run` in plan với `NOT_RUN`; build tuần tự, mặc định hai job và tôn trọng `CARGO_BUILD_JOBS`.
 
 Chơi **trên trình duyệt** (Bevy WASM trong shell Leptos):
 
 ```bash
 cargo install wasm-bindgen-cli --version 0.2.129 --locked
-./scripts/build-web-shell.sh
-python3 scripts/serve-web-shell.py
+cargo xtask run web
+# Terminal khác, sau khi server đã ready:
+cargo xtask app web
 ```
 
-Mở `http://127.0.0.1:8080/`. Script build dùng profile `web`; `PROFILE=dev ./scripts/build-web-shell.sh` dùng bản debug. Chạy browser check sau khi server sẵn sàng:
+`run web` build cả hai bundle rồi serve `http://127.0.0.1:8080/`, in URL/PID/log sau readiness; Ctrl+C dừng owned server. `app web` chỉ mở bundle/server đã có. Dùng `--port` khi port bận; không kill process khác. Build mặc định profile `web`; `cargo xtask build web --profile dev` dùng debug, `--release` dùng release. Provision browser prerequisites rồi chạy E2E ở port riêng (xtask tự quản lý server của test):
 
 ```bash
 npm ci
-CHROME_PATH=/usr/bin/google-chrome npm run test:web
+CHROME_PATH=/usr/bin/google-chrome cargo xtask verify web --port 8081
 ```
 
 Đọc [báo cáo web](docs/reports/web-feasibility.md) và [báo cáo native](docs/reports/native-feasibility.md) để phân biệt compile, browser interaction, giả lập touch và thiết bị thật. Android/iOS thật còn blocker; không dùng bản standalone để kết luận CMP đã tích hợp.
@@ -96,7 +100,7 @@ CHROME_PATH=/usr/bin/google-chrome npm run test:web
 Chơi **native desktop** (Linux cần `libudev-dev` để build gamepad; `--no-default-features` bỏ gamepad):
 
 ```bash
-cargo run -p myva-graybox            # thêm --duel, --demo, --no-art, --screenshot <file.png>
+cargo xtask run graybox -- --duel    # thêm --demo, --no-art, --screenshot <file.png>
 ```
 
 Phím: A/D di chuyển, Space nhảy, Shift lướt, giữ L đỡ, J/K nhẹ/nặng, Q/E/R thuật; Enter đấu lại, M đổi chế độ, H hitbox, G bật/tắt art. Bản native lưu replay bằng F9, bản web bằng nút “Tải replay”. Khi trận kết thúc, client tự chạy lại replay và hiện kết quả kiểm chứng; `myva-replay verify <file>` chạy lại ngoài client, `myva-replay events <file>` in từng đòn ra, trúng, đỡ theo tick. Replay ghi trên WASM kiểm chứng được bằng bản native cùng revision.

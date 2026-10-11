@@ -11,8 +11,9 @@ rustup toolchain install 1.97.1 --profile minimal
 rustup +1.97.1 target add aarch64-linux-android
 sdkmanager 'platforms;android-37.0' 'build-tools;36.0.0' 'ndk;27.0.12077973' 'platform-tools'
 # Set ANDROID_HOME and JAVA_HOME if SDK/JDK are not already configured.
-prototypes/native/scripts/build-android.sh check
-prototypes/native/scripts/build-android.sh apk
+cargo xtask doctor mobile --platform android
+cargo xtask build native-probe --platform android --mode check
+cargo xtask build native-probe --platform android --mode apk
 ```
 
 Script mặc định tìm SDK trong `$HOME/Android/Sdk`; override `ANDROID_HOME` hoặc `ANDROID_NDK_ROOT` nếu cài ở nơi khác. Không cần `cargo-ndk`: script đặt linker, C/C++ compiler và archiver của NDK, dùng Cargo lockfile và giới hạn hai job. `check` chưa link; `build` tạo `.so`; `apk` mới đóng gói debug APK. Bản debug không phải build phát hành/signing production. Feature chỉ gồm renderer sprite 2D/window/lifecycle cần cho baseline; audio, UI, gilrs và renderer 3D không được bật.
@@ -22,7 +23,7 @@ Linker dùng `max-page-size=16384` và `common-page-size=16384` cho NDK r27 theo
 Sau khi cắm **thiết bị thật** đã cho phép USB debugging, chọn serial tương ứng:
 
 ```bash
-adb devices -l
+cargo xtask devices --platform android
 adb -s "$DEVICE_SERIAL" install -r prototypes/native/android/app/build/outputs/apk/debug/app-debug.apk
 adb -s "$DEVICE_SERIAL" shell am start -n com.myva.nativeprobe/.MainActivity
 adb -s "$DEVICE_SERIAL" logcat -v threadtime -s RustStdoutStderr bevy myva
@@ -35,7 +36,7 @@ Không gọi install/start thành công là device PASS: phải thực hiện v�
 Sau khi thử standalone, có thể build riêng shell dùng **CMP 1.12.0 / Kotlin và Compose compiler 2.4.20**, `activity-compose` 1.12.4. `shared/src/commonMain` chứa UI dùng Compose Multiplatform; target hiện chỉ là Android, chưa có iOS compilation.
 
 ```bash
-prototypes/native/scripts/build-android.sh cmp
+cargo xtask build native-probe --platform android --mode cmp
 adb -s "$DEVICE_SERIAL" install -r prototypes/native/android/cmp-shell/build/outputs/apk/debug/cmp-shell-debug.apk
 adb -s "$DEVICE_SERIAL" shell am start -n com.myva.cmpprobe/.ShellActivity
 ```
@@ -55,10 +56,12 @@ Probe tạo/drop/tạo lại `winit::EventLoop` trên Linux. Kỳ vọng `second
 ## Preflight và phần chưa triển khai
 
 ```bash
-python3 prototypes/native/scripts/preflight.py
+cargo xtask doctor mobile --platform android
+cargo xtask doctor mobile --platform ios
+cargo xtask devices
 ```
 
-Preflight chỉ đọc toolchain/device; kết quả `NOT_RUN` vẫn yêu cầu thử thủ công. `fps`, memory và số chu kỳ trả `null` đến khi có phép đo thật. Evidence mới lưu vào `prototypes/native/evidence/` (gitignored), chỉ commit bản đã loại thông tin nhạy cảm khi cần review.
+Doctor chỉ đọc prerequisites; device listing yêu cầu ADB server được developer mở sẵn và không boot/install/launch. Kết quả `NOT_RUN` vẫn yêu cầu thử thủ công. [xtask contract](../../docs/architecture/xtask-build-contract.md) là entrypoint mới; script JSON preflight giữ compatibility cho evidence lịch sử. `fps`, memory và số chu kỳ chưa có phép đo thật. Evidence mới lưu vào `prototypes/native/evidence/` (gitignored), chỉ commit bản đã loại thông tin nhạy cảm khi cần review. Các lệnh install/start thủ công ở trên chỉ là hướng dẫn cho người chọn device tường minh; xtask không thực thi chúng.
 
 Module `app` giữ baseline **standalone**; `cmp-shell` là thí nghiệm B riêng, chưa được chạy trên device. Chưa có ABI handle-based hoặc adapter A. Chưa có iOS packaging/build: cần macOS/Xcode, Apple signing và iPhone để thử đúng mobile example, rồi mới quyết định staticlib/xcframework và ownership UIKit. Không thêm C ABI `create/destroy` khi `DefaultPlugins` còn sở hữu event loop toàn ứng dụng.
 

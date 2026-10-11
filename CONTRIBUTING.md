@@ -26,6 +26,15 @@ Các test nên bảo vệ luật hoặc lỗi có thể gây mất state, nhân 
 
 ## Kiểm tra tài liệu
 
-Chạy `python3 scripts/check-docs.py` để kiểm tra inline links, ảnh và heading fragments nội bộ trong README, CONTRIBUTING và `docs/`. Có thể truyền thêm file/thư mục, ví dụ `python3 scripts/check-docs.py docs prototypes/native`. Script không truy cập mạng hoặc xác nhận nội dung nguồn bên ngoài.
+Developer và agent dùng [`cargo xtask`](xtask/README.md) theo [build contract](docs/architecture/xtask-build-contract.md), nguồn duy nhất về Single Surface Rule, command mapping, process ownership và verification selection. Repository chưa có agent instructions/skills riêng; không tạo thêm bản sao quy tắc. Scripts là implementation primitives, npm `test:web` và CI forward về xtask.
+
+```bash
+cargo xtask fmt
+cargo xtask verify xtask             # khi sửa tooling
+cargo xtask preflight --changed-only # base mặc định origin/develop
+cargo xtask preflight                # cùng full contract với cargo xtask ci
+```
+
+`verify repository` kiểm inline links, ảnh và heading fragments trong README, CONTRIBUTING, `docs/`, README prototype/xtask, cùng Rust/asset/report contracts. Checker không truy cập mạng hoặc xác nhận nội dung nguồn bên ngoài. Thiếu tool/browser/target phải báo BLOCKED và nonzero; không coi dry-run hoặc test bị bỏ qua là PASS. Xem [bằng chứng xtask](docs/reports/xtask-verification.md) cho môi trường đã chạy.
 
 Khi sửa Mermaid, chạy parser/render Mermaid riêng; link checker không xác nhận cú pháp diagram. Ví dụ dùng Mermaid CLI đã cài: trích nội dung một fence `mermaid` vào file `.mmd`, rồi chạy `mmdc -i diagram.mmd -o diagram.svg` và xem kết quả. ADR 0003 và sơ đồ ownership architecture đã được parse bằng Mermaid `12.1.0`; việc parse không thay thế review ownership trong sơ đồ.

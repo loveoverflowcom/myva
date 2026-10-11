@@ -1,6 +1,6 @@
 {
   "name": "myva-web-feasibility",
   "private": true,
-  "scripts": { "test:web": "playwright test" },
+  "scripts": { "test:web": "cargo xtask verify web --" },
   "devDependencies": { "@playwright/test": "1.64.0" }
 }

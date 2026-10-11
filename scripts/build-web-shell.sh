@@ -10,8 +10,10 @@ if [[ "$(wasm-bindgen --version 2>/dev/null || true)" != "wasm-bindgen 0.2.129" 
 fi
 cargo build --locked --manifest-path "$root/Cargo.toml" -p myva-web-shell -p myva-web-game \
   --target wasm32-unknown-unknown --profile "$profile" -j "${CARGO_BUILD_JOBS:-2}"
-target="$root/target/wasm32-unknown-unknown/$profile"
-[[ "$profile" == dev ]] && target="$root/target/wasm32-unknown-unknown/debug"
+cargo_target="${CARGO_TARGET_DIR:-$root/target}"
+[[ "$cargo_target" = /* ]] || cargo_target="$PWD/$cargo_target"
+target="$cargo_target/wasm32-unknown-unknown/$profile"
+[[ "$profile" == dev ]] && target="$cargo_target/wasm32-unknown-unknown/debug"
 out="$root/target/web-shell"
 mkdir -p "$out/shell" "$out/game/pkg"
 cp "$root/apps/web/public/index.html" "$root/apps/web/public/style.css" "$root/apps/web/public/bootstrap.js" "$out/"

@@ -21,9 +21,10 @@ export default defineConfig({
         },
     },
     outputDir: 'target/web-evidence/artifacts',
-    webServer: {
-        command: `python3 scripts/serve-web-shell.py --port ${port}`,
+    webServer: process.env.MYVA_XTASK_WEB_SERVER === '1' ? undefined : {
+        command: `cargo xtask run web --port ${port}`,
         url: `${baseURL}/bundle-report.json`,
-        reuseExistingServer: !process.env.CI,
+        reuseExistingServer: false,
+        timeout: 1800000,
     },
 });

@@ -27,8 +27,15 @@ test('Mạch keyboard: hold requests ultimate without a stray normal cast; tap c
     expect(blurred.tally.player.actions).toBe(before.tally.player.actions);
     expect(blurred.player.cooldowns[2]).toBe(0);
     await frame.locator('#game-canvas').click();
+    const holdStart = await state(frame);
     await page.keyboard.down('KeyR');
-    await expect.poll(async () => (await state(frame)).player.denial).toBe('Some(Mach)');
+    // A slow software-rendered frame can stretch the earlier 100 ms wait beyond
+    // the hold threshold. Its denial persists, so wait for this gesture's input
+    // to reach the simulation before releasing R; stale feedback is not enough.
+    await expect.poll(async () => {
+        const held = await state(frame);
+        return held.presses > holdStart.presses && held.player.denial === 'Some(Mach)';
+    }).toBe(true);
     await page.keyboard.up('KeyR');
     await page.waitForTimeout(500);
     const denied = await state(frame);
