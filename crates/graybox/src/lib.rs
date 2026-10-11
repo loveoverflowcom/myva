@@ -17,6 +17,8 @@ mod controls;
 mod fight;
 mod hud;
 pub mod scene;
+// D05-B planner only; no AssetServer backend or scene integration yet.
+pub mod streaming;
 pub mod telemetry;
 pub mod text;
 pub mod touch;

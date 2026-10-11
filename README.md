@@ -79,7 +79,7 @@ Phím: A/D di chuyển, Space nhảy, Shift lướt, giữ L đỡ, J/K nhẹ/n�
 1. [Review draft và quyết định cần kiểm chứng](docs/design/review.md).
 2. [GDD](docs/design/gdd.md), [World Bible](docs/design/world-bible.md), [chiến đấu](docs/design/combat.md).
 3. [Tiến triển, solo và bang hội](docs/design/progression-social.md), [kinh tế](docs/design/economy.md).
-4. [Kiến trúc](docs/technical/architecture.md), [assets và hiệu năng](docs/technical/assets-performance.md).
+4. [Kiến trúc](docs/technical/architecture.md), [assets và hiệu năng](docs/technical/assets-performance.md), [D05-B preparation và gate chưa chạy](docs/reports/asset-streaming-performance.md).
 5. [Vertical slice](docs/production/vertical-slice.md), [roadmap](docs/production/roadmap.md), [QA](docs/production/qa.md).
 6. [Hàng đợi công việc](docs/work-plan/README.md), [quyết định Bevy hiện hành](docs/decisions/0003-bevy-engine-adoption.md) và [quyết định nền tảng](docs/decisions/0001-project-foundation.md).
 7. Đề xuất v0.2 về thế giới, thần thoại và hệ nhân vật: [báo cáo thiết kế](docs/design/worldbuilding-report.md), [khảo sát thần thoại](docs/research/mythology-survey.md) và [quyết định 0002 (chờ duyệt)](docs/decisions/0002-lineages-world-structure.md).

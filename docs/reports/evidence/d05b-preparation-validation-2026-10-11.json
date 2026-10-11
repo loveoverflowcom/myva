@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "kind": "independent_preparation_validation_summary",
+  "date": "2026-10-11",
+  "base_revision": "33c77e1e7e507c8a76723c14fa9731f4b5b45875",
+  "subject": "Content hashes of independently tested source; not a runtime benchmark or Bevy workspace build.",
+  "checked_content": {
+    "crates/graybox/src/streaming.rs": "b081f9c79d10ec8766020fe81b6eaea9af90e84a8fe1d4e86a68ae8aceab0e51",
+    "benchmarks/asset-performance.json": "1a92de5f920f8ac54ff06908f1de042c88124ae98e3e4ca956a8a284a0cd0071",
+    "scripts/report-asset-performance.py": "fc4320856f5e547897c22990c2ff89f5461ec85bd05b2e61606a8a2b9d0e088b",
+    "tests/test_asset_performance_report.py": "7d030c890f058328a16ed9077427104604a45b2eef6bd40fe62ab369c15d6be0"
+  },
+  "rust_check": {
+    "status": "PASS",
+    "compiler": "rustc 1.96.1 (31fca3adb 2026-06-26)",
+    "pinned_workspace_compiler": "1.97.1 NOT_RUN on Mac",
+    "tests": 11,
+    "scope": "std-only streaming.rs; strong-handle and GPU behavior unverified"
+  },
+  "python_check": {
+    "status": "PASS",
+    "tests": 34,
+    "scope": "stdlib unit fixtures; no performance capture",
+    "version": "Python 3.13.5"
+  },
+  "review": {
+    "status": "PASS_after_fixes",
+    "scope": "Independent source review; required repository SKILL.md files absent"
+  },
+  "runtime_acceptance": "BLOCKED_D05A_missing_and_MYVA_heavy_window_not_granted",
+  "commands": [
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p test_asset_performance_report.py -v",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "test_absent_metrics_stay_not_run_not_zero (test_asset_performance_report.PerformanceContractTests.test_absent_metrics_stay_not_run_not_zero) ... ok\ntest_all_stale_fields_are_rejected_when_unavailable (test_asset_performance_report.PerformanceContractTests.test_all_stale_fields_are_rejected_when_unavailable) ... ok\ntest_available_inputs_cannot_inject_derived_output_fields (test_asset_performance_report.PerformanceContractTests.test_available_inputs_cannot_inject_derived_output_fields) ... ok\ntest_blocked_frame_budgets_are_not_reported_as_a_measurement (test_asset_performance_report.PerformanceContractTests.test_blocked_frame_budgets_are_not_reported_as_a_measurement) ... ok\ntest_blocked_metric_reason_is_preserved (test_asset_performance_report.PerformanceContractTests.test_blocked_metric_reason_is_preserved) ... ok\ntest_boolean_seed_cannot_masquerade_as_integer_seed (test_asset_performance_report.PerformanceContractTests.test_boolean_seed_cannot_masquerade_as_integer_seed) ... ok\ntest_cli_writes_labelled_fixture_json_and_markdown (test_asset_performance_report.PerformanceContractTests.test_cli_writes_labelled_fixture_json_and_markdown) ... ok\ntest_encoded_ram_bytes_do_not_imply_decoded_or_gpu_memory (test_asset_performance_report.PerformanceContractTests.test_encoded_ram_bytes_do_not_imply_decoded_or_gpu_memory) ... ok\ntest_estimated_p1_is_descriptive_and_zero_cache_transfer_cannot_qualify (test_asset_performance_report.PerformanceContractTests.test_estimated_p1_is_descriptive_and_zero_cache_transfer_cannot_qualify) ... ok\ntest_frame_window_must_cover_contiguous_intervals (test_asset_performance_report.PerformanceContractTests.test_frame_window_must_cover_contiguous_intervals) ... ok\ntest_gzip_and_texture_estimates_do_not_become_wire_or_total_gpu (test_asset_performance_report.PerformanceContractTests.test_gzip_and_texture_estimates_do_not_become_wire_or_total_gpu) ... ok\ntest_input_endpoint_and_p1_scope_cannot_be_implicit (test_asset_performance_report.PerformanceContractTests.test_input_endpoint_and_p1_scope_cannot_be_implicit) ... ok\ntest_instantaneous_presented_fps_percentiles_are_distinct (test_asset_performance_report.PerformanceContractTests.test_instantaneous_presented_fps_percentiles_are_distinct) ... ok\ntest_invalid_and_empty_samples_are_rejected (test_asset_performance_report.PerformanceContractTests.test_invalid_and_empty_samples_are_rejected) ... ok\ntest_metric_method_and_units_are_required (test_asset_performance_report.PerformanceContractTests.test_metric_method_and_units_are_required) ... ok\ntest_missing_metrics_cannot_carry_stale_numbers (test_asset_performance_report.PerformanceContractTests.test_missing_metrics_cannot_carry_stale_numbers) ... ok\ntest_mobile_needs_device_and_hardware (test_asset_performance_report.PerformanceContractTests.test_mobile_needs_device_and_hardware) ... ok\ntest_nearest_rank_and_small_tail (test_asset_performance_report.PerformanceContractTests.test_nearest_rank_and_small_tail) ... ok\ntest_noncontiguous_samples_do_not_establish_a_rate (test_asset_performance_report.PerformanceContractTests.test_noncontiguous_samples_do_not_establish_a_rate) ... ok\ntest_numeric_overflow_is_rejected_or_safely_summarized (test_asset_performance_report.PerformanceContractTests.test_numeric_overflow_is_rejected_or_safely_summarized) ... ok\ntest_p1_needs_matching_cold_observed_wire (test_asset_performance_report.PerformanceContractTests.test_p1_needs_matching_cold_observed_wire) ... ok\ntest_pipeline_and_unit_fixtures_cannot_authorize_art (test_asset_performance_report.PerformanceContractTests.test_pipeline_and_unit_fixtures_cannot_authorize_art) ... ok\ntest_presented_fixture_is_explicitly_synthetic (test_asset_performance_report.PerformanceContractTests.test_presented_fixture_is_explicitly_synthetic) ... ok\ntest_presented_frames_require_instrumentation (test_asset_performance_report.PerformanceContractTests.test_presented_frames_require_instrumentation) ... ok\ntest_raf_and_update_rates_are_not_fps (test_asset_performance_report.PerformanceContractTests.test_raf_and_update_rates_are_not_fps) ... ok\ntest_required_metadata_rejects_missing_and_abbreviated_values (test_asset_performance_report.PerformanceContractTests.test_required_metadata_rejects_missing_and_abbreviated_values) ... ok\ntest_resolved_scene_cannot_hide_density_or_tier_changes (test_asset_performance_report.PerformanceContractTests.test_resolved_scene_cannot_hide_density_or_tier_changes) ... ok\ntest_rss_requires_scope_and_game_only_does_not_qualify (test_asset_performance_report.PerformanceContractTests.test_rss_requires_scope_and_game_only_does_not_qualify) ... ok\ntest_scene_fixture_separates_gameplay_from_render_entities (test_asset_performance_report.PerformanceContractTests.test_scene_fixture_separates_gameplay_from_render_entities) ... ok\ntest_software_cannot_be_relabelled_as_hardware (test_asset_performance_report.PerformanceContractTests.test_software_cannot_be_relabelled_as_hardware) ... ok\ntest_start_cache_and_endpoint_cannot_be_relabelled (test_asset_performance_report.PerformanceContractTests.test_start_cache_and_endpoint_cannot_be_relabelled) ... ok\ntest_start_metrics_need_cache_endpoint_and_covered_phases (test_asset_performance_report.PerformanceContractTests.test_start_metrics_need_cache_endpoint_and_covered_phases) ... ok\ntest_unknown_metric_cannot_silently_hide_a_typo (test_asset_performance_report.PerformanceContractTests.test_unknown_metric_cannot_silently_hide_a_typo) ... ok\ntest_wire_requires_acquisition_encoding_coverage_and_exact_sum (test_asset_performance_report.PerformanceContractTests.test_wire_requires_acquisition_encoding_coverage_and_exact_sum) ... ok\n\n----------------------------------------------------------------------\nRan 34 tests in 0.005s\n\nOK\n",
+      "status": "PASS"
+    },
+    {
+      "command": "python3 scripts/check-docs.py",
+      "exit_code": 0,
+      "stdout": "PASS: 348 local links/anchors in 41 Markdown files\n",
+      "stderr": "",
+      "status": "PASS"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "status": "PASS"
+    },
+    {
+      "command": "rustup run 1.96 rustfmt --edition 2024 --check crates/graybox/src/streaming.rs",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "status": "PASS"
+    },
+    {
+      "command": "rustup run 1.96 clippy-driver --edition 2024 --test crates/graybox/src/streaming.rs -o /tmp/myva-d05b-streaming-tests -D warnings",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "status": "PASS"
+    },
+    {
+      "command": "/tmp/myva-d05b-streaming-tests",
+      "exit_code": 0,
+      "stdout": "\nrunning 11 tests\ntest tests::invalid_limits_and_generation_exhaustion_are_safe ... ok\ntest tests::rapid_scene_changes_keep_global_slots_until_backend_stops ... ok\ntest tests::oversized_required_plan_preserves_current_handle ... ok\ntest tests::exit_cancellation_cannot_fill_a_new_scene_with_the_same_bundle ... ok\ntest tests::missing_required_blocks_and_corrupt_optional_selects_fallback ... ok\ntest tests::ready_prefetch_promotes_without_reload_or_hidden_handle_clone ... ok\ntest tests::late_success_is_rejected_before_timeout_poll ... ok\ntest tests::required_capacity_and_request_priority_are_bounded ... ok\ntest tests::repeated_failures_have_bounded_attempts_and_linear_backoff ... ok\ntest tests::timeout_cancellation_retains_slot_and_retry_waits_for_backoff ... ok\ntest tests::thirty_planner_cycles_release_owned_handles_not_gpu_evidence ... ok\n\ntest result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n",
+      "stderr": "",
+      "status": "PASS"
+    }
+  ],
+  "verified_at": "2026-10-11T04:20:52.735473+00:00",
+  "workdir": "/Users/manhblue/projects/loveoverflow/myva",
+  "installed_source_hashes_match": true,
+  "status": "PASS"
+}
