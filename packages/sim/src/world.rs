@@ -13,7 +13,9 @@
 
 use std::hash::{Hash, Hasher};
 
-use crate::fighter::{Fighter, FighterId, State, Team};
+use crate::fighter::{
+    Contact, Denial, ESCAPE_PUSH, ESCAPE_RADIUS, Fighter, FighterId, State, Team,
+};
 use crate::input::{InputFrame, Intent};
 use crate::kit::{ActionKind, Kit};
 use crate::meter::SUB_PER_POINT;
@@ -22,10 +24,26 @@ use crate::projectile::{Projectile, ProjectileId};
 use crate::status::StatusKind;
 use crate::tick::Tick;
 
-/// Sự kiện do mô phỏng quyết định; client chỉ thể hiện, không tự tạo. `damage` là damage danh
-/// nghĩa của đòn, không bị cắt theo HP còn lại.
+/// Sự kiện do mô phỏng quyết định; client chỉ thể hiện, không tự tạo. `damage` là damage
+/// được cấp sau ngân sách CC, không bị cắt theo HP còn lại.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Event {
+    Whiff {
+        fighter: FighterId,
+        action: ActionKind,
+    },
+    ActionDenied {
+        fighter: FighterId,
+        reason: Denial,
+    },
+    MachEscaped {
+        fighter: FighterId,
+    },
+    ControlLimited {
+        fighter: FighterId,
+        ticks: u32,
+        damage: u32,
+    },
     InputRejected {
         fighter: FighterId,
         seq: u32,
@@ -160,7 +178,7 @@ impl World {
     pub fn step(&mut self, inputs: &[(FighterId, InputFrame)]) -> Vec<Event> {
         let mut events = Vec::new();
         self.input_phase(inputs, &mut events);
-        self.movement_phase();
+        self.movement_phase(&mut events);
         let strikes = self.collision_phase();
         self.combat_phase(strikes, &mut events);
         self.status_phase(&mut events);
@@ -208,14 +226,64 @@ impl World {
         for (fighter, frame) in self.fighters.iter_mut().zip(frames) {
             fighter.apply_input(frame, &mut self.next_instance, events);
         }
+        let escaped: Vec<_> = events
+            .iter()
+            .filter_map(|e| match e {
+                Event::MachEscaped { fighter } => Some(*fighter),
+                _ => None,
+            })
+            .collect();
+        for id in escaped {
+            let x = self.fighter(id).x;
+            let kit = self.fighter(id).kit;
+            let team = self.fighter(id).team;
+            let nearest = self
+                .fighters
+                .iter()
+                .filter(|f| f.id != id && !self.fighter(id).is_ally(f) && f.state != State::Downed)
+                .min_by_key(|f| ((f.x - x).abs(), f.id))
+                .map(|f| f.x);
+            for fighter in &mut self.fighters {
+                if fighter.id != id
+                    && !fighter.kit.body.armored
+                    && (fighter.x - x).abs() <= ESCAPE_RADIUS
+                    && !(team.is_some() && team == fighter.team)
+                {
+                    let dir = if fighter.x >= x { 1 } else { -1 };
+                    fighter.x = (fighter.x + dir * ESCAPE_PUSH).clamp(
+                        fighter.kit.body.half_width,
+                        crate::fighter::ARENA_WIDTH - fighter.kit.body.half_width,
+                    );
+                }
+            }
+            if let Some(other_x) = nearest.filter(|other| (*other - x).abs() <= ESCAPE_RADIUS) {
+                let dir = if other_x >= x { -1 } else { 1 };
+                self.fighters[usize::from(id.0)].x = (x + dir * ESCAPE_PUSH).clamp(
+                    kit.body.half_width,
+                    crate::fighter::ARENA_WIDTH - kit.body.half_width,
+                );
+            }
+        }
     }
 
-    fn movement_phase(&mut self) {
+    fn movement_phase(&mut self, events: &mut Vec<Event>) {
         for fighter in &mut self.fighters {
             fighter.integrate();
         }
         // Đạn cũ bay trước; đạn mới đứng tại chỗ sinh trong tick đầu tiên.
-        self.projectiles.retain_mut(Projectile::fly);
+        self.projectiles.retain_mut(|projectile| {
+            let alive = projectile.fly();
+            if !alive && projectile.hit_set.is_empty() {
+                events.push(Event::Whiff {
+                    fighter: projectile.owner,
+                    action: projectile.action,
+                });
+                self.fighters[usize::from(projectile.owner.0)]
+                    .feedback
+                    .contact = Contact::Whiff;
+            }
+            alive
+        });
         for fighter in &self.fighters {
             if let Some(projectile) =
                 Projectile::launch(fighter, ProjectileId(self.next_projectile))
@@ -332,12 +400,16 @@ impl World {
             // Tư thế phản công chỉ bắt đòn cận chiến.
             if let (Source::Melee, Some((damage, hitstun))) = (source, target.counter_ready()) {
                 target.hit_set.push(attacker_id);
+                target.feedback.contact = Contact::Hit;
+                self.fighters[ai].feedback.contact = Contact::Countered;
+                let mut consequences = Vec::new();
+                let damage = self.fighters[ai].take_hit(damage, hitstun, 0, &mut consequences);
                 events.push(Event::Countered {
                     counterer: target_id,
                     attacker: attacker_id,
                     damage,
                 });
-                self.fighters[ai].take_hit(damage, hitstun, 0, events);
+                events.extend(consequences);
                 return;
             }
             if let Some(perfect) = target.guard_active() {
@@ -351,22 +423,29 @@ impl World {
                 // Mỗi hit bị chặn tiêu 8 + 0,5 × áp lực đòn; perfect guard không tiêu.
                 let cost = (16 + spec.guard_pressure) * SUB_PER_POINT / 2;
                 if !perfect && target.stamina.drain_sub(cost) {
-                    target.state = State::GuardBreak {
-                        remaining: crate::fighter::GUARD_BREAK,
-                    };
-                    events.push(Event::GuardBroken { fighter: target_id });
+                    target.break_guard(events);
+                }
+                if self.fighters[ai].feedback.contact != Contact::Hit {
+                    self.fighters[ai].feedback.contact = Contact::Blocked;
                 }
                 return;
             }
         }
 
+        let mut consequences = Vec::new();
+        let damage = target.take_hit(
+            spec.damage,
+            spec.hitstun,
+            push_dir * spec.knockback,
+            &mut consequences,
+        );
         events.push(Event::Hit {
             attacker: attacker_id,
             target: target_id,
             action,
-            damage: spec.damage,
+            damage,
         });
-        target.take_hit(spec.damage, spec.hitstun, push_dir * spec.knockback, events);
+        events.extend(consequences);
         if let Some(status) = spec.on_hit
             && target.state != State::Downed
             && let Some(effect) = target.statuses.apply(status, attacker_id)
@@ -380,7 +459,8 @@ impl World {
             });
         }
         let attacker = &mut self.fighters[ai];
-        attacker.mach.gain(spec.damage / 10);
+        attacker.mach.gain(damage / 10);
+        attacker.feedback.contact = Contact::Hit;
         // Chỉ hit cận chiến mở cửa nối thuật.
         if let (
             Source::Melee,
@@ -390,6 +470,7 @@ impl World {
                 ..
             },
         ) = (source, &mut attacker.state)
+            && damage > 0
         {
             confirmed_at.get_or_insert(*elapsed);
         }
@@ -645,7 +726,10 @@ mod tests {
         let mut world = duel(600, -1);
         world.fighters[0].energy = Meter::new(100, 30, 0, 0);
         let events = world.step(&[(A, press(1, Buttons::SKILL3))]);
-        assert!(events.is_empty(), "thiếu năng lượng thì không ra thuật");
+        assert!(events.contains(&Event::ActionDenied {
+            fighter: A,
+            reason: Denial::Energy
+        }));
         assert_eq!(world.fighter(A).energy.points(), 30);
 
         world.step(&[(A, press(2, Buttons::SKILL1))]);
@@ -653,7 +737,10 @@ mod tests {
         run_idle(&mut world, 60);
         world.fighters[0].energy = Meter::energy();
         let events = world.step(&[(A, press(3, Buttons::SKILL1))]);
-        assert!(events.is_empty(), "Lưu Tiễn còn hồi chiêu 3 giây");
+        assert!(events.contains(&Event::ActionDenied {
+            fighter: A,
+            reason: Denial::Cooldown
+        }));
     }
 
     #[test]

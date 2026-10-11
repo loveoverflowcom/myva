@@ -152,3 +152,55 @@ pub fn run_core(seed: u64, ticks: u32) -> Vec<TickReport> {
 pub fn fingerprint(seed: u64, ticks: u32) -> Vec<u64> {
     run_core(seed, ticks).iter().map(|r| r.hash).collect()
 }
+
+/// Fixture #19: tích Mạch bằng hit thật, đại thuật ô 3, boss bắt startup rồi nhấn đỡ mới để
+/// Thoát Mạch. Không chèn số dư, không sửa state sau spawn; mọi thứ đi qua cổng lệnh/replay.
+pub fn mach_ground(seed: u64) -> Session {
+    let mut session = Session::new(SessionConfig::new(INSTANCE + 19, seed));
+    session.spawn_player(&LONG_LUU, 400 * PX, 1, Some(PLAYERS), PLAYER_EPOCH);
+    session.spawn_player(
+        &crate::boss::KE_GIU_DAP,
+        460 * PX,
+        -1,
+        Some(HOSTILE),
+        SessionEpoch(2),
+    );
+    session
+}
+
+pub fn mach_commands(tick: u32) -> [CommandEnvelope; 2] {
+    let mut player = CommandFrame::IDLE;
+    let mut boss = CommandFrame::IDLE;
+    if tick < 1_000 && tick.is_multiple_of(40) {
+        player.action = Some(Action::Attack(Attack::Light));
+    }
+    if tick == 1_000 {
+        player.action = Some(Action::Ultimate(2));
+    }
+    if (1_120..1_640).contains(&tick) && (tick - 1_120).is_multiple_of(40) {
+        player.action = Some(Action::Attack(Attack::Light));
+    }
+    if tick == 1_700 {
+        boss.action = Some(Action::Attack(Attack::Light));
+    }
+    if tick == 1_749 {
+        player.action = Some(Action::GuardPress);
+        player.guard = true;
+    }
+    [
+        CommandEnvelope::new(PLAYER_EPOCH, FighterId(0), tick + 1, tick, player),
+        CommandEnvelope::new(SessionEpoch(2), FighterId(1), tick + 1, tick, boss),
+    ]
+}
+
+pub fn run_mach_core(seed: u64, ticks: u32) -> Vec<TickReport> {
+    let mut session = mach_ground(seed);
+    (0..ticks)
+        .map(|tick| {
+            for command in mach_commands(tick) {
+                session.submit(command).expect("lệnh Mạch fixture hợp lệ");
+            }
+            session.step()
+        })
+        .collect()
+}

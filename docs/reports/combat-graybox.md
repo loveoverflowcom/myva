@@ -6,6 +6,8 @@ Báo cáo này xác nhận một trận Long Lưu đấu Kẻ Giữ Đập **ch�
 
 Đường dẫn source trong phần mô tả đã theo [layout hiện hành](../technical/repository-layout.md): `crates/graybox` → `packages/graybox`. Evidence, commands, SHA và số đo vẫn thuộc run gốc; refactor đường dẫn có [báo cáo kiểm chứng riêng](repository-layout.md).
 
+> **Cập nhật luật #19:** số đo bên dưới thuộc revision gốc, dùng replay v2. Build hiện hành có đại thuật/Thoát Mạch và DR/budget; replay v3 từ chối v1/v2. Hành vi thuật 3 chạm/giữ và bằng chứng mới nằm ở [báo cáo Mạch](combat-mach.md). Không dùng bằng chứng cũ để xác nhận luật mới.
+
 ## Cách tái lập
 
 ```bash

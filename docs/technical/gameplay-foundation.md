@@ -53,7 +53,7 @@ Presentation đọc lại mirror qua `view::FighterMirror`/`ProjectileMirror` th
 
 ## 4. Lệnh và sự kiện
 
-`CommandEnvelope { protocol, session, actor, seq, tick, frame }`, `PROTOCOL_VERSION = 1`. `CommandFrame` gồm **Move** (`move_x` −1/0/1), **Guard** (giữ) và tối đa một `Action`: **Jump**, **Dash**, **Attack** (`Light`/`Heavy`), **Skill** (ô 0..=2), **Interact**. Không có trường damage, kết quả trúng, phần thưởng hay số dư.
+`CommandEnvelope { protocol, session, actor, seq, tick, frame }`, `PROTOCOL_VERSION = 2` (cập nhật #19; v1 bị từ chối). `CommandFrame` gồm **Move** (`move_x` −1/0/1), **Guard** (giữ) và tối đa một `Action`: **Jump**, **Dash**, **Attack** (`Light`/`Heavy`), **Skill** (ô 0..=2), **Ultimate** (biến thể ô đã chọn; server xác thực kit) và **GuardPress** (cạnh nhấn chủ động), **CancelPending** (bỏ buffer khi UI chuyển trạng thái, không hủy đòn), **Interact**. Không có trường damage, kết quả trúng, phần thưởng hay số dư.
 
 | Kiểm tra trong `CommandQueue::submit` | Từ chối |
 | --- | --- |
@@ -67,7 +67,7 @@ Presentation đọc lại mirror qua `view::FighterMirror`/`ProjectileMirror` th
 
 Server tự gán `accepted_tick = max(tick hiện tại, tick trống kế tiếp của tác nhân)` và trả `CommandAck`; không lùi về tick client đề xuất (combat.md §6). Lệnh của một tick được lấy theo `FighterId`, nên thứ tự đến giữa các tác nhân không đổi kết quả. Bộ não quái dùng epoch `SessionEpoch::AI` và đi qua cùng cổng; phiên tự đánh số `seq` lệnh AI, nên tắt/chỉnh bộ não giữa trận (`Session::controller_mut`) không làm lệnh bị từ chối và replay vẫn ghi đủ lệnh đã áp dụng. Reconnect (`Session::rebind`) cấp epoch mới, hủy lệnh chưa chạy của epoch cũ; `seq` tiếp tục sau `last_seq` trong snapshot.
 
-Sự kiện lõi: `InputRejected`, `ActionStarted`, `Hit`, `Blocked`, `Countered`, `GuardBroken`, `Downed`, `StatusApplied`, `StatusEnded`, `Interacted`. `TickReport { protocol, tick, events: [EventRecord { id, event }], hash }` là kết quả một tick. `damage` trong sự kiện là damage danh nghĩa của đòn.
+Sự kiện lõi: `InputRejected`, `ActionStarted`, `Hit`, `Blocked`, `Countered`, `GuardBroken`, `Downed`, `StatusApplied`, `StatusEnded`, `Interacted`, cùng `Whiff`, `ActionDenied`, `MachEscaped`, `ControlLimited` của #19. `TickReport { protocol, tick, events: [EventRecord { id, event }], hash }` là kết quả một tick. `damage` trong sự kiện là damage được cấp sau budget CC, chưa cắt theo HP còn lại. Replay hiện là v3; v1/v2 cần build gốc để phát vì luật/hash đã đổi. Xem [báo cáo #19](../reports/combat-mach.md).
 
 ## 5. Định danh, lưu/khôi phục và hòa giải
 

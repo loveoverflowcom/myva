@@ -13,11 +13,16 @@ let failed = false;
 for (const seed of seeds) {
   const native = readFileSync(join(out, `native-${seed}.txt`), 'utf8').trim().split('\n');
   const web = Array.from(wasm.fingerprint(BigInt(seed), ticks), (h) => h.toString(16).padStart(16, '0'));
+  const machNative = readFileSync(join(out, `mach-${seed}.txt`), 'utf8').trim().split('\n');
+  const machWeb = Array.from(wasm.mach_fingerprint(BigInt(seed), ticks), (h) => h.toString(16).padStart(16, '0'));
+  const machFirst = machNative.findIndex((hash, tick) => hash !== machWeb[tick]);
+  const machSame = machNative.length === ticks && machWeb.length === ticks && machFirst === -1;
   const first = native.findIndex((hash, tick) => hash !== web[tick]);
   const same = native.length === ticks && web.length === ticks && first === -1;
-  report.seeds.push({ seed: Number(seed), ticks: web.length, identical: same, firstMismatch: same ? null : first, final: web.at(-1) });
+  report.seeds.push({ seed: Number(seed), ticks: web.length, identical: same, firstMismatch: same ? null : first, final: web.at(-1), mach: { identical: machSame, firstMismatch: machSame ? null : machFirst, final: machWeb.at(-1) } });
   console.log(`seed ${seed}: ${same ? 'khớp' : `LỆCH ở tick ${first}`} ${web.length} hash; cuối ${web.at(-1)}`);
-  failed ||= !same;
+  console.log(`Mạch seed ${seed}: ${machSame ? 'khớp' : `LỆCH ở tick ${machFirst}`} ${machWeb.length} hash; cuối ${machWeb.at(-1)}`);
+  failed ||= !same || !machSame;
 }
 writeFileSync(join(out, 'report.json'), `${JSON.stringify(report, null, 2)}\n`);
 process.exit(failed ? 1 : 0);

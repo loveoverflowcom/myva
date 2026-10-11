@@ -20,7 +20,7 @@ use crate::projectile::ProjectileId;
 use crate::tick::Tick;
 use crate::world::Event;
 
-pub const PROTOCOL_VERSION: u16 = 1;
+pub const PROTOCOL_VERSION: u16 = 2;
 
 /// Lệnh có tick dự đoán lệch quá ngần này so với server bị từ chối (500 ms ở 60 Hz, GT).
 pub const INPUT_WINDOW: Tick = 30;
@@ -55,11 +55,16 @@ pub enum Attack {
 /// Hành động bấm một lần. `Move` và `Guard` là trạng thái giữ nên nằm trong [`CommandFrame`].
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Action {
+    /// Bỏ buffer khi mở UI/mất focus, không hủy startup/active/recovery đã cam kết.
+    CancelPending,
+    /// Lần nhấn chủ động của nút đỡ; giữ đỡ không tạo hành động này.
+    GuardPress,
     Jump,
     Dash,
     Attack(Attack),
     /// Ô thuật `0..=2`.
     Skill(u8),
+    Ultimate(u8),
     Interact,
 }
 
@@ -90,6 +95,8 @@ impl CommandFrame {
                 Buttons::NONE
             },
             pressed: self.action.map_or(Buttons::NONE, |action| match action {
+                Action::CancelPending => Buttons::CANCEL_PENDING,
+                Action::GuardPress => Buttons::GUARD,
                 Action::Jump => Buttons::JUMP,
                 Action::Dash => Buttons::DASH,
                 Action::Attack(Attack::Light) => Buttons::LIGHT,
@@ -97,6 +104,14 @@ impl CommandFrame {
                 Action::Skill(0) => Buttons::SKILL1,
                 Action::Skill(1) => Buttons::SKILL2,
                 Action::Skill(_) => Buttons::SKILL3,
+                Action::Ultimate(slot) => {
+                    Buttons::ULTIMATE
+                        | match slot {
+                            0 => Buttons::SKILL1,
+                            1 => Buttons::SKILL2,
+                            _ => Buttons::SKILL3,
+                        }
+                }
                 Action::Interact => Buttons::INTERACT,
             }),
         }
@@ -109,7 +124,10 @@ impl CommandFrame {
             move_x: frame.move_x.signum(),
             guard: frame.held.contains(Buttons::GUARD),
             action: frame.intent().map(|intent| match intent {
+                Intent::CancelPending => Action::CancelPending,
+                Intent::GuardPress => Action::GuardPress,
                 Intent::Skill(slot) => Action::Skill(slot),
+                Intent::Ultimate(slot) => Action::Ultimate(slot),
                 Intent::Heavy => Action::Attack(Attack::Heavy),
                 Intent::Light => Action::Attack(Attack::Light),
                 Intent::Dash => Action::Dash,
@@ -123,7 +141,7 @@ impl CommandFrame {
         if !(-1..=1).contains(&self.move_x) {
             return Err(Rejection::Malformed("move_x ngoài -1..=1"));
         }
-        if let Some(Action::Skill(slot)) = self.action
+        if let Some(Action::Skill(slot) | Action::Ultimate(slot)) = self.action
             && slot > 2
         {
             return Err(Rejection::Malformed("ô thuật ngoài 0..=2"));
@@ -382,6 +400,10 @@ mod tests {
     fn rejects_bad_headers_and_payloads() {
         let mut q = queue();
         let ok = CommandEnvelope::new(ONE, A, 1, 10, light());
+        assert_eq!(
+            q.submit(CommandEnvelope { protocol: 1, ..ok }, 10),
+            Err(Rejection::UnsupportedProtocol(1))
+        );
         let wrong_version = CommandEnvelope { protocol: 99, ..ok };
         assert_eq!(
             q.submit(wrong_version, 10),
@@ -422,6 +444,19 @@ mod tests {
             Err(Rejection::Malformed(_))
         ));
         assert_eq!(q.pending_len(), 0, "lệnh bị từ chối không chiếm seq");
+        assert!(matches!(
+            q.submit(
+                CommandEnvelope {
+                    frame: CommandFrame {
+                        action: Some(Action::Ultimate(3)),
+                        ..CommandFrame::IDLE
+                    },
+                    ..ok
+                },
+                10
+            ),
+            Err(Rejection::Malformed(_))
+        ));
         assert!(q.submit(ok, 10).is_ok());
     }
 
@@ -520,6 +555,10 @@ mod tests {
     fn command_frame_roundtrips_through_input() {
         let actions = [
             None,
+            Some(Action::CancelPending),
+            Some(Action::GuardPress),
+            Some(Action::Ultimate(0)),
+            Some(Action::Ultimate(2)),
             Some(Action::Jump),
             Some(Action::Dash),
             Some(Action::Attack(Attack::Light)),

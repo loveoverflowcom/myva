@@ -19,7 +19,7 @@ use myva_sim::fixture::{self, Brawler, PLAYER_EPOCH};
 use myva_sim::{Event, State};
 
 const USAGE: &str = "dùng: myva-headless [--seed N] [--ticks N] [--authority server|client] \
-                     [--replay FILE] [--hashes FILE]";
+                     [--replay FILE] [--hashes FILE] [--mach]";
 
 struct Options {
     seed: u64,
@@ -27,6 +27,7 @@ struct Options {
     authority: Authority,
     replay: Option<String>,
     hashes: Option<String>,
+    mach: bool,
 }
 
 fn parse(args: &[String]) -> Result<Options, String> {
@@ -36,6 +37,7 @@ fn parse(args: &[String]) -> Result<Options, String> {
         authority: Authority::Server,
         replay: None,
         hashes: None,
+        mach: false,
     };
     let mut args = args.iter();
     while let Some(flag) = args.next() {
@@ -44,6 +46,7 @@ fn parse(args: &[String]) -> Result<Options, String> {
                 .ok_or_else(|| format!("{flag} thiếu giá trị\n{USAGE}"))
         };
         match flag.as_str() {
+            "--mach" => options.mach = true,
             "--seed" => options.seed = value()?.parse().map_err(|e| format!("--seed: {e}"))?,
             "--ticks" => options.ticks = value()?.parse().map_err(|e| format!("--ticks: {e}"))?,
             "--authority" => {
@@ -74,19 +77,31 @@ fn main() -> ExitCode {
 
 fn run(options: &Options) -> Result<(), String> {
     let (session, ground) = fixture::training_ground(options.seed);
-    let mut app = headless_app(session, options.authority);
-    app.insert_resource(ScriptedPlayer(Brawler::new(
-        options.seed,
-        ground.player,
-        PLAYER_EPOCH,
-    )));
+    let mut app = if options.mach {
+        myva_gameplay::headless::mach_app(options.seed, options.authority)
+    } else {
+        let mut app = headless_app(session, options.authority);
+        app.insert_resource(ScriptedPlayer(Brawler::new(
+            options.seed,
+            ground.player,
+            PLAYER_EPOCH,
+        )));
+        app
+    };
     // Đọc sự kiện mỗi frame như presentation sẽ làm.
     app.add_systems(bevy_app::Update, count_events)
         .init_resource::<EventCounts>();
     let frames = run_until(&mut app, options.ticks);
 
     let ecs = app.world().resource::<TickHistory>().0.clone();
-    let core: Vec<u64> = fixture::fingerprint(options.seed, options.ticks);
+    let core: Vec<u64> = if options.mach {
+        fixture::run_mach_core(options.seed, options.ticks)
+            .iter()
+            .map(|r| r.hash)
+            .collect()
+    } else {
+        fixture::fingerprint(options.seed, options.ticks)
+    };
     let mismatch = ecs
         .iter()
         .zip(&core)
@@ -178,6 +193,10 @@ struct EventCounts(BTreeMap<&'static str, u32>);
 fn count_events(mut reader: MessageReader<SimEvent>, mut counts: ResMut<EventCounts>) {
     for SimEvent(record) in reader.read() {
         let kind = match record.event {
+            Event::Whiff { .. } => "hụt",
+            Event::ActionDenied { .. } => "không nối",
+            Event::MachEscaped { .. } => "Thoát Mạch",
+            Event::ControlLimited { .. } => "giới hạn CC",
             Event::InputRejected { .. } => "từ chối input",
             Event::ActionStarted { .. } => "ra đòn",
             Event::Hit { .. } => "trúng",

@@ -20,9 +20,13 @@ impl Buttons {
     pub const SKILL2: Self = Self(1 << 6);
     pub const SKILL3: Self = Self(1 << 7);
     pub const INTERACT: Self = Self(1 << 8);
+    /// Ý định tăng cường cùng nút thuật, do chế độ giữ/toggle tạo; không phải nút thứ chín.
+    pub const ULTIMATE: Self = Self(1 << 9);
+    /// Bỏ ý định chờ khi đổi UI, không hủy đòn đã cam kết; không là nút hành động mới.
+    pub const CANCEL_PENDING: Self = Self(1 << 10);
 
     /// Mọi nút đã định nghĩa; bit khác bị coi là dữ liệu hỏng.
-    pub const ALL: [Self; 9] = [
+    pub const ALL: [Self; 11] = [
         Self::JUMP,
         Self::DASH,
         Self::GUARD,
@@ -32,6 +36,8 @@ impl Buttons {
         Self::SKILL2,
         Self::SKILL3,
         Self::INTERACT,
+        Self::ULTIMATE,
+        Self::CANCEL_PENDING,
     ];
 
     /// Dựng từ bitflag, `None` nếu có bit lạ.
@@ -50,6 +56,10 @@ impl Buttons {
 
     pub const fn is_empty(self) -> bool {
         self.0 == 0
+    }
+
+    pub const fn without(self, other: Self) -> Self {
+        Self(self.0 & !other.0)
     }
 }
 
@@ -83,8 +93,11 @@ pub struct InputFrame {
 /// Ý định hành động rút từ `pressed`.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Intent {
+    CancelPending,
+    GuardPress,
     /// Ô thuật `0..=2`.
     Skill(u8),
+    Ultimate(u8),
     Heavy,
     Light,
     Dash,
@@ -107,10 +120,21 @@ const PRIORITY: [(Buttons, Intent); 8] = [
 impl InputFrame {
     /// Một ý định mỗi khung, theo thứ tự ưu tiên cố định; các nút còn lại bị bỏ qua.
     pub fn intent(&self) -> Option<Intent> {
+        if self.pressed.contains(Buttons::CANCEL_PENDING) {
+            return Some(Intent::CancelPending);
+        }
+        if self.pressed.contains(Buttons::GUARD) {
+            return Some(Intent::GuardPress);
+        }
         PRIORITY
             .iter()
             .find(|(button, _)| self.pressed.contains(*button))
-            .map(|&(_, intent)| intent)
+            .map(|&(_, intent)| match intent {
+                Intent::Skill(slot) if self.pressed.contains(Buttons::ULTIMATE) => {
+                    Intent::Ultimate(slot)
+                }
+                _ => intent,
+            })
     }
 }
 
@@ -129,13 +153,21 @@ mod tests {
     }
 
     #[test]
-    fn guard_alone_is_not_an_intent() {
+    fn guard_press_is_distinct_from_held_guard() {
         let frame = InputFrame {
             held: Buttons::GUARD,
             pressed: Buttons::GUARD,
             ..InputFrame::default()
         };
-        assert_eq!(frame.intent(), None);
+        assert_eq!(frame.intent(), Some(Intent::GuardPress));
+        assert_eq!(
+            InputFrame {
+                pressed: Buttons::NONE,
+                ..frame
+            }
+            .intent(),
+            None
+        );
         assert!(!Buttons::NONE.contains(Buttons::NONE));
     }
 

@@ -15,6 +15,8 @@ pub enum ActionKind {
     Heavy,
     /// Ô thuật `0..=2`.
     Skill(u8),
+    /// Biến thể đại thuật của ô đã chọn trong kit; không thêm nút.
+    Ultimate(u8),
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -199,6 +201,14 @@ pub struct Kit {
     pub light: [ActionSpec; 3],
     pub heavy: ActionSpec,
     pub skills: [ActionSpec; 3],
+    pub ultimate: Option<UltimateSpec>,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct UltimateSpec {
+    pub slot: u8,
+    pub mach_cost: u32,
+    pub action: ActionSpec,
 }
 
 impl Kit {
@@ -207,6 +217,11 @@ impl Kit {
             ActionKind::Light(step) => &self.light[usize::from(step)],
             ActionKind::Heavy => &self.heavy,
             ActionKind::Skill(slot) => &self.skills[usize::from(slot)],
+            ActionKind::Ultimate(slot) => {
+                let ultimate = self.ultimate.as_ref().expect("kit đã xác thực đại thuật");
+                assert_eq!(slot, ultimate.slot);
+                &ultimate.action
+            }
         }
     }
 }
@@ -219,11 +234,37 @@ const GON_SONG: ActionSpec = ActionSpec {
     ..ActionSpec::timed("Gợn Sóng", 180, 100, 240)
 };
 
+const TRIEU_DANG: ActionSpec = ActionSpec {
+    energy_cost: 35,
+    cooldown: ms_to_ticks(10_000),
+    damage: 100,
+    guard_pressure: 30,
+    hitstun: ms_to_ticks(300),
+    knockback: 60 * PX,
+    hitbox: Hitbox::px(0, 160, 0, 90),
+    ..ActionSpec::timed("Triều Dâng", 450, 150, 450)
+};
+
 /// Long Lưu: điều tiết dòng chảy, giữ khoảng cách vừa và phản công (combat.md §7).
 pub const LONG_LUU: Kit = Kit {
     id: "long-luu",
     lineage: "Long Lưu",
     body: HUMAN,
+    ultimate: Some(UltimateSpec {
+        slot: 2,
+        mach_cost: 100,
+        action: ActionSpec {
+            name: "Triều Dâng tăng cường",
+            startup: ms_to_ticks(650),
+            active: ms_to_ticks(200),
+            recovery: ms_to_ticks(550),
+            damage: 160,
+            guard_pressure: 36,
+            knockback: 80 * PX,
+            hitbox: Hitbox::px(0, 220, 0, 100),
+            ..TRIEU_DANG
+        },
+    }),
     // Nhịp 3 đẩy lùi nhẹ.
     light: [
         GON_SONG,
@@ -264,16 +305,7 @@ pub const LONG_LUU: Kit = Kit {
             counter_damage: Some(65),
             ..ActionSpec::timed("Hồi Thế", 160, 300, 300)
         },
-        ActionSpec {
-            energy_cost: 35,
-            cooldown: ms_to_ticks(10_000),
-            damage: 100,
-            guard_pressure: 30,
-            hitstun: ms_to_ticks(300),
-            knockback: 60 * PX,
-            hitbox: Hitbox::px(0, 160, 0, 90),
-            ..ActionSpec::timed("Triều Dâng", 450, 150, 450)
-        },
+        TRIEU_DANG,
     ],
 };
 

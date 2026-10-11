@@ -1,6 +1,6 @@
 # MyVa — Thần Mạch: chiến đấu và điều khiển
 
-> Bản nháp v0.1. Timing, damage, cooldown và ngưỡng mạng dưới đây phục vụ prototype; mọi thay đổi cần cập nhật cùng dữ liệu và phép đo.
+> Bản nháp v0.2, cập nhật 2026-10-11 cho [#19](https://github.com/loveoverflowcom/myva/issues/19). Timing, damage, cooldown và ngưỡng mạng dưới đây phục vụ prototype; mọi thay đổi cần cập nhật cùng dữ liệu và phép đo.
 > Thuật ngữ **frame animation** không đồng nghĩa **tick mô phỏng**. Server quyết định hành động và kết quả; client thể hiện, dự đoán và hòa giải trạng thái.
 
 ## 1. Mục tiêu
@@ -33,7 +33,7 @@ Mỗi build có **2 đòn cơ bản + 3 thuật được trang bị**. Di chuy�
 | Sinh lực | Khả năng sống sót | Chuẩn hóa 1.000 trong phòng thử; PvE tính theo tiến triển |
 | Sức bền | Lướt, đỡ, đòn nặng | 100; hồi 20/giây sau 600 ms không tiêu; không hồi khi đỡ |
 | Năng lượng | Ba thuật | 100; hồi 6/giây sau 1.000 ms không dùng thuật |
-| Mạch | Đại thuật | 0–100; nhận khi tác động hợp lệ trong chiến đấu; tiêu 100 một lần |
+| Mạch | Lựa chọn công/thủ | 0–100; đại thuật tiêu 100 + chi phí thuật; Thoát Mạch tiêu 50, hồi 20 s (GT) |
 
 Đánh thường không cần năng lượng để người chơi luôn còn phương án. Lướt tiêu 25 sức bền; đòn nặng mẫu tiêu 12; đỡ tiêu 12/giây và `8 + 0,5 × áp lực đòn` mỗi hit được chặn. Chi phí không bao giờ âm; cạn sức bền dẫn tới guard break, không trừ sang thanh năng lượng.
 
@@ -80,13 +80,19 @@ Guard break có recovery mẫu 500 ms và tín hiệu âm thanh/tư thế rõ. �
 
 Input ở ngoài cửa sổ không bị biến thành combo bí mật. UI luyện tập hiện trạng thái “trúng/hụt/đã chặn” và cửa nối bằng tín hiệu nhẹ; không ép học chuỗi mệnh lệnh dài kiểu đối kháng arcade.
 
+**Counter-hit và punish:** counter-hit là đòn thực sự trúng đối thủ trong startup; punish là đòn thực sự trúng trong recovery. Cả hai vẫn cần tầm, hướng và timing hợp lệ; đối thủ hụt không tự làm phản công trúng. Không mặc định cộng damage/stun hoặc mở cancel thêm chỉ vì nhãn này. HUD hiện phân biệt hit/block/whiff và pha đòn; nhãn counter-hit/punish riêng còn thiếu.
+
 **Hit confirm có dự đoán:** client có thể hiện phản hồi trúng dự đoán và gửi ý định nối thuật kèm action ID trước đó ngay khi người chơi nhập; không chờ round trip nhận hit confirm từ server. Ý định chỉ là yêu cầu, không là bằng chứng đã trúng. Server ghi `acceptedTick` sau khi nhận và xác thực input, giữ ý định trước hit tối đa 120 ms; chỉ cancel sau khi chính server xác nhận hit và điều kiện thuật. Ý định đến trong 80 ms sau hit có thể được thực thi ở tick hợp lệ trong cửa sổ; đánh hụt, hết buffer, hết cửa sổ hoặc thiếu tài nguyên thì bị từ chối, client hòa giải animation/tài nguyên đã dự đoán.
 
 Server không nhận `acceptedTick` do client chỉ định và không lùi cửa sổ theo timestamp client. 80 ms là giả thuyết về cửa cancel, không là thời gian đủ để chờ xác nhận qua mạng; đo tỷ lệ ý định hợp lệ bị từ chối và chênh lệch cảm giác nối đòn ở các profile RTT/jitter. Nếu buffer cùng prediction vẫn không cho kết quả ổn định ở profile mục tiêu, nới cửa sổ hoặc đổi nhánh combo trước khi chốt, thay vì âm thầm trao hit authority cho client.
 
-Trong PvP prototype: một chuỗi không cho phản ứng có mục tiêu ≤800 ms và ≤25% sinh lực chuẩn; không xem đây là trần damage của mọi chiến thuật. Combo dài hơn phải có đoạn có thể đỡ/né/thoát. Không có true combo lặp vô hạn khi đủ cooldown hoặc khi nhiều người thay nhau nâng mục tiêu.
+**Thoát Mạch (GT):** nhấn mới nút đỡ **sau khi vào hitstun**, đủ 50 Mạch, không còn hồi 20 s; giữ đỡ/toggle hoặc buffer từ trước không kích hoạt. Cắt hitstun, không gây damage; 200 ms bảo vệ với đòn đánh và không cho tấn công trong cửa này. Tách hai bên trong arena, giữ hướng đã cam kết, không đẩy boss có giáp. Không thoát khi chết, guard break hoặc từ UI; không phải miễn hazard/đòn nắm boss. Thoát không reset DR/ngân sách, và chống khóa vẫn hoạt động khi chưa có Mạch.
+
+Trong PvP prototype: một chuỗi không cho phản ứng có mục tiêu ≤800 ms và ≤25% sinh lực chuẩn; không xem đây là trần damage của mọi chiến thuật. Combo dài hơn phải có đoạn có thể đỡ/né/thoát. Không có true combo lặp vô hạn khi đủ cooldown hoặc khi nhiều người thay nhau nâng mục tiêu. Ngân sách gắn với mục tiêu và mọi nguồn damage (cận chiến, phản công, đạn), không reset khi đổi người đánh, đổi bên hay tiếp đất. Một cửa phản ứng liên tục **200 ms (GT, 12 tick)** mới reset ngân sách chuỗi; một khoảng trống 1 tick không đủ. Khi hết ngân sách, cắt khóa và bảo đảm cửa phản ứng; damage vượt ngân sách trong chuỗi bị cắt, sự kiện và nhận Mạch dùng damage đã cấp. Đây không phải trần damage sau khi đã có cửa phản ứng.
 
 Khống chế mạnh dùng bộ đếm chung cho mọi nguồn trong cửa sổ trượt 8 giây: lần 1 đủ thời gian, lần 2 70%, lần 3 40%, lần 4 gây 0 ms và cho miễn khống chế mạnh 1 giây. Thời gian mẫu mỗi lần stun ≤300 ms trong PvP; knockup tối đa một lần mỗi 6 giây. Displacement vẫn chịu kiểm tra bản đồ và không là cách né bộ đếm.
+
+Root chỉ cấm di chuyển theo hiệu ứng, vẫn cho đỡ/đánh nếu không có stun riêng; không dùng root như tên khác của stun. Root/stun/launch/displacement phải chia sẻ DR; landing hoặc đổi nguồn không reset. **Root, launch và air follow-up chưa bật trong lát cắt #19**; cần fixture launch–tiếp đất và tìm chuỗi nhiều nguồn đạt gate trước.
 
 Slow không xếp cộng vô hạn: chỉ hiệu lực mạnh nhất, giới hạn 25% ở PvP prototype. Root, stun, launch và kéo cưỡng bức đều thuộc nhóm mạnh; boss dùng luật riêng nhưng không bị khóa vô hạn bởi 4 người chơi.
 
@@ -103,7 +109,7 @@ Chủ đề: điều tiết dòng chảy, giữ khoảng cách vừa và phản 
 | Thuật 3 — Triều Dâng | 450 / 150 / 450 ms | 35 năng lượng / 10 s | Sóng cận-trung 100 damage; đẩy, không launch mặc định; đứng yên khi cam kết |
 | Triều Dâng tăng cường | 650 / 200 / 550 ms | 100 Mạch + chi phí thuật / cooldown chung | 160 damage theo một đợt rộng hơn; đỡ/né được; không xuyên mọi vật cản |
 
-Đại thuật cần xác nhận chủ động: giữ nút thuật được chọn hoặc dùng chế độ toggle rõ trong cài đặt; chạm ngắn vẫn dùng thuật thường. Nếu thiếu năng lượng/cooldown, không tiêu Mạch. Server trừ cả hai tài nguyên trong một lần thực thi; mạng chập chờn không tạo phiên bản thường và tăng cường cùng lúc.
+Đại thuật cần xác nhận chủ động: giữ nút thuật được chọn hoặc dùng chế độ toggle rõ trong cài đặt; chạm ngắn vẫn dùng thuật thường. Lát cắt Long Lưu chọn sẵn ô 3 trước trận: **R / RB+B / nút Triều**, giữ **450 ms (GT)** gửi đúng một yêu cầu tăng cường; chạm ngắn gửi bản thường khi thả, không phát thường ở touch-down. Toggle và chọn ô trong UI vẫn chưa có. Nếu thiếu năng lượng/cooldown, không tiêu Mạch. Server trừ cả hai tài nguyên trong một lần thực thi; mạng chập chờn không tạo phiên bản thường và tăng cường cùng lúc.
 
 Lưu Tiễn không homing trong slice. Giới hạn khoảng cách/projectile lifetime được ghi trong data. Hồi Thế không tự tìm mục tiêu phía sau; thất bại vẫn trả chi phí và chịu recovery. Người chơi cần chọn đúng tình huống thay vì bấm theo cooldown.
 
@@ -189,3 +195,21 @@ PvP cạnh tranh, nếu làm sau MVP, dùng template HP/thuộc tính chuẩn v�
 | Visual | Hitbox, telegraph và cue luôn tồn tại khi giảm hiệu ứng hoặc thiếu asset mỹ phẩm |
 
 Trước khi mở rộng kit, ghi dữ liệu damage, tỷ lệ dùng đòn, thời gian boss, nguyên nhân chết, hiệu lực guard/dash và lỗi mạng. Review các combo tốt nhất lẫn hành động không ai dùng; không chỉ cân bằng theo DPS trung bình.
+
+
+## 14. Lát cắt #19 và trạng thái triển khai
+
+Brief: MMORPG hành động 2D ngang, kit gắn kết như MOBA, khoảng cách/cam kết/phản công như đối kháng. Tỷ trọng 60/25/15 diễn đạt hướng thiết kế, không là quota cân bằng. Không thêm core, engine, nút item/parry/launcher hoặc đổi vũ khí giữa combo. Thế lực/trực hệ theo [#18](https://github.com/loveoverflowcom/myva/issues/18), không theo địa lý. Nguồn nghiên cứu và giới hạn diễn giải nằm trong [issue #19](https://github.com/loveoverflowcom/myva/issues/19); không sao chép kit hoặc coi MK3 sở hữu các cơ chế chung.
+
+| Hạng mục | Đã có trước #19 | Lát cắt này | Còn thiếu / đề xuất |
+| --- | --- | --- | --- |
+| Bộ kit / input | 2 đòn + 3 thuật, 8 nút + joystick | Giữ bộ nút; thuật 3 chạm/giữ, đỡ có cạnh nhấn riêng | Tùy chỉnh/toggle, đo kích nhầm và phản ứng người thật |
+| Trúng / bị đỡ / hụt | Hit confirm cận chiến, đỡ đúng hướng, recovery và buffer | HUD/popup/telemetry và replay ghi kết quả, lý do thiếu tài nguyên/cooldown/cửa nối | Nhãn counter-hit/punish, cancel lướt trên confirm trong §6 vẫn chưa bật; không free-cancel hụt |
+| Mạch công/thủ | Tích Mạch từ hit/đỡ hợp lệ, spawn bắt đầu 0 | Một đại thuật Long Lưu và Thoát Mạch; trừ tài nguyên một lần | Decay ngoài combat, trần farm theo thời gian/mục tiêu và server online |
+| CC | Hitstun, guard break, Slow | DR và budget theo mục tiêu cho hitstun/guard break/displacement đòn hiện có | Root, launcher, anti-air và air follow-up có gate riêng |
+| Boss | Cơ thể có giáp, nhận damage nhưng không stun/đẩy | Giữ poise này; Thoát bảo vệ người chơi trước đòn thường | Đòn nắm/hazard và poise boss nhiều người chưa tồn tại |
+| Authority / replay | Session/sequence, action instance, hit set, ECS mirror | Protocol v2, replay v3; v1/v2 replay bị từ chối rõ | Transport hai client, RTT/jitter/mất gói, reconnect mạng thật |
+
+**Phạm vi ruleset:** code hiện dùng một phòng thử chuẩn hóa: mọi cơ thể không giáp (người chơi và quái thường) dùng chung budget; boss có giáp giữ luật trên. Không tuyên bố đã có bộ PvE/PvP production có thể chọn riêng. Stun từng lần giới hạn 300 ms; guard break có baseline 500 ms rồi qua cùng DR/budget. Damage chuỗi tính theo HP chuẩn của mẫu mục tiêu. Tất cả là GT cần playtest, không là thông số cân bằng đã đo.
+
+Nguồn dữ liệu runtime duy nhất: `packages/sim/src/kit.rs` (đại thuật/timing/chi phí), `fighter.rs` (cửa nối/Thoát), `control.rs` (DR/budget). `myva-gameplay` chỉ gọi core và mirror feedback; graybox chỉ gom ý định và đọc state/event. Không lưu bản luật thứ hai trong ECS/HUD. Bằng chứng, cách tái lập và các gate NOT_RUN nằm trong [báo cáo #19](../reports/combat-mach.md).

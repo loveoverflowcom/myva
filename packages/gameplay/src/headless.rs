@@ -11,6 +11,22 @@ use myva_sim::session::Session;
 
 use crate::{Authority, GameplayPlugin, SimSession};
 
+/// Cùng fixture Mạch #19 cho CLI, test ECS và harness native/WASM.
+pub fn mach_app(seed: u64, authority: Authority) -> App {
+    let mut app = headless_app(myva_sim::fixture::mach_ground(seed), authority);
+    app.add_systems(
+        bevy_app::FixedUpdate,
+        submit_mach.before(crate::GameplaySet::Input),
+    );
+    app
+}
+
+fn submit_mach(mut session: ResMut<SimSession>) {
+    for command in myva_sim::fixture::mach_commands(session.get().world().tick()) {
+        session.submit(command).expect("lệnh Mạch fixture hợp lệ");
+    }
+}
+
 /// Lịch sử `(tick, hash)` sau mỗi tick; chỉ ghi khi resource này tồn tại.
 #[derive(Resource, Debug, Default, Clone, PartialEq, Eq)]
 pub struct TickHistory(pub Vec<(u32, u64)>);

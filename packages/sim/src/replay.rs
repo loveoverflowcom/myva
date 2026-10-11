@@ -4,7 +4,7 @@
 //! bên, kể cả boss, đều được ghi, nên chạy lại không cần bộ não boss hay bot.
 //!
 //! ```text
-//! myva-replay 2
+//! myva-replay 3
 //! seed 7                   # seed phiên đã sinh lệnh AI; chỉ để truy vết
 //! fighter long-luu 640000 1 1   # kit, x, hướng, phe (bỏ trống: không phe)
 //! npc huong-dan 900000     # NPC, x
@@ -13,8 +13,8 @@
 //! end 3600
 //! ```
 //!
-//! Bản 1 (không có seed, phe, NPC) vẫn đọc được. Hash chỉ so được trong cùng build và cùng target
-//! (combat-progression-balance.md §11).
+//! Bản 1/2 bị từ chối: luật Mạch/CC và state hash đã đổi (#19). Không chạy file cũ bằng luật
+//! mới rồi coi kết quả là tương thích. Hash so trong cùng revision; harness kiểm native/WASM.
 
 use std::fmt::{self, Write as _};
 
@@ -27,8 +27,8 @@ use crate::npc::{NpcSpec, npc_by_id};
 use crate::tick::Tick;
 use crate::world::{Event, World};
 
-pub const HEADER: &str = "myva-replay 2";
-/// Header bản cũ vẫn được chấp nhận khi đọc.
+pub const HEADER: &str = "myva-replay 3";
+/// Chỉ để nhận diện và báo lỗi rõ ràng.
 pub const HEADER_V1: &str = "myva-replay 1";
 
 /// Các kit có thể xuất hiện trong replay.
@@ -189,7 +189,15 @@ impl Replay {
             .map(|(i, line)| (i + 1, line.split('#').next().unwrap_or("").trim()))
             .filter(|(_, line)| !line.is_empty());
         match lines.next() {
-            Some((_, HEADER | HEADER_V1)) => {}
+            Some((_, HEADER)) => {}
+            Some((line, HEADER_V1 | "myva-replay 2")) => {
+                return Err(ReplayError::Parse {
+                    line,
+                    message:
+                        "replay v1/v2 không tương thích luật Mạch/CC v3; cần build gốc để phát"
+                            .to_owned(),
+                });
+            }
             other => {
                 return Err(ReplayError::Parse {
                     line: other.map_or(1, |(line, _)| line),
@@ -456,11 +464,14 @@ mod tests {
     }
 
     #[test]
-    fn version_1_files_still_play() {
+    fn old_rules_are_rejected_explicitly() {
         let v1 = format!("{HEADER_V1}\nfighter long-luu 640000 1\ninput 0 0 1 1 0 8\nend 30\n");
-        let replay = Replay::parse(&v1).unwrap();
-        assert_eq!(replay.spawns[0].team, None);
-        assert_eq!(replay.play().unwrap().world.tick(), 30);
+        for text in [v1, "myva-replay 2\nend 0\n".to_owned()] {
+            assert!(matches!(
+                Replay::parse(&text),
+                Err(ReplayError::Parse { line: 1, .. })
+            ));
+        }
     }
 
     #[test]

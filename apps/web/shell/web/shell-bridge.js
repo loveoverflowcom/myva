@@ -1,7 +1,7 @@
 // v2: event mang tóm tắt trận thay cho điểm của spike; thêm lệnh trận và message replay.
 const VERSION = 2;
-// Lõi ghi bản 2 (thêm seed, phe, NPC); bản 1 vẫn đọc được nên shell nhận cả hai.
-const REPLAY_HEADER = /^myva-replay [12]\n/;
+// Bản 3 dùng luật Mạch/CC mới; file v1/v2 phải phát ở revision gốc.
+const REPLAY_HEADER = /^myva-replay 3\n/;
 let frame = null;
 let session = null;
 let deadline = null;

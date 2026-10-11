@@ -1,6 +1,7 @@
 //! Nhân vật trong phòng thử: trạng thái, xử lý input và vật lý số nguyên
 //! (combat.md §2–§5, §11).
 
+use crate::control::{ControlBudget, STUN_LIMIT};
 use crate::input::{Buttons, InputFrame, Intent};
 use crate::kit::{ActionKind, ActionSpec, HUMAN, Kit, PX, Phase, Rect};
 use crate::meter::Meter;
@@ -41,6 +42,43 @@ pub const ACTION_BUFFER: u32 = ms_to_ticks(120);
 pub const LIGHT_CHAIN_WINDOW: u32 = ms_to_ticks(100);
 /// Nhẹ xác nhận trúng → thuật trong 80 ms sau hit.
 pub const HIT_CANCEL_WINDOW: u32 = ms_to_ticks(80);
+pub const ESCAPE_COST: u32 = 50;
+pub const ESCAPE_COOLDOWN: u32 = ms_to_ticks(20_000);
+pub const ESCAPE_PROTECTION: u32 = ms_to_ticks(200);
+pub const ESCAPE_RADIUS: i32 = 120 * PX;
+pub const ESCAPE_PUSH: i32 = 60 * PX;
+
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
+pub enum Contact {
+    #[default]
+    Pending,
+    Hit,
+    Blocked,
+    Whiff,
+    Countered,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum Denial {
+    State,
+    HitRequired,
+    Window,
+    Stamina,
+    Energy,
+    Mach,
+    Cooldown,
+    Unsupported,
+    FreshGuardRequired,
+}
+
+/// Phản hồi do lõi xác nhận, dùng chung snapshot và HUD luyện tập.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
+pub struct CombatFeedback {
+    pub contact: Contact,
+    pub denial: Option<Denial>,
+    pub escape_cooldown: u32,
+    pub control: ControlBudget,
+}
 
 /// ID miền của nhân vật: chỉ số theo thứ tự spawn, không tái sử dụng trong một `World`.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -76,6 +114,10 @@ pub enum State {
     GuardBreak {
         remaining: u32,
     },
+    /// Cắt hitstun, chỉ bảo vệ với đòn đánh; không ra đòn trong cửa bảo vệ.
+    Escape {
+        remaining: u32,
+    },
     Downed,
 }
 
@@ -83,7 +125,7 @@ enum Outcome {
     Started(Option<ActionKind>),
     /// Chưa tới cửa sổ hợp lệ; có thể buffer.
     NotYet,
-    Refused,
+    Refused(Denial),
 }
 
 #[derive(Clone, Debug, Hash)]
@@ -102,6 +144,8 @@ pub struct Fighter {
     pub state: State,
     pub cooldowns: [u32; 3],
     pub statuses: Statuses,
+    pub feedback: CombatFeedback,
+    guard_held: bool,
     pub(crate) move_x: i8,
     pub(crate) last_seq: Option<u32>,
     pub(crate) buffered: Option<(Intent, u32)>,
@@ -131,6 +175,8 @@ impl Fighter {
             state: State::Neutral,
             cooldowns: [0; 3],
             statuses: Statuses::default(),
+            feedback: CombatFeedback::default(),
+            guard_held: false,
             move_x: 0,
             last_seq: None,
             buffered: None,
@@ -194,6 +240,7 @@ impl Fighter {
                 (DASH_STARTUP..DASH_STARTUP + DASH_IFRAMES).contains(&elapsed)
             }
             State::Downed => true,
+            State::Escape { .. } => true,
             _ => false,
         }
     }
@@ -235,28 +282,99 @@ impl Fighter {
         hitstun: u32,
         knockback: i32,
         events: &mut Vec<Event>,
-    ) {
+    ) -> u32 {
         // Đã bị hạ thì không nhận thêm đòn, nên `Downed` chỉ phát một lần.
         if self.state == State::Downed {
-            return;
+            return 0;
         }
+        let granted = if self.kit.body.armored {
+            crate::control::Granted {
+                damage,
+                ticks: 0,
+                release: false,
+            }
+        } else {
+            self.feedback
+                .control
+                .grant(damage, hitstun.min(STUN_LIMIT), self.kit.body.max_hp)
+        };
+        if !self.kit.body.armored && (granted.damage != damage || granted.ticks != hitstun) {
+            events.push(Event::ControlLimited {
+                fighter: self.id,
+                ticks: granted.ticks,
+                damage: granted.damage,
+            });
+        }
+        let damage = granted.damage;
         self.hp = self.hp.saturating_sub(damage);
         if self.hp == 0 {
             self.state = State::Downed;
             self.buffered = None;
             self.statuses.clear();
             events.push(Event::Downed { fighter: self.id });
-            return;
+            return damage;
         }
         if self.kit.body.armored {
-            return;
+            return damage;
         }
-        self.x = clamp_x(self.kit, self.x + knockback);
+        if granted.ticks > 0 {
+            self.x = clamp_x(self.kit, self.x + knockback);
+        }
         // Bị trúng không phát lại thao tác cũ trong buffer.
+        let locked = matches!(self.state, State::Hitstun { .. } | State::GuardBreak { .. });
+        if granted.ticks > 0 || (granted.release && locked) {
+            self.buffered = None;
+        }
+        if granted.release && locked {
+            self.state = State::Neutral;
+        } else if granted.ticks > 0 {
+            let remaining = match self.state {
+                State::Hitstun { remaining } | State::GuardBreak { remaining } => {
+                    remaining.max(granted.ticks)
+                }
+                _ => granted.ticks,
+            };
+            self.state = State::Hitstun { remaining };
+        }
+        damage
+    }
+
+    pub(crate) fn break_guard(&mut self, events: &mut Vec<Event>) {
+        let granted = self
+            .feedback
+            .control
+            .grant(0, GUARD_BREAK, self.kit.body.max_hp);
+        if granted.release || granted.ticks == 0 {
+            self.state = State::Neutral;
+        } else if granted.ticks > 0 {
+            self.state = State::GuardBreak {
+                remaining: granted.ticks,
+            };
+        }
+        events.push(Event::GuardBroken { fighter: self.id });
+    }
+
+    fn escape(&mut self, fresh: bool, events: &mut Vec<Event>) -> Result<(), Denial> {
+        if !matches!(self.state, State::Hitstun { .. }) {
+            return Err(Denial::State);
+        }
+        if !fresh {
+            return Err(Denial::FreshGuardRequired);
+        }
+        if self.feedback.escape_cooldown > 0 {
+            return Err(Denial::Cooldown);
+        }
+        if !self.mach.try_spend(ESCAPE_COST) {
+            return Err(Denial::Mach);
+        }
+        self.feedback.escape_cooldown = ESCAPE_COOLDOWN;
+        self.feedback.denial = None;
         self.buffered = None;
-        self.state = State::Hitstun {
-            remaining: hitstun.max(1),
+        self.state = State::Escape {
+            remaining: ESCAPE_PROTECTION,
         };
+        events.push(Event::MachEscaped { fighter: self.id });
+        Ok(())
     }
 
     pub(crate) fn apply_input(
@@ -273,6 +391,17 @@ impl Fighter {
         let (move_x, held, intent) = frame.map_or((0, Buttons::NONE, None), |f| {
             (f.move_x.signum(), f.held, f.intent())
         });
+        if intent == Some(Intent::CancelPending) {
+            self.buffered = None;
+            self.move_x = 0;
+            self.guard_held = false;
+            if matches!(self.state, State::Guard { .. }) {
+                self.state = State::Neutral;
+            }
+            return;
+        }
+        let fresh_guard = !self.guard_held;
+        self.guard_held = held.contains(Buttons::GUARD);
         // `World` xử lý tương tác; ý định này không bắt đầu hay xóa hành động trong buffer.
         let intent = intent.filter(|&want| want != Intent::Interact);
         self.move_x = move_x;
@@ -284,9 +413,21 @@ impl Fighter {
             self.state = State::Neutral;
         }
 
+        if intent == Some(Intent::GuardPress) {
+            if matches!(self.state, State::Hitstun { .. })
+                && let Err(reason) = self.escape(fresh_guard, events)
+            {
+                self.deny(reason, events);
+            }
+            // Không buffer một lần nhấn đỡ trước hitstun để thoát sau chuyển trạng thái.
+            self.buffered = None;
+        }
+        let intent = intent.filter(|&want| want != Intent::GuardPress);
+
         if let Some(want) = intent.or(self.buffered.map(|(buffered, _)| buffered)) {
             match self.try_start(want, next_instance) {
                 Outcome::Started(action) => {
+                    self.feedback.denial = None;
                     self.buffered = None;
                     if let Some(action) = action {
                         events.push(Event::ActionStarted {
@@ -298,15 +439,37 @@ impl Fighter {
                 // Input ngoài cửa sổ không bị biến thành combo bí mật.
                 Outcome::NotYet if intent.is_some() => {
                     self.buffered = self.can_buffer(want).then_some((want, ACTION_BUFFER));
+                    if self.buffered.is_none() {
+                        let reason = match self.state {
+                            State::Attack {
+                                confirmed_at: None, ..
+                            } if matches!(want, Intent::Skill(_) | Intent::Ultimate(_)) => {
+                                Denial::HitRequired
+                            }
+                            _ => Denial::Window,
+                        };
+                        self.deny(reason, events);
+                    }
                 }
                 Outcome::NotYet => {}
-                Outcome::Refused => self.buffered = None,
+                Outcome::Refused(reason) => {
+                    self.buffered = None;
+                    self.deny(reason, events);
+                }
             }
         }
 
         if self.state == State::Neutral && self.is_grounded() && held.contains(Buttons::GUARD) {
             self.state = State::Guard { elapsed: 0 };
         }
+    }
+
+    fn deny(&mut self, reason: Denial, events: &mut Vec<Event>) {
+        self.feedback.denial = Some(reason);
+        events.push(Event::ActionDenied {
+            fighter: self.id,
+            reason,
+        });
     }
 
     fn try_start(&mut self, want: Intent, next_instance: &mut u32) -> Outcome {
@@ -328,6 +491,11 @@ impl Fighter {
                     {
                         self.start_attack(ActionKind::Skill(slot), next_instance)
                     }
+                    Intent::Ultimate(slot)
+                        if confirmed_at.is_some_and(|hit| elapsed - hit <= HIT_CANCEL_WINDOW) =>
+                    {
+                        self.start_attack(ActionKind::Ultimate(slot), next_instance)
+                    }
                     _ => Outcome::NotYet,
                 }
             }
@@ -335,7 +503,8 @@ impl Fighter {
             State::Guard { .. }
             | State::Hitstun { .. }
             | State::GuardBreak { .. }
-            | State::Downed => Outcome::Refused,
+            | State::Escape { .. }
+            | State::Downed => Outcome::Refused(Denial::State),
         }
     }
 
@@ -347,7 +516,10 @@ impl Fighter {
                 let remaining = self.kit.spec(action).total() - elapsed;
                 // Ý định nối thuật được giữ trước hit để chờ server xác nhận trúng.
                 remaining <= ACTION_BUFFER
-                    || matches!((action, want), (ActionKind::Light(_), Intent::Skill(_)))
+                    || matches!(
+                        (action, want),
+                        (ActionKind::Light(_), Intent::Skill(_) | Intent::Ultimate(_))
+                    )
             }
             State::Dash { elapsed, .. } => DASH_TOTAL - elapsed <= ACTION_BUFFER,
             _ => false,
@@ -363,7 +535,7 @@ impl Fighter {
             }
             Intent::Dash if grounded => {
                 if !self.stamina.try_spend(DASH_STAMINA) {
-                    return Outcome::Refused;
+                    return Outcome::Refused(Denial::Stamina);
                 }
                 let dir = if self.move_x != 0 {
                     self.move_x
@@ -379,20 +551,37 @@ impl Fighter {
             Intent::Skill(slot) if grounded => {
                 self.start_attack(ActionKind::Skill(slot), next_instance)
             }
-            _ => Outcome::Refused,
+            Intent::Ultimate(slot) if grounded => {
+                self.start_attack(ActionKind::Ultimate(slot), next_instance)
+            }
+            _ => Outcome::Refused(Denial::State),
         }
     }
 
     fn start_attack(&mut self, action: ActionKind, next_instance: &mut u32) -> Outcome {
         let kit: &'static Kit = self.kit;
+        let mach_cost = if let ActionKind::Ultimate(slot) = action {
+            match kit.ultimate {
+                Some(ultimate) if ultimate.slot == slot => ultimate.mach_cost,
+                _ => return Outcome::Refused(Denial::Unsupported),
+            }
+        } else {
+            0
+        };
         let spec = kit.spec(action);
-        if let ActionKind::Skill(slot) = action
+        if let ActionKind::Skill(slot) | ActionKind::Ultimate(slot) = action
             && self.cooldowns[usize::from(slot)] > 0
         {
-            return Outcome::Refused;
+            return Outcome::Refused(Denial::Cooldown);
         }
-        if !self.stamina.can_spend(spec.stamina_cost) || !self.energy.can_spend(spec.energy_cost) {
-            return Outcome::Refused;
+        if !self.stamina.can_spend(spec.stamina_cost) {
+            return Outcome::Refused(Denial::Stamina);
+        }
+        if !self.energy.can_spend(spec.energy_cost) {
+            return Outcome::Refused(Denial::Energy);
+        }
+        if !self.mach.can_spend(mach_cost) {
+            return Outcome::Refused(Denial::Mach);
         }
         // Chỉ trừ sau khi đủ mọi tài nguyên, để không tiêu nửa vời.
         if spec.stamina_cost > 0 {
@@ -401,7 +590,10 @@ impl Fighter {
         if spec.energy_cost > 0 {
             self.energy.try_spend(spec.energy_cost);
         }
-        if let ActionKind::Skill(slot) = action {
+        if mach_cost > 0 {
+            self.mach.try_spend(mach_cost);
+        }
+        if let ActionKind::Skill(slot) | ActionKind::Ultimate(slot) = action {
             self.cooldowns[usize::from(slot)] = spec.cooldown;
         }
         self.state = State::Attack {
@@ -412,6 +604,7 @@ impl Fighter {
         };
         *next_instance = next_instance.wrapping_add(1);
         self.hit_set.clear();
+        self.feedback.contact = Contact::Pending;
         Outcome::Started(Some(action))
     }
 
@@ -445,6 +638,11 @@ impl Fighter {
     /// Tiến bộ đếm ở cuối tick; chuyển trạng thái khi hết thời gian.
     pub(crate) fn advance(&mut self, events: &mut Vec<Event>) {
         let kit: &'static Kit = self.kit;
+        let release = self.feedback.control.tick(matches!(
+            self.state,
+            State::Hitstun { .. } | State::GuardBreak { .. }
+        ));
+        self.feedback.escape_cooldown = self.feedback.escape_cooldown.saturating_sub(1);
         self.state = match self.state {
             State::Attack {
                 action,
@@ -452,6 +650,17 @@ impl Fighter {
                 instance,
                 confirmed_at,
             } => {
+                let spec = kit.spec(action);
+                if elapsed + 1 == spec.startup + spec.active
+                    && spec.projectile.is_none()
+                    && self.hit_set.is_empty()
+                {
+                    self.feedback.contact = Contact::Whiff;
+                    events.push(Event::Whiff {
+                        fighter: self.id,
+                        action,
+                    });
+                }
                 if elapsed + 1 >= kit.spec(action).total() {
                     State::Neutral
                 } else {
@@ -465,10 +674,8 @@ impl Fighter {
             }
             State::Guard { elapsed } => {
                 if self.stamina.drain_per_sec(GUARD_DRAIN_PER_SEC) {
-                    events.push(Event::GuardBroken { fighter: self.id });
-                    State::GuardBreak {
-                        remaining: GUARD_BREAK,
-                    }
+                    self.break_guard(events);
+                    self.state
                 } else {
                     State::Guard {
                         elapsed: elapsed.saturating_add(1),
@@ -491,9 +698,17 @@ impl Fighter {
             State::GuardBreak { remaining } if remaining > 1 => State::GuardBreak {
                 remaining: remaining - 1,
             },
-            State::Hitstun { .. } | State::GuardBreak { .. } => State::Neutral,
+            State::Escape { remaining } if remaining > 1 => State::Escape {
+                remaining: remaining - 1,
+            },
+            State::Hitstun { .. } | State::GuardBreak { .. } | State::Escape { .. } => {
+                State::Neutral
+            }
             state @ (State::Neutral | State::Downed) => state,
         };
+        if release && matches!(self.state, State::Hitstun { .. } | State::GuardBreak { .. }) {
+            self.state = State::Neutral;
+        }
 
         // Không hồi sức bền khi đỡ.
         self.stamina
@@ -505,6 +720,15 @@ impl Fighter {
         let id = self.id;
         self.statuses
             .tick(|kind| events.push(Event::StatusEnded { fighter: id, kind }));
+        if self.buffered.is_some_and(|(_, ttl)| ttl == 1) {
+            let reason = match self.state {
+                State::Attack {
+                    confirmed_at: None, ..
+                } => Denial::HitRequired,
+                _ => Denial::Window,
+            };
+            self.deny(reason, events);
+        }
         self.buffered = self
             .buffered
             .and_then(|(intent, ttl)| (ttl > 1).then_some((intent, ttl - 1)));

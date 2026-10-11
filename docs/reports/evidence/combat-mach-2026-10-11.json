@@ -1,0 +1,357 @@
+{
+  "date": "2026-10-11T09:36:21.602578+00:00",
+  "issue": "https://github.com/loveoverflowcom/myva/issues/19",
+  "scope": "Long Lưu offense/defense Mạch, target CC budget, training feedback; partial A/B slice, no human acceptance claim.",
+  "source": {
+    "base_revision": "942a70e6f05fbe1dbb09520c59aa4feda0096d40",
+    "dirty": true,
+    "branch": "feat/combat-mach-guardrails",
+    "sha256": "b7aaba234ad65204ce1016387a289b7dd7bb372280a5bd1dd891e7abcbb6ba88",
+    "file_count": 140,
+    "pathspecs": [
+      "apps",
+      "packages",
+      "scripts",
+      "tests",
+      "assets/fixture",
+      "prototypes/native",
+      "Cargo.toml",
+      "Cargo.lock",
+      "rust-toolchain.toml",
+      "package.json",
+      "package-lock.json",
+      "playwright.config.mjs"
+    ],
+    "algorithm": "SHA256 over sorted unique git ls-files -z -co --exclude-standard pathspecs: UTF-8 path + NUL + file bytes + NUL; docs excluded."
+  },
+  "host": {
+    "os": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+    "logical_cpus": 22,
+    "cpu": "Intel(R) Core(TM) Ultra 7 155H",
+    "mem_total_kib": 24095604,
+    "libudev": "Development .deb extracted to /tmp/myva-issue19-deps/root; PKG_CONFIG_PATH and LIBRARY_PATH point to usr/lib/x86_64-linux-gnu there; system libudev.so.1 linked, no system package installation."
+  },
+  "tools": {
+    "rustc": "rustc 1.97.1 (8bab26f4f 2026-07-14)",
+    "wasm_bindgen": "wasm-bindgen 0.2.129",
+    "node": "v24.21.0",
+    "chromium": "153.0.8010.36"
+  },
+  "rules": {
+    "protocol": 2,
+    "replay": 3,
+    "tick_hz": 60,
+    "ultimate_slot": 2,
+    "ultimate_mach": 100,
+    "ultimate_energy": 35,
+    "shared_cooldown_ticks": 600,
+    "escape_mach": 50,
+    "escape_cooldown_ticks": 1200,
+    "escape_protection_ticks": 12,
+    "cc_lock_ticks": 48,
+    "response_ticks": 12,
+    "damage_percent": 25,
+    "data_sha256": {
+      "packages/sim/src/kit.rs": "c10777a40e5d8f692ee0526186ccaceb24759d326f3cc584c21e190cef1e8880",
+      "packages/sim/src/fighter.rs": "6ff87dc4b5f0fc38310a496f7c74f9b423363a6628a1473a490993e3ef33527c",
+      "packages/sim/src/control.rs": "c5065e49caa5fd2259dd16e37a6951b63abbf43c10791d51f6f22295b3829a66"
+    }
+  },
+  "checks": {
+    "fmt": "PASS",
+    "native_clippy_all_targets": "PASS",
+    "wasm_clippy": "PASS",
+    "workspace_tests": {
+      "status": "PASS",
+      "passed": 180,
+      "failed": 0
+    },
+    "asset_fixture_check": "PASS",
+    "asset_validator_in_web_build": "PASS",
+    "docs": {
+      "status": "PASS",
+      "output": "PASS: 420 local links/anchors in 47 Markdown files"
+    }
+  },
+  "fixture": {
+    "name": "mach_ground/mach_commands",
+    "seed": 7,
+    "ticks": 2000,
+    "ultimate_count": 1,
+    "escape_count": 1,
+    "player_hp": 880,
+    "player_mach": 18,
+    "boss_hp": 530,
+    "native_ecs": "seed 7 · Server · 2000 tick qua 2001 frame · hash cuối 9fc3334d4ed8c88b\n  #0 Player Long Lưu: HP 880/1000\n  #1 Player Kẻ Giữ Đập: HP 530/2400\n  đã ghi replay vào target/issue19-mach.myva-replay\n  sự kiện: {\"Thoát Mạch\": 1, \"ra đòn\": 40, \"trúng\": 40}\n  entity ECS: [(\"người chơi\", 2), (\"quái\", 0), (\"NPC\", 0), (\"đạn đang bay\", 0)]\n  claim phần thưởng (server): 0\n  ECS và lõi server-only khớp 2000 hash từng tick\n",
+    "native_replay_verify": "khớp 34 mốc hash qua 2000 tick; hash cuối 9fc3334d4ed8c88b\n#0 Long Lưu: HP 880/1000, Neutral\n#1 Kẻ Giữ Đập: HP 530/2400, Neutral\n",
+    "replay_sha256": "ec910bd5f22c5064863f05c4ab3ce3b4c87ef690263f496e99510490c0b59448",
+    "bot": "Scripted commands through Session::submit, no injected meter/state. Boss body manually commanded; not human playtest or boss AI balance."
+  },
+  "determinism": {
+    "date": "2026-10-11T09:20:46.480Z",
+    "node": "v24.21.0",
+    "ticks": 3600,
+    "seeds": [
+      {
+        "seed": 1,
+        "ticks": 3600,
+        "identical": true,
+        "firstMismatch": null,
+        "final": "eb7937e10ba78ed0",
+        "mach": {
+          "identical": true,
+          "firstMismatch": null,
+          "final": "f579852957e6041c"
+        }
+      },
+      {
+        "seed": 7,
+        "ticks": 3600,
+        "identical": true,
+        "firstMismatch": null,
+        "final": "a3f74b34b5cfdef0",
+        "mach": {
+          "identical": true,
+          "firstMismatch": null,
+          "final": "f579852957e6041c"
+        }
+      },
+      {
+        "seed": 12,
+        "ticks": 3600,
+        "identical": true,
+        "firstMismatch": null,
+        "final": "b1192671baeda01b",
+        "mach": {
+          "identical": true,
+          "firstMismatch": null,
+          "final": "f579852957e6041c"
+        }
+      }
+    ]
+  },
+  "browser": {
+    "command": "MYVA_WEB_TEST_PORT=8091 CHROME_PATH=/usr/bin/google-chrome npm run test:web",
+    "renderer": "Headless desktop Chromium, WebGL2 via ANGLE SwiftShader; touch and gamepad are emulated.",
+    "stats": {
+      "startTime": "2026-10-11T09:30:15.695Z",
+      "duration": 319930.431,
+      "expected": 11,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "keyboard": {
+      "before": {
+        "tick": 16,
+        "actions": 0,
+        "player": {
+          "state": "neutral",
+          "action": null,
+          "mach": 0,
+          "energy": 100,
+          "cooldowns": [
+            0,
+            0,
+            0
+          ],
+          "denial": "None",
+          "contact": "Pending"
+        }
+      },
+      "blurred": {
+        "tick": 46,
+        "actions": 0,
+        "player": {
+          "state": "neutral",
+          "action": null,
+          "mach": 0,
+          "energy": 100,
+          "cooldowns": [
+            0,
+            0,
+            0
+          ],
+          "denial": "None",
+          "contact": "Pending"
+        }
+      },
+      "denied": {
+        "tick": 151,
+        "actions": 0,
+        "player": {
+          "state": "neutral",
+          "action": null,
+          "mach": 0,
+          "energy": 100,
+          "cooldowns": [
+            0,
+            0,
+            0
+          ],
+          "denial": "Some(Mach)",
+          "contact": "Pending"
+        }
+      },
+      "normal": {
+        "tick": 166,
+        "actions": 1,
+        "player": {
+          "state": "attack",
+          "action": {
+            "name": "Trieu Dang",
+            "phase": "Startup"
+          },
+          "mach": 0,
+          "energy": 65,
+          "cooldowns": [
+            0,
+            0,
+            585
+          ],
+          "denial": "None",
+          "contact": "Pending"
+        }
+      }
+    },
+    "touch": {
+      "before": {
+        "tick": 1,
+        "actions": 0,
+        "player": {
+          "state": "neutral",
+          "action": null,
+          "mach": 0,
+          "energy": 100,
+          "cooldowns": [
+            0,
+            0,
+            0
+          ],
+          "denial": "None",
+          "contact": "Pending"
+        }
+      },
+      "denied": {
+        "tick": 123,
+        "actions": 0,
+        "player": {
+          "state": "neutral",
+          "action": null,
+          "mach": 0,
+          "energy": 100,
+          "cooldowns": [
+            0,
+            0,
+            0
+          ],
+          "denial": "Some(Mach)",
+          "contact": "Pending"
+        }
+      },
+      "normal": {
+        "tick": 216,
+        "actions": 1,
+        "player": {
+          "state": "attack",
+          "action": {
+            "name": "Trieu Dang",
+            "phase": "Startup"
+          },
+          "mach": 0,
+          "energy": 65,
+          "cooldowns": [
+            0,
+            0,
+            593
+          ],
+          "denial": "None",
+          "contact": "Pending"
+        }
+      }
+    },
+    "touch_button_count": 8,
+    "gamepad": {
+      "after": {
+        "tick": 188,
+        "actions": 2,
+        "player": {
+          "state": "neutral",
+          "action": null,
+          "mach": 8,
+          "energy": 82,
+          "cooldowns": [
+            97,
+            0,
+            0
+          ],
+          "denial": "None",
+          "contact": "Hit"
+        }
+      },
+      "deniedUltimate": {
+        "tick": 263,
+        "actions": 2,
+        "player": {
+          "state": "neutral",
+          "action": null,
+          "mach": 8,
+          "energy": 89,
+          "cooldowns": [
+            22,
+            0,
+            0
+          ],
+          "denial": "Some(Mach)",
+          "contact": "Hit"
+        }
+      }
+    },
+    "bridge_rejected_cases": 11,
+    "browser_recorded_replay_native_verify": "khớp 63 mốc hash qua 3774 tick; hash cuối edc129eb045fcdd0\n#0 Long Lưu: HP 1000/1000, Neutral\n#1 Kẻ Giữ Đập: HP 0/2400, Downed\n",
+    "test_results_sha256": "956bfc302871975612b9adaeae3bcc048a300c4ad06c0d3e73c8767bbc0c253b"
+  },
+  "bundle": {
+    "revision": "942a70e6f05fbe1dbb09520c59aa4feda0096d40",
+    "dirty": true,
+    "profile": "web",
+    "rustc": "rustc 1.97.1 (8bab26f4f 2026-07-14)",
+    "total_bytes": 87392783,
+    "total_gzip_bytes": 12048357,
+    "files": [
+      {
+        "path": "game/pkg/myva_web_game_bg.wasm",
+        "bytes": 86303842,
+        "gzip_bytes": 11508425,
+        "sha256": "df0b1c6614cb10536bb6ccf32455a7ba9b16ae8f2f4b43602084688739d8e7c5"
+      },
+      {
+        "path": "shell/myva_web_shell_bg.wasm",
+        "bytes": 440700,
+        "gzip_bytes": 75307,
+        "sha256": "2f083025540a7cdbe3dee2efb3255551fd3183b508c5a82e0cba23127f7cf714"
+      },
+      {
+        "path": "shell/snippets/myva-web-shell-2f0fcbe15a87b985/web/shell-bridge.js",
+        "bytes": 5899,
+        "gzip_bytes": 2443,
+        "sha256": "3f36cdd00bebefc3bb5e66466b857a9330f257fe98be4b8ca0204112eedc59d1"
+      }
+    ]
+  },
+  "open_gates": {
+    "new_and_experienced_humans": "NOT_RUN",
+    "confirm_short_long_reaction": "NOT_RUN",
+    "physical_android_ios_gamepad": "NOT_RUN",
+    "rtt_jitter_loss": "BLOCKED: two-client transport #5 absent",
+    "root_launch_landing_wall_crossup": "NOT_RUN: mechanics remain gated",
+    "production_pve_pvp_coop_poise": "NOT_RUN"
+  },
+  "screenshots": {
+    "run": "Focused Mạch browser regressions on the final runtime build, 2 passed; same build used in the full browser suite.",
+    "sha256": {
+      "docs/reports/evidence/combat-mach-keyboard.png": "6344d67514f0a584479a0148f163bcf78f84de993b27f0ffc9ffe0bcb839fae2",
+      "docs/reports/evidence/combat-mach-touch.png": "11879a75e6583f78dbe40b3b3d638f239ca1a376b169cd129a1e70a49bf43aa6"
+    }
+  }
+}

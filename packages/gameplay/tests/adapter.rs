@@ -53,6 +53,46 @@ fn hashes(app: &App) -> Vec<u64> {
         .collect()
 }
 
+#[test]
+fn mach_fixture_keeps_server_client_core_and_feedback_mirrors_identical() {
+    let core: Vec<_> = fixture::run_mach_core(7, 2_000)
+        .iter()
+        .map(|r| r.hash)
+        .collect();
+    for authority in [Authority::Server, Authority::Client] {
+        let mut app = myva_gameplay::headless::mach_app(7, authority);
+        app.init_resource::<Collected>()
+            .add_systems(Update, collect);
+        for wanted in [1_001, 1_040, 1_750, 1_761, 2_000] {
+            run_until(&mut app, wanted);
+            let snapshot = app.world().resource::<SimSession>().get().snapshot();
+            assert_eq!(mirrored_views(app.world_mut()).0, snapshot.fighters);
+        }
+        assert_eq!(hashes(&app), core);
+        let events = &app.world().resource::<Collected>().0;
+        assert_eq!(
+            events
+                .iter()
+                .filter(|r| matches!(r.event, Event::MachEscaped { .. }))
+                .count(),
+            1
+        );
+        assert_eq!(
+            events
+                .iter()
+                .filter(|r| matches!(
+                    r.event,
+                    Event::ActionStarted {
+                        action: ActionKind::Ultimate(2),
+                        ..
+                    }
+                ))
+                .count(),
+            1
+        );
+    }
+}
+
 fn count<T: Component>(app: &mut App) -> usize {
     let world = app.world_mut();
     world.query_filtered::<(), With<T>>().iter(world).count()

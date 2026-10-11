@@ -10,7 +10,7 @@ use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use myva_sim::Buttons;
 
-use crate::fight::{ArenaView, GraySet, HostCommand, Intent, Match};
+use crate::fight::{ArenaView, GraySet, HostCommand, Intent, Match, SkillGesture};
 
 /// Đường kính vùng chạm tối thiểu, px logic.
 pub const MIN_TARGET: f32 = 48.0;
@@ -75,7 +75,7 @@ impl TouchButton {
             Self::Heavy => "Nang",
             Self::Skill(0) => "Tien",
             Self::Skill(1) => "The",
-            Self::Skill(_) => "Trieu",
+            Self::Skill(_) => "Trieu/Giu",
             Self::Jump => "Nhay",
             Self::Dash => "Luot",
             Self::Guard => "Do",
@@ -282,13 +282,17 @@ impl TouchPad {
         }
     }
 
-    /// Chỉ đỡ là nút giữ.
+    /// Đỡ giữ và thuật 3 cho cử chỉ chạm/giữ; simulation nhận ý định đã phân giải.
     pub fn held(&self) -> Buttons {
-        if self.is_held(TouchButton::Guard) {
+        let mut held = if self.is_held(TouchButton::Guard) {
             Buttons::GUARD
         } else {
             Buttons::NONE
+        };
+        if self.is_held(TouchButton::Skill(2)) {
+            held |= Buttons::SKILL3;
         }
+        held
     }
 
     pub fn is_held(&self, button: TouchButton) -> bool {
@@ -332,7 +336,7 @@ pub fn plugin(app: &mut App) {
 
 fn clear_on_host_command(mut commands: MessageReader<HostCommand>, mut pad: ResMut<TouchPad>) {
     if commands.read().count() > 0 {
-        pad.take_pressed();
+        pad.clear();
     }
 }
 
@@ -343,11 +347,13 @@ fn read_touches(
     mut pad: ResMut<TouchPad>,
     mut ui: ResMut<TouchUi>,
     mut intent: ResMut<Intent>,
+    mut gesture: ResMut<SkillGesture>,
 ) {
     for ShowTouchControls(visible) in show.read() {
         ui.visible = *visible;
         if !visible {
             pad.clear();
+            gesture.cancel();
         }
     }
     let current = layout(window.size());
@@ -358,8 +364,12 @@ fn read_touches(
                 pad.begin(&current, touch.id, touch.position)
             }
             bevy::input::touch::TouchPhase::Moved => pad.moved(touch.id, touch.position),
-            bevy::input::touch::TouchPhase::Ended | bevy::input::touch::TouchPhase::Canceled => {
+            bevy::input::touch::TouchPhase::Ended => {
                 pad.end(touch.id);
+            }
+            bevy::input::touch::TouchPhase::Canceled => {
+                pad.end(touch.id);
+                gesture.cancel();
             }
         }
     }

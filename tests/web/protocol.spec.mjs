@@ -64,6 +64,10 @@ test('bridge rejects stale messages; Tab, fullscreen and synthetic visibility pr
             { origin: location.origin, source: frame.contentWindow, data: { ...valid, battle: { ...battle, hash: '<b>x</b>' } } },
             { origin: location.origin, source: frame.contentWindow, data: { ...valid, battle: { ...battle, outcome: 'jackpot' } } },
             { origin: location.origin, source: frame.contentWindow, data: { v: 2, session, type: 'replay', text: 'not a replay', name: 'x.myva-replay' } },
+            ...[1, 2].map(version => ({
+                origin: location.origin, source: frame.contentWindow,
+                data: { v: 2, session, type: 'replay', text: `myva-replay ${version}\n`, name: 'old.myva-replay' },
+            })),
             { origin: location.origin, source: frame.contentWindow, data: null },
         ];
         for (const message of cases) window.dispatchEvent(new MessageEvent('message', message));

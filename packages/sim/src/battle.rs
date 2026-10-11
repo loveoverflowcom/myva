@@ -413,6 +413,10 @@ impl Bout {
             | Event::Downed { .. }
             | Event::StatusApplied { .. }
             | Event::StatusEnded { .. }
+            | Event::Whiff { .. }
+            | Event::ActionDenied { .. }
+            | Event::MachEscaped { .. }
+            | Event::ControlLimited { .. }
             | Event::Interacted { .. } => {}
         }
     }

@@ -6,3 +6,12 @@
 pub fn fingerprint(seed: u64, ticks: u32) -> Vec<u64> {
     myva_sim::fixture::fingerprint(seed, ticks)
 }
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen::prelude::wasm_bindgen]
+pub fn mach_fingerprint(seed: u64, ticks: u32) -> Vec<u64> {
+    myva_sim::fixture::run_mach_core(seed, ticks)
+        .iter()
+        .map(|r| r.hash)
+        .collect()
+}
