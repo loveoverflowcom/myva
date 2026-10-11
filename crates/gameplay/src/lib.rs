@@ -21,12 +21,13 @@ pub mod components;
 pub mod headless;
 pub mod input;
 pub mod mirror;
+pub mod view;
 
 use bevy_app::prelude::*;
 use bevy_ecs::prelude::*;
 use bevy_time::{Fixed, Time, TimePlugin};
 use myva_sim::protocol::{EventRecord, TickReport};
-use myva_sim::session::Session;
+use myva_sim::session::{Controller, Session};
 use myva_sim::tick::{TICK_HZ, Tick};
 
 pub use authority::{Authority, RewardClaim, RewardIssued, RewardKey, RewardOutbox};
@@ -42,27 +43,47 @@ pub enum GameplaySet {
 }
 
 /// Phiên mô phỏng do adapter giữ. Không expose `&mut World`: mọi thay đổi trạng thái đi qua
-/// lệnh và `Session::step`. Một app giữ một phiên suốt đời; vào instance khác thì dựng app mới,
-/// như web shell tháo cả runtime khi rời game (ADR 0003).
+/// lệnh và `Session::step`. Vào instance khác trong cùng app (ví dụ đấu lại) thì nạp phiên mới
+/// bằng [`LoadSession`]; rời game thì web shell tháo cả runtime (ADR 0003).
 #[derive(Resource)]
-pub struct SimSession(Session);
+pub struct SimSession {
+    session: Session,
+    halted: bool,
+}
 
 impl SimSession {
     pub fn new(session: Session) -> Self {
-        Self(session)
+        Self {
+            session,
+            halted: false,
+        }
     }
 
     pub fn get(&self) -> &Session {
-        &self.0
+        &self.session
     }
 
     pub(crate) fn session_mut(&mut self) -> &mut Session {
-        &mut self.0
+        &mut self.session
+    }
+
+    /// Instance kết thúc: không chạy thêm tick, entity mirror giữ trạng thái cuối.
+    pub fn halt(&mut self) {
+        self.halted = true;
+    }
+
+    pub fn is_running(&self) -> bool {
+        !self.halted
+    }
+
+    /// Chỉnh bộ não AI của nhân vật `id` (ví dụ tắt bot đấu tập); không chạm `World`.
+    pub fn controller_mut<T: Controller>(&mut self, id: myva_sim::FighterId) -> Option<&mut T> {
+        self.session.controller_mut(id)
     }
 
     /// Đổi phiên điều khiển người chơi khi reconnect.
     pub fn rebind(&mut self, actor: myva_sim::FighterId, session: myva_sim::SessionEpoch) {
-        self.0.rebind(actor, session);
+        self.session.rebind(actor, session);
     }
 }
 
@@ -79,6 +100,29 @@ impl LastTick {
 /// Một sự kiện lõi, kèm ID duy nhất `(tick, index)` để presentation bỏ bản lặp.
 #[derive(Message, Clone, Copy, Debug, PartialEq, Eq)]
 pub struct SimEvent(pub EventRecord);
+
+/// Điều kiện chạy tick: có phiên và phiên chưa dừng. Hệ của client cần chạy cùng nhịp tick
+/// nhưng nằm ngoài [`GameplaySet`] dùng điều kiện này.
+pub fn session_running(session: Option<Res<SimSession>>) -> bool {
+    session.is_some_and(|session| session.is_running())
+}
+
+/// Thay phiên đang chạy bằng phiên mới trong cùng app: xóa entity mirror của phiên cũ (kể cả
+/// component client gắn thêm), nạp phiên mới và mirror ngay để entity có trước tick đầu tiên.
+pub struct LoadSession(pub Session);
+
+impl Command for LoadSession {
+    type Out = ();
+
+    fn apply(self, world: &mut World) {
+        mirror::reset(world);
+        world.insert_resource(LastTick::default());
+        world.insert_resource(SimSession::new(self.0));
+        if let Err(error) = world.run_system_cached(mirror::mirror_world) {
+            panic!("không mirror được phiên mới: {error}");
+        }
+    }
+}
 
 #[derive(Message, Clone, Copy, Debug, PartialEq, Eq)]
 pub struct TickCompleted {
@@ -115,8 +159,8 @@ impl Plugin for GameplayPlugin {
                     GameplaySet::Events,
                 )
                     .chain()
-                    // Client có thể chỉ tạo phiên khi vào arena.
-                    .run_if(resource_exists::<SimSession>),
+                    // Client có thể chỉ tạo phiên khi vào arena; phiên đã dừng không chạy tick.
+                    .run_if(session_running),
             )
             // Phiên có sẵn khi khởi động thì entity có ngay, trước tick đầu tiên.
             .add_systems(

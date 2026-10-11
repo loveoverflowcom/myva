@@ -67,6 +67,21 @@ impl LocalInput {
         .pressed;
     }
 
+    /// Thay toàn bộ ý định của tick kế tiếp bằng `frame` (bot lái hộ), bỏ cú bấm đang chốt.
+    pub fn set_frame(&mut self, frame: CommandFrame) {
+        self.release_all();
+        self.set_move(frame.move_x);
+        self.set_guard(frame.guard);
+        if let Some(action) = frame.action {
+            self.press(action);
+        }
+    }
+
+    /// Có cú bấm đang chờ vào tick kế tiếp.
+    pub fn has_press(&self) -> bool {
+        !self.pressed.is_empty()
+    }
+
     /// Mất focus hoặc mở bàn phím chat: thả mọi phím để nhân vật không tự đi/đánh.
     pub fn release_all(&mut self) {
         self.move_x = 0;

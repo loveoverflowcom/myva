@@ -10,14 +10,16 @@ use bevy_ecs::prelude::*;
 use bevy_time::TimeUpdateStrategy;
 use myva_gameplay::components::*;
 use myva_gameplay::headless::{TickHistory, headless_app, run_until, tick};
+use myva_gameplay::view::{self, FighterMirror, ProjectileMirror};
 use myva_gameplay::{
-    Authority, CommandRejected, EntityIndex, LocalInput, RewardIssued, RewardOutbox,
+    Authority, CommandRejected, EntityIndex, LoadSession, LocalInput, RewardIssued, RewardOutbox,
     ScriptedPlayer, SimEvent, SimSession,
 };
 use myva_sim::fixture::{self, Brawler, PLAYER_EPOCH, PLAYERS};
 use myva_sim::kit::{ActionKind, LONG_LUU, PX};
-use myva_sim::protocol::{Action, Attack, EventRecord, Rejection};
+use myva_sim::protocol::{Action, Attack, CommandFrame, EventRecord, Rejection};
 use myva_sim::session::{Role, Session, SessionConfig};
+use myva_sim::snapshot::{FighterView, ProjectileView};
 use myva_sim::{EntityRef, Event, FighterId, SessionEpoch, State};
 
 #[derive(Resource, Default)]
@@ -150,11 +152,28 @@ fn mirror_matches_core_state_every_tick() {
             .iter(world)
             .count();
         assert_eq!(live, snapshot.projectiles.len(), "đạn đã mất phải bị xóa");
+        let (fighters, projectiles) = mirrored_views(world);
+        assert_eq!(
+            fighters, snapshot.fighters,
+            "khung nhìn từ mirror = snapshot"
+        );
+        assert_eq!(projectiles, snapshot.projectiles);
     }
     assert!(
         !projectiles_seen.is_empty(),
         "fixture phải sinh đạn để kiểm tra spawn/despawn"
     );
+}
+
+fn mirrored_views(world: &mut World) -> (Vec<FighterView>, Vec<ProjectileView>) {
+    world
+        .run_system_cached(
+            |fighters: Query<FighterMirror>,
+             projectiles: Query<ProjectileMirror, With<Projectile>>| {
+                (view::fighters(&fighters), view::projectiles(&projectiles))
+            },
+        )
+        .unwrap()
 }
 
 #[test]
@@ -378,4 +397,73 @@ fn session_can_arrive_after_the_app_starts() {
     run_until(&mut app, 10);
     assert_eq!(count::<Monster>(&mut app), 2);
     assert_eq!(tick(&app), 10);
+}
+
+#[test]
+fn set_frame_replaces_the_pending_intent() {
+    let (mut app, _) = duel_app(16_666_667);
+    {
+        let mut input = app.world_mut().resource_mut::<LocalInput>();
+        input.press(Action::Attack(Attack::Heavy));
+        input.set_guard(true);
+        assert!(input.has_press());
+        input.set_frame(CommandFrame {
+            move_x: 1,
+            guard: false,
+            action: Some(Action::Attack(Attack::Light)),
+        });
+    }
+    app.update();
+    assert_eq!(started(&app), [ActionKind::Light(0)], "đòn nặng đã bị thay");
+    assert!(!app.world().resource::<LocalInput>().has_press());
+}
+
+#[test]
+fn halted_session_stops_ticking_but_keeps_its_mirror() {
+    let mut app = fixture_app(4, Authority::Client);
+    run_until(&mut app, 120);
+    app.world_mut().resource_mut::<SimSession>().halt();
+    let fighters = count::<SimId>(&mut app);
+    for _ in 0..30 {
+        app.update();
+    }
+    assert_eq!(tick(&app), 120);
+    assert!(!app.world().resource::<SimSession>().is_running());
+    assert_eq!(count::<SimId>(&mut app), fighters);
+}
+
+#[test]
+fn load_session_replaces_the_instance_and_its_entities() {
+    let mut app = fixture_app(5, Authority::Client);
+    run_until(&mut app, 300);
+    let old: Vec<Entity> = app
+        .world()
+        .resource::<EntityIndex>()
+        .iter()
+        .map(|(_, entity)| entity)
+        .collect();
+
+    // Phiên mới chỉ có một người chơi, không quái, không NPC.
+    let mut session = Session::new(SessionConfig::new(9, 9));
+    let player = session.spawn_player(&LONG_LUU, 300 * PX, 1, None, SessionEpoch(1));
+    app.world_mut().remove_resource::<ScriptedPlayer>();
+    app.world_mut().commands().queue(LoadSession(session));
+    app.world_mut().flush();
+
+    assert_eq!(tick(&app), 0);
+    assert!(old.iter().all(|&e| app.world().get_entity(e).is_err()));
+    assert_eq!(count::<Monster>(&mut app), 0);
+    assert_eq!(count::<Npc>(&mut app), 0);
+    assert_eq!(count::<Player>(&mut app), 1);
+    let world = app.world_mut();
+    let (fighters, _) = mirrored_views(world);
+    assert_eq!(
+        fighters,
+        world.resource::<SimSession>().get().snapshot().fighters
+    );
+    assert_eq!(fighters[0].id, player);
+
+    app.insert_resource(LocalInput::new(player, SessionEpoch(1), None));
+    run_until(&mut app, 60);
+    assert_eq!(tick(&app), 60);
 }

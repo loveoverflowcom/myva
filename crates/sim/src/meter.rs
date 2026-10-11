@@ -69,7 +69,12 @@ impl Meter {
     }
 
     pub const fn can_spend(&self, points: u32) -> bool {
-        self.sub >= points * SUB_PER_POINT
+        Self::covers(self.sub, points)
+    }
+
+    /// `sub` đơn vị con có đủ trả `points` điểm không; dùng chung cho khung nhìn snapshot.
+    pub const fn covers(sub: u32, points: u32) -> bool {
+        sub >= points * SUB_PER_POINT
     }
 
     /// Tiêu đủ `points` hoặc không tiêu gì; trả `false` khi thiếu.

@@ -1,6 +1,6 @@
 # D03 — Bevy trong Leptos web shell
 
-Ngày thực hiện: **2026-10-09**. Issue [#11](https://github.com/loveoverflowcom/myva/issues/11), quyết định [ADR 0003](../decisions/0003-bevy-engine-adoption.md). Đây là prototype tích hợp; cảnh thu thập linh lực chỉ kiểm tra render/input, không thay luật combat hoặc kinh tế.
+Ngày thực hiện: **2026-10-09**. Issue [#11](https://github.com/loveoverflowcom/myva/issues/11), quyết định [ADR 0003](../decisions/0003-bevy-engine-adoption.md). Đây là prototype tích hợp; cảnh thu thập linh lực chỉ kiểm tra render/input, không thay luật combat hoặc kinh tế. **Từ 2026-10-10**, [#2](https://github.com/loveoverflowcom/myva/issues/2) thay cảnh này bằng trận graybox và nâng bridge lên v2; số đo dưới đây vẫn thuộc revision của D03. Bằng chứng mới nằm trong [báo cáo combat](combat-graybox.md).
 
 ## Cách tái lập
 

@@ -5,7 +5,7 @@
 //! bền vững và snapshot mạng đầy đủ là việc của prototype online.
 
 use crate::fighter::{Fighter, FighterId, State, Team};
-use crate::kit::{ActionKind, Kit, Phase, Rect};
+use crate::kit::{ActionKind, ActionSpec, Kit, Phase, Rect};
 use crate::meter::Meter;
 use crate::monster::AiState;
 use crate::npc::{NpcId, NpcSpec};
@@ -33,6 +33,15 @@ impl Gauge {
 
     pub const fn points(&self) -> u32 {
         self.sub / crate::meter::SUB_PER_POINT
+    }
+
+    pub const fn max_points(&self) -> u32 {
+        self.max_sub / crate::meter::SUB_PER_POINT
+    }
+
+    /// Cùng điều kiện [`Meter::can_spend`] của lõi.
+    pub const fn can_spend(&self, points: u32) -> bool {
+        Meter::covers(self.sub, points)
     }
 }
 
@@ -64,9 +73,21 @@ pub struct FighterView {
     pub hurtbox: Rect,
     pub attack_box: Option<Rect>,
     pub invulnerable: bool,
+    /// Đứng trên nền (không nhảy, không rơi).
+    pub grounded: bool,
+    /// Thế đỡ đã có hiệu lực: `Some(true)` trong cửa sổ đỡ hoàn hảo, `None` khi chưa đỡ được.
+    pub guard: Option<bool>,
     /// `seq` lớn nhất đã áp dụng, để client bỏ input đã được xác nhận khi hòa giải.
     pub last_seq: Option<u32>,
     pub ai: Option<AiState>,
+}
+
+impl FighterView {
+    /// Thông số đòn đang thực hiện.
+    pub fn action_spec(&self) -> Option<&'static ActionSpec> {
+        let kit: &'static Kit = self.kit;
+        self.action.map(|view| kit.spec(view.action))
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -167,6 +188,8 @@ fn view(f: &Fighter, role: Role, ai: Option<AiState>) -> FighterView {
         hurtbox: f.hurtbox(),
         attack_box: f.attack_box(),
         invulnerable: f.is_invulnerable(),
+        grounded: f.is_grounded(),
+        guard: f.guard_active(),
         last_seq: f.last_seq(),
         ai,
     }

@@ -12,6 +12,8 @@
 //! Phiên không cấp phần thưởng: sự kiện `Downed` là dữ kiện để server nghiệp vụ quyết định, có
 //! khóa chống trùng riêng.
 
+use std::any::Any;
+
 use crate::fighter::{FighterId, Team};
 use crate::input::InputFrame;
 use crate::kit::Kit;
@@ -33,8 +35,8 @@ pub enum Role {
 }
 
 /// Bộ não sinh input cho một nhân vật. Thêm loại quái là thêm một `Controller`, không sửa
-/// vòng lặp tick.
-pub trait Controller: Send + Sync {
+/// vòng lặp tick. `seq` của khung trả về bị bỏ qua: phiên tự đánh số lệnh AI.
+pub trait Controller: Any + Send + Sync {
     fn next_frame(&mut self, world: &World, me: FighterId) -> InputFrame;
 
     fn ai_state(&self) -> Option<AiState> {
@@ -75,6 +77,8 @@ impl SessionConfig {
 struct Member {
     role: Role,
     controller: Option<Box<dyn Controller>>,
+    /// `seq` lệnh AI cuối cùng phiên đã gửi cho nhân vật này.
+    seq: u32,
 }
 
 pub struct Session {
@@ -182,10 +186,11 @@ impl Session {
             };
             let id = FighterId(index as u16);
             let input = controller.next_frame(&self.world, id);
+            member.seq += 1;
             let envelope = CommandEnvelope::new(
                 SessionEpoch::AI,
                 id,
-                input.seq,
+                member.seq,
                 now,
                 CommandFrame::from_input(&input),
             );
@@ -199,6 +204,24 @@ impl Session {
 
     pub fn role(&self, id: FighterId) -> Role {
         self.members[usize::from(id.0)].role
+    }
+
+    /// Bộ não của nhân vật `id` nếu đúng kiểu `T`, để host đọc trạng thái riêng (ví dụ pha boss).
+    pub fn controller<T: Controller>(&self, id: FighterId) -> Option<&T> {
+        let controller: &dyn Controller =
+            self.members.get(usize::from(id.0))?.controller.as_deref()?;
+        (controller as &dyn Any).downcast_ref()
+    }
+
+    /// Chỉnh bộ não của nhân vật `id` (ví dụ tắt bot đấu tập). Không chạm `World`: lệnh AI vẫn
+    /// đi qua cổng và được ghi vào replay, nên đổi giữa trận không làm replay lệch.
+    pub fn controller_mut<T: Controller>(&mut self, id: FighterId) -> Option<&mut T> {
+        let controller: &mut dyn Controller = self
+            .members
+            .get_mut(usize::from(id.0))?
+            .controller
+            .as_deref_mut()?;
+        (controller as &mut dyn Any).downcast_mut()
     }
 
     pub fn ai_state(&self, id: FighterId) -> Option<AiState> {
@@ -238,7 +261,11 @@ impl Session {
     ) -> FighterId {
         self.assert_not_started();
         let id = self.world.spawn_in_team(kit, x, facing, team);
-        self.members.push(Member { role, controller });
+        self.members.push(Member {
+            role,
+            controller,
+            seq: 0,
+        });
         id
     }
 

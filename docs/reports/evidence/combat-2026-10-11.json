@@ -1,0 +1,647 @@
+{
+  "date": "2026-10-11",
+  "issue": "https://github.com/loveoverflowcom/myva/issues/2",
+  "revision": "82524ccfeeaa8f647cc6b34facd8a81ec4635945",
+  "note": "Graybox chạy trên GameplayPlugin của D04 (#12); thay run 2026-10-10 dùng adapter tạm.",
+  "host": {
+    "os": "Linux 7.0.0-38-generic",
+    "cpu": "Intel Core Ultra 7 155H (22 logical CPUs)",
+    "ram": "22 GiB",
+    "gpu": "Intel Graphics (MTL), Mesa 26.0.8"
+  },
+  "browser": "153.0.8010.36",
+  "e2e": {
+    "stats": {
+      "duration": 257587.182,
+      "expected": 6,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "renderer": "Chromium headless, WebGL2 via ANGLE SwiftShader (software)"
+  },
+  "bundle": {
+    "revision": "82524ccfeeaa8f647cc6b34facd8a81ec4635945",
+    "dirty": false,
+    "profile": "web",
+    "rustc": "rustc 1.97.1 (8bab26f4f 2026-07-14)",
+    "total_bytes": 85453825,
+    "total_gzip_bytes": 11291227,
+    "files": [
+      {
+        "path": "game/pkg/myva_web_game.js",
+        "bytes": 106670,
+        "gzip_bytes": 15774,
+        "sha256": "41acb3f76ed0851d2a8f3f6247e6d6c17bf223a6d5724cf44607a69cce14ba52"
+      },
+      {
+        "path": "game/pkg/myva_web_game_bg.wasm",
+        "bytes": 84842609,
+        "gzip_bytes": 11182853,
+        "sha256": "d41f5183ec23bf439d1e1d238d01f641ec7dbb6bfc2e8eee5de18b5db14de7d3"
+      },
+      {
+        "path": "shell/myva_web_shell_bg.wasm",
+        "bytes": 440291,
+        "gzip_bytes": 75090,
+        "sha256": "fffcc1488599c5b38c932fd638584dd689f366fa5c0d5d5a4730ef558d1a2883"
+      }
+    ]
+  },
+  "lifecycle": {
+    "cycles": 30,
+    "startupMs": [
+      1658,
+      1551.1000000005588,
+      1521,
+      1532.5999999996275,
+      1584.8999999994412,
+      1611.8999999994412,
+      1611.7000000001863,
+      1569.5,
+      1568.5,
+      1535.5,
+      1534.3999999994412,
+      1577.7999999998137,
+      1566.2999999998137,
+      1590.9000000003725,
+      1533.7999999998137,
+      1528.7000000001863,
+      1597.7999999998137,
+      1635.7999999998137,
+      1572.5,
+      1612.199999999255,
+      1556.7000000001863,
+      1697.5999999996275,
+      1560.4000000003725,
+      1547.2000000001863,
+      1578.7000000001863,
+      1550.7999999998137,
+      1573.4000000003725,
+      1578.199999999255,
+      1643.2000000001863,
+      1306.4000000003725
+    ],
+    "domAfterGc": {
+      "documents": [
+        2,
+        2
+      ],
+      "nodes": [
+        222,
+        222
+      ],
+      "jsEventListeners": [
+        42,
+        42
+      ]
+    },
+    "heapBytesIdleBeforeAfter": [
+      3077664,
+      3258384
+    ],
+    "errors": []
+  },
+  "keyboard": {
+    "disclaimer": "Latency = DOM keydown to the fixed tick that consumed the press, observed on requestAnimationFrame; not input-to-photon.",
+    "inputSamplesMs": [
+      241.20000000018626
+    ],
+    "final": {
+      "v": 2,
+      "ready": true,
+      "paused": false,
+      "updates": 21,
+      "touch": false,
+      "gamepads": 0,
+      "mode": "boss",
+      "round": 1,
+      "tick": 223,
+      "autopilot": false,
+      "sparring": null,
+      "hitboxes": false,
+      "phase": 1,
+      "projectiles": 0,
+      "outcome": null,
+      "settled": false,
+      "verified": null,
+      "verified_ticks": 0,
+      "hash": "9bcb800e9c84ea29",
+      "presses": 1,
+      "player": {
+        "x": 776,
+        "y": 0,
+        "facing": 1,
+        "hp": 880,
+        "max_hp": 1000,
+        "stamina": 100,
+        "energy": 84,
+        "mach": 8,
+        "cooldowns": [
+          76,
+          0,
+          0
+        ],
+        "state": "neutral",
+        "action": null
+      },
+      "rival": {
+        "x": 1016,
+        "y": 0,
+        "facing": -1,
+        "hp": 2320,
+        "max_hp": 2400,
+        "stamina": 100,
+        "energy": 100,
+        "mach": 12,
+        "cooldowns": [
+          0,
+          0,
+          0
+        ],
+        "state": "attack",
+        "action": {
+          "name": "Quet Ngang",
+          "phase": "Recovery"
+        }
+      },
+      "tally": {
+        "player": {
+          "actions": 1,
+          "hits": 1,
+          "damage_dealt": 80,
+          "damage_taken": 120,
+          "blocks": 0,
+          "perfect_blocks": 0,
+          "counters": 0,
+          "guard_breaks": 0
+        },
+        "rival": {
+          "actions": 1,
+          "hits": 1,
+          "damage_dealt": 120,
+          "damage_taken": 80,
+          "blocks": 0,
+          "perfect_blocks": 0,
+          "counters": 0,
+          "guard_breaks": 0
+        }
+      }
+    },
+    "errors": []
+  },
+  "gamepad": {
+    "disclaimer": "Mocked navigator.getGamepads() with Standard Gamepad mapping; verifies gilrs → Bevy → sim wiring, not a physical controller.",
+    "before": {
+      "v": 2,
+      "ready": true,
+      "paused": false,
+      "updates": 5,
+      "touch": false,
+      "gamepads": 1,
+      "mode": "boss",
+      "round": 1,
+      "tick": 0,
+      "autopilot": false,
+      "sparring": null,
+      "hitboxes": false,
+      "phase": 1,
+      "projectiles": 0,
+      "outcome": null,
+      "settled": false,
+      "verified": null,
+      "verified_ticks": 0,
+      "hash": "557f4052d5901b88",
+      "presses": 0,
+      "player": {
+        "x": 400,
+        "y": 0,
+        "facing": 1,
+        "hp": 1000,
+        "max_hp": 1000,
+        "stamina": 100,
+        "energy": 100,
+        "mach": 0,
+        "cooldowns": [
+          0,
+          0,
+          0
+        ],
+        "state": "neutral",
+        "action": null
+      },
+      "rival": {
+        "x": 1100,
+        "y": 0,
+        "facing": -1,
+        "hp": 2400,
+        "max_hp": 2400,
+        "stamina": 100,
+        "energy": 100,
+        "mach": 0,
+        "cooldowns": [
+          0,
+          0,
+          0
+        ],
+        "state": "neutral",
+        "action": null
+      },
+      "tally": {
+        "player": {
+          "actions": 0,
+          "hits": 0,
+          "damage_dealt": 0,
+          "damage_taken": 0,
+          "blocks": 0,
+          "perfect_blocks": 0,
+          "counters": 0,
+          "guard_breaks": 0
+        },
+        "rival": {
+          "actions": 0,
+          "hits": 0,
+          "damage_dealt": 0,
+          "damage_taken": 0,
+          "blocks": 0,
+          "perfect_blocks": 0,
+          "counters": 0,
+          "guard_breaks": 0
+        }
+      }
+    },
+    "preSkill": {
+      "v": 2,
+      "ready": true,
+      "paused": false,
+      "updates": 15,
+      "touch": false,
+      "gamepads": 1,
+      "mode": "boss",
+      "round": 1,
+      "tick": 133,
+      "autopilot": false,
+      "sparring": null,
+      "hitboxes": false,
+      "phase": 1,
+      "projectiles": 0,
+      "outcome": null,
+      "settled": false,
+      "verified": null,
+      "verified_ticks": 0,
+      "hash": "feea11d772e9a738",
+      "presses": 1,
+      "player": {
+        "x": 576,
+        "y": 0,
+        "facing": 1,
+        "hp": 1000,
+        "max_hp": 1000,
+        "stamina": 100,
+        "energy": 100,
+        "mach": 0,
+        "cooldowns": [
+          0,
+          0,
+          0
+        ],
+        "state": "neutral",
+        "action": null
+      },
+      "rival": {
+        "x": 1014,
+        "y": 0,
+        "facing": -1,
+        "hp": 2400,
+        "max_hp": 2400,
+        "stamina": 100,
+        "energy": 100,
+        "mach": 0,
+        "cooldowns": [
+          0,
+          0,
+          0
+        ],
+        "state": "neutral",
+        "action": null
+      },
+      "tally": {
+        "player": {
+          "actions": 1,
+          "hits": 0,
+          "damage_dealt": 0,
+          "damage_taken": 0,
+          "blocks": 0,
+          "perfect_blocks": 0,
+          "counters": 0,
+          "guard_breaks": 0
+        },
+        "rival": {
+          "actions": 0,
+          "hits": 0,
+          "damage_dealt": 0,
+          "damage_taken": 0,
+          "blocks": 0,
+          "perfect_blocks": 0,
+          "counters": 0,
+          "guard_breaks": 0
+        }
+      }
+    },
+    "after": {
+      "v": 2,
+      "ready": true,
+      "paused": false,
+      "updates": 23,
+      "touch": false,
+      "gamepads": 1,
+      "mode": "boss",
+      "round": 1,
+      "tick": 252,
+      "autopilot": false,
+      "sparring": null,
+      "hitboxes": false,
+      "phase": 1,
+      "projectiles": 0,
+      "outcome": null,
+      "settled": false,
+      "verified": null,
+      "verified_ticks": 0,
+      "hash": "9f73e4f150e090fd",
+      "presses": 2,
+      "player": {
+        "x": 576,
+        "y": 0,
+        "facing": 1,
+        "hp": 1000,
+        "max_hp": 1000,
+        "stamina": 100,
+        "energy": 83,
+        "mach": 8,
+        "cooldowns": [
+          90,
+          0,
+          0
+        ],
+        "state": "neutral",
+        "action": null
+      },
+      "rival": {
+        "x": 776,
+        "y": 0,
+        "facing": -1,
+        "hp": 2320,
+        "max_hp": 2400,
+        "stamina": 100,
+        "energy": 100,
+        "mach": 0,
+        "cooldowns": [
+          0,
+          0,
+          0
+        ],
+        "state": "neutral",
+        "action": null
+      },
+      "tally": {
+        "player": {
+          "actions": 2,
+          "hits": 1,
+          "damage_dealt": 80,
+          "damage_taken": 0,
+          "blocks": 0,
+          "perfect_blocks": 0,
+          "counters": 0,
+          "guard_breaks": 0
+        },
+        "rival": {
+          "actions": 0,
+          "hits": 0,
+          "damage_dealt": 0,
+          "damage_taken": 80,
+          "blocks": 0,
+          "perfect_blocks": 0,
+          "counters": 0,
+          "guard_breaks": 0
+        }
+      }
+    }
+  },
+  "autopilot": {
+    "disclaimer": "Bot B1 (250 ms reaction) pilots the player through the same input path; the wasm32 replay is re-run by native myva-replay.",
+    "wallSeconds": 65.264,
+    "final": {
+      "v": 2,
+      "ready": true,
+      "paused": false,
+      "updates": 266,
+      "touch": false,
+      "gamepads": 0,
+      "mode": "boss",
+      "round": 1,
+      "tick": 3773,
+      "autopilot": true,
+      "sparring": null,
+      "hitboxes": false,
+      "phase": 3,
+      "projectiles": 0,
+      "outcome": "victory",
+      "settled": true,
+      "verified": true,
+      "verified_ticks": 3773,
+      "hash": "fabc0e52bccb31a2",
+      "presses": 0,
+      "player": {
+        "x": 1068,
+        "y": 0,
+        "facing": -1,
+        "hp": 1000,
+        "max_hp": 1000,
+        "stamina": 100,
+        "energy": 100,
+        "mach": 100,
+        "cooldowns": [
+          0,
+          0,
+          0
+        ],
+        "state": "neutral",
+        "action": null
+      },
+      "rival": {
+        "x": 1000,
+        "y": 0,
+        "facing": 1,
+        "hp": 0,
+        "max_hp": 2400,
+        "stamina": 100,
+        "energy": 100,
+        "mach": 0,
+        "cooldowns": [
+          0,
+          0,
+          0
+        ],
+        "state": "downed",
+        "action": null
+      },
+      "tally": {
+        "player": {
+          "actions": 54,
+          "hits": 54,
+          "damage_dealt": 2430,
+          "damage_taken": 0,
+          "blocks": 0,
+          "perfect_blocks": 0,
+          "counters": 0,
+          "guard_breaks": 0
+        },
+        "rival": {
+          "actions": 27,
+          "hits": 0,
+          "damage_dealt": 0,
+          "damage_taken": 2430,
+          "blocks": 0,
+          "perfect_blocks": 0,
+          "counters": 0,
+          "guard_breaks": 0
+        }
+      }
+    },
+    "replay": "myva-boss-r1-t3773.myva-replay",
+    "nativeVerify": "khớp 63 mốc hash qua 3773 tick; hash cuối fabc0e52bccb31a2\n#0 Long Lưu: HP 1000/1000, Neutral\n#1 Kẻ Giữ Đập: HP 0/2400, Downed\n",
+    "errors": []
+  },
+  "touch": {
+    "disclaimer": "Chromium touch emulation, not a physical phone",
+    "portrait": {
+      "width": 357,
+      "height": 403,
+      "stick": {
+        "x": 76.9,
+        "y": 326.1,
+        "r": 60.4
+      },
+      "buttons": {
+        "light": {
+          "x": 306.5,
+          "y": 352.5,
+          "r": 34.1
+        },
+        "heavy": {
+          "x": 228.5,
+          "y": 352.5,
+          "r": 34.1
+        },
+        "skill1": {
+          "x": 183.4,
+          "y": 281.1,
+          "r": 27.5
+        },
+        "skill2": {
+          "x": 248.3,
+          "y": 281.1,
+          "r": 27.5
+        },
+        "skill3": {
+          "x": 313.1,
+          "y": 281.1,
+          "r": 27.5
+        },
+        "jump": {
+          "x": 183.4,
+          "y": 216.3,
+          "r": 27.5
+        },
+        "dash": {
+          "x": 248.3,
+          "y": 216.3,
+          "r": 27.5
+        },
+        "guard": {
+          "x": 313.1,
+          "y": 216.3,
+          "r": 27.5
+        }
+      }
+    },
+    "landscape": {
+      "width": 844,
+      "height": 390,
+      "stick": {
+        "x": 84,
+        "y": 306,
+        "r": 66
+      },
+      "buttons": {
+        "light": {
+          "x": 788.8,
+          "y": 334.8,
+          "r": 37.2
+        },
+        "heavy": {
+          "x": 703.6,
+          "y": 334.8,
+          "r": 37.2
+        },
+        "skill1": {
+          "x": 625.6,
+          "y": 256.8,
+          "r": 30
+        },
+        "skill2": {
+          "x": 703.6,
+          "y": 256.8,
+          "r": 30
+        },
+        "skill3": {
+          "x": 788.8,
+          "y": 256.8,
+          "r": 30
+        },
+        "jump": {
+          "x": 473.2,
+          "y": 342,
+          "r": 30
+        },
+        "dash": {
+          "x": 544,
+          "y": 342,
+          "r": 30
+        },
+        "guard": {
+          "x": 614.8,
+          "y": 342,
+          "r": 30
+        }
+      }
+    }
+  },
+  "rateDiagnostics": [
+    {
+      "scenario": "headless-forced-swiftshader",
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "rafRateHz": 4.676539360872954,
+      "bevyUpdateRateHz": 4.676539360872954,
+      "simTickRateHz": 62.54871395167576,
+      "canvas": {
+        "width": 1098,
+        "height": 556
+      },
+      "inputSamplesMs": [
+        412.20000000018626,
+        419.1000000005588,
+        431.40000000037253,
+        442.29999999981374,
+        468.79999999981374,
+        253.59999999962747
+      ],
+      "note": "One 5-second scene sample after 2-second warm-up; RAF and Bevy Update rates are not GPU presentation FPS. Input latency is DOM keydown (Playwright CDP key events, not keyboard hardware) to the fixed tick that consumed the press, observed on RAF. A headed desktop may receive real user input; inspect observedInputEvents and before/after state for contamination."
+    }
+  ],
+  "native": {
+    "command": "myva-graybox --screenshot combat-native.png (debug build, Vulkan)",
+    "adapter": "Intel(R) Graphics (MTL), Mesa, Vulkan",
+    "replayVerify": "khớp 16 mốc hash qua 950 tick; hash cuối 15ec9964cd48cb1f\n#0 Long Lưu: HP 1000/1000, Neutral\n#1 Kẻ Giữ Đập: HP 2085/2400, Attack { action: Light(0), elapsed: 1, instance: 13, confirmed_at: None }\n"
+  }
+}

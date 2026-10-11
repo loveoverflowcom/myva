@@ -14,6 +14,7 @@
 //! Chưa làm: đại thuật, Thoát Mạch, DR khống chế, coyote time/jump buffer, đòn không trung riêng,
 //! spawn giữa trận và phần thưởng (thuộc server nghiệp vụ).
 
+pub mod battle;
 pub mod boss;
 pub mod bot;
 pub mod fighter;

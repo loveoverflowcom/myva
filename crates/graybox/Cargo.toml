@@ -1,14 +1,48 @@
 [package]
 name = "myva-graybox"
-description = "Client graybox Macroquad để thử combat của MyVa — Thần Mạch."
+description = "Client graybox Bevy để thử combat của MyVa — Thần Mạch: native và nhúng web."
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 publish.workspace = true
 
+[features]
+default = ["gamepad"]
+# gilrs: Gamepad API trên web; native Linux cần libudev-dev lúc build.
+gamepad = ["bevy/bevy_gilrs"]
+
 [dependencies]
-macroquad = "0.4.16"
+myva-gameplay = { path = "../gameplay" }
 myva-sim = { path = "../sim" }
+# Tập feature tối thiểu cho cảnh 2D hình khối, HUD chữ ASCII và ba loại input (ADR 0003).
+bevy = { version = "=0.20.0", default-features = false, features = [
+    "std",
+    "async_executor",
+    "bevy_asset",
+    "bevy_log",
+    "bevy_color",
+    "bevy_camera",
+    "bevy_core_pipeline",
+    "bevy_render",
+    "bevy_sprite",
+    "bevy_sprite_render",
+    "bevy_text",
+    "bevy_ui",
+    "bevy_ui_render",
+    "bevy_window",
+    "bevy_winit",
+    "default_font",
+    "keyboard",
+    "touch",
+    "gamepad",
+] }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+bevy = { version = "=0.20.0", default-features = false, features = ["webgl2"] }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+# PNG chỉ dùng cho `--screenshot` của bản native.
+bevy = { version = "=0.20.0", default-features = false, features = ["multi_threaded", "png", "x11"] }
 
 [lints]
 workspace = true

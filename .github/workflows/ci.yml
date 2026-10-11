@@ -15,6 +15,8 @@ jobs:
           components: rustfmt, clippy
           targets: wasm32-unknown-unknown
       - uses: Swatinem/rust-cache@v2
+      # gilrs (gamepad của graybox Bevy native) liên kết libudev trên Linux.
+      - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libudev-dev
       - run: python3 scripts/check-docs.py
       - run: cargo fmt --all -- --check
       - run: cargo clippy --workspace --all-targets -- -D warnings
@@ -22,7 +24,6 @@ jobs:
       - run: cargo test --workspace
       # Lõi mô phỏng phải build được cho web mà không kéo theo renderer.
       - run: cargo build -p myva-sim --target wasm32-unknown-unknown
-      - run: ./scripts/build-web.sh
       - run: cargo install wasm-bindgen-cli --version 0.2.129 --locked
       # Cùng fixture: adapter ECS headless native và lõi WASM (Node) phải cùng hash từng tick.
       - run: ./scripts/check-wasm-determinism.sh 3600 1 7 12
