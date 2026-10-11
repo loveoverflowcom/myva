@@ -1,0 +1,72 @@
+{
+  "format": "myva.asset-manifest",
+  "format_version": 1,
+  "content_version": "d05a-fixture-1",
+  "texels_per_unit": {
+    "gameplay": 2.0,
+    "backdrop": 1.0
+  },
+  "limits": {
+    "max_texture_side": 2048,
+    "total_texture_bytes": 33554432,
+    "total_file_bytes": 4194304
+  },
+  "assets": [
+    {
+      "id": "long_luu.atlas",
+      "kind": "texture",
+      "path": "fixture/long_luu/atlas.png",
+      "version": 1,
+      "bytes": 156992,
+      "sha256": "ba8087f828e5d174833511b66d49a64338f8fdd30cc9872937bddc819d0387c9",
+      "dependencies": [],
+      "provenance": {
+        "origin": "procedural",
+        "tool": "scripts/generate-asset-fixture.py",
+        "author": "MyVa — Thần Mạch contributors (sinh bằng mã, không có đầu vào bên thứ ba)",
+        "license": "LicenseRef-MyVa-Unreleased",
+        "redistribution": "Chỉ dùng trong repo MyVa; chủ dự án chưa chọn license phát hành.",
+        "created": "2026-10-11"
+      },
+      "texture": {
+        "width": 1852,
+        "height": 1044,
+        "format": "rgba8_srgb"
+      }
+    },
+    {
+      "id": "long_luu.sheet",
+      "kind": "sprite_sheet",
+      "path": "fixture/long_luu/sheet.json",
+      "version": 1,
+      "bytes": 4173,
+      "sha256": "b71bb348c0dd09e85fac15884eddf767e928823bd6fa640aedc12f85f5abcba9",
+      "dependencies": [
+        "long_luu.atlas"
+      ],
+      "provenance": {
+        "origin": "procedural",
+        "tool": "scripts/generate-asset-fixture.py",
+        "author": "MyVa — Thần Mạch contributors (sinh bằng mã, không có đầu vào bên thứ ba)",
+        "license": "LicenseRef-MyVa-Unreleased",
+        "redistribution": "Chỉ dùng trong repo MyVa; chủ dự án chưa chọn license phát hành.",
+        "created": "2026-10-11"
+      }
+    }
+  ],
+  "bundles": [
+    {
+      "id": "character.long_luu",
+      "kind": "character",
+      "assets": [
+        "long_luu.sheet",
+        "long_luu.atlas"
+      ],
+      "dependencies": [],
+      "budget": {
+        "texture_bytes": 8388608,
+        "file_bytes": 1048576
+      }
+    }
+  ]
+}

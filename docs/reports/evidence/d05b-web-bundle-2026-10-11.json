@@ -1,0 +1,202 @@
+{
+  "revision": "1152f4e521390c827a726342f24e097728984cc3",
+  "dirty": false,
+  "profile": "web",
+  "rustc": "rustc 1.97.1 (8bab26f4f 2026-07-14)",
+  "files": [
+    {
+      "path": "bootstrap.js",
+      "bytes": 300,
+      "gzip_bytes": 233,
+      "sha256": "b71c31f1fe0e8ffe02e63bd8057dd414823626f42e35239232efafac4027f509"
+    },
+    {
+      "path": "game/assets/fixture/README.md",
+      "bytes": 1287,
+      "gzip_bytes": 835,
+      "sha256": "47a46f69bfd5ba722ed0730cca5e9e39db1852f61b923bad1b766ddcb527efb9"
+    },
+    {
+      "path": "game/assets/fixture/dap_co/backdrop/atlas.png",
+      "bytes": 17498,
+      "gzip_bytes": 13526,
+      "sha256": "24a37cd76c7c3cc892adc630c9a227480e1ebac90620334638b754931fa8ccc3"
+    },
+    {
+      "path": "game/assets/fixture/dap_co/backdrop/sheet.json",
+      "bytes": 883,
+      "gzip_bytes": 277,
+      "sha256": "da8ee639facc39298fdf0d060854de2d0f4af43e29146878be6367b804936825"
+    },
+    {
+      "path": "game/assets/fixture/dap_co/ground/atlas.png",
+      "bytes": 2787,
+      "gzip_bytes": 2529,
+      "sha256": "d76016704bbb5794062556fda4d065e6d01594bc027b0234f7fd3ed8533d8fd7"
+    },
+    {
+      "path": "game/assets/fixture/dap_co/ground/sheet.json",
+      "bytes": 576,
+      "gzip_bytes": 243,
+      "sha256": "a5961cec305a70c5d575b3f6f8478dd95680202a33769f74bfe909217fb93373"
+    },
+    {
+      "path": "game/assets/fixture/dap_co/layout.json",
+      "bytes": 802,
+      "gzip_bytes": 314,
+      "sha256": "14f7e094e19b106467ad43e0f8b06d124f63fd4f1f2a3d65c7d177b3597e101f"
+    },
+    {
+      "path": "game/assets/fixture/ke_giu_dap/atlas.png",
+      "bytes": 230620,
+      "gzip_bytes": 217421,
+      "sha256": "eb85df50086de849b555df46bbf5d2e507326bb84ea1336e904c5e9bbcf89bad"
+    },
+    {
+      "path": "game/assets/fixture/ke_giu_dap/sheet.json",
+      "bytes": 3080,
+      "gzip_bytes": 457,
+      "sha256": "3ebc85c3982278b372137db4cf303f4f89db226550ff720f9acac3eb8961420c"
+    },
+    {
+      "path": "game/assets/fixture/long_luu/atlas.png",
+      "bytes": 156992,
+      "gzip_bytes": 148776,
+      "sha256": "ba8087f828e5d174833511b66d49a64338f8fdd30cc9872937bddc819d0387c9"
+    },
+    {
+      "path": "game/assets/fixture/long_luu/sheet.json",
+      "bytes": 4173,
+      "gzip_bytes": 526,
+      "sha256": "b71bb348c0dd09e85fac15884eddf767e928823bd6fa640aedc12f85f5abcba9"
+    },
+    {
+      "path": "game/assets/fixture/manifest.json",
+      "bytes": 9657,
+      "gzip_bytes": 1575,
+      "sha256": "e4ea5ee3b17729b4138b070047d1b62220160ee5a2a683264616e0f49fc7080c"
+    },
+    {
+      "path": "game/assets/fixture/vfx/atlas.png",
+      "bytes": 45314,
+      "gzip_bytes": 44436,
+      "sha256": "8cb3070ca370163d12b5c9ed063eb171dc1566c6ad01013e16561515d3b8e3c0"
+    },
+    {
+      "path": "game/assets/fixture/vfx/sheet.json",
+      "bytes": 3680,
+      "gzip_bytes": 452,
+      "sha256": "9f8f9ef6e00ad130109572ccfaaa60d090ed46135889eecc4e5458efbac594d2"
+    },
+    {
+      "path": "game/assets/runtime-boss.ke_giu_dap.myva",
+      "bytes": 2103,
+      "gzip_bytes": 803,
+      "sha256": "9556d774ebe091b71c0f53a3f318e1e11305f487a58d3224f97b2300ca0ab7be"
+    },
+    {
+      "path": "game/assets/runtime-character.long_luu.myva",
+      "bytes": 2096,
+      "gzip_bytes": 805,
+      "sha256": "0f1ee69264583582be7cd99a9baf5a782ae1965796d7b4bc6a1eef6f049390cc"
+    },
+    {
+      "path": "game/assets/runtime-map.dap_co.myva",
+      "bytes": 4452,
+      "gzip_bytes": 1047,
+      "sha256": "c4c2df88aece7b88b3c1a7d50897b87eb0dd80959ef18d13f2f674a2a3b75d51"
+    },
+    {
+      "path": "game/assets/runtime-vfx.combat.myva",
+      "bytes": 2066,
+      "gzip_bytes": 786,
+      "sha256": "ad9b8da6634e244605748c3f8950c699e0afe51c76160eac4a2100863eb3c756"
+    },
+    {
+      "path": "game/game.css",
+      "bytes": 521,
+      "gzip_bytes": 320,
+      "sha256": "a3bc83d0f9acd666904724830787106ed2595548538b2629de8a71669232ae4d"
+    },
+    {
+      "path": "game/index.html",
+      "bytes": 635,
+      "gzip_bytes": 458,
+      "sha256": "acfe1e366a676be0f3f51d0ac4ce96ab12224eee3f893a0a821eb852b4cd55d4"
+    },
+    {
+      "path": "game/pkg/myva_web_game.d.ts",
+      "bytes": 6340,
+      "gzip_bytes": 1632,
+      "sha256": "a7c1af18347c4fe37d5238ebbe6329f2becb1cb0f86104efbb16ed9470d95648"
+    },
+    {
+      "path": "game/pkg/myva_web_game.js",
+      "bytes": 108546,
+      "gzip_bytes": 16142,
+      "sha256": "70e04e361639c96129f6f3e18710b2c1d337929c46af326bd37bc01cef384a42"
+    },
+    {
+      "path": "game/pkg/myva_web_game_bg.wasm",
+      "bytes": 87238855,
+      "gzip_bytes": 11650506,
+      "sha256": "8ff90d6d058212e7a1f0e0832bf40748c79bb65d343e5f9686df6d54f7809c0e"
+    },
+    {
+      "path": "game/pkg/myva_web_game_bg.wasm.d.ts",
+      "bytes": 3683,
+      "gzip_bytes": 609,
+      "sha256": "05d297597d5804249ebc968d1abc240d38e5246ad09d12fb388757c13c89816f"
+    },
+    {
+      "path": "game/runtime.js",
+      "bytes": 7487,
+      "gzip_bytes": 2873,
+      "sha256": "2b4b5b63e7c06ff9ec8a1c2549bbf785a395de30a67e66de13eca6fd11c97e20"
+    },
+    {
+      "path": "index.html",
+      "bytes": 549,
+      "gzip_bytes": 376,
+      "sha256": "1584f87d0e2a260ee5ac946498c06caa74557167478213e4c4301b94c7ebd19a"
+    },
+    {
+      "path": "shell/myva_web_shell.d.ts",
+      "bytes": 4489,
+      "gzip_bytes": 1130,
+      "sha256": "65590b3379d9fbf06ca8717975ef30df36af636db2e5f8a0da07bebf9050993a"
+    },
+    {
+      "path": "shell/myva_web_shell.js",
+      "bytes": 30971,
+      "gzip_bytes": 6289,
+      "sha256": "5af73b9e8bd457137d01357656faebf332a70255e5142243cac5997702e58849"
+    },
+    {
+      "path": "shell/myva_web_shell_bg.wasm",
+      "bytes": 441660,
+      "gzip_bytes": 75359,
+      "sha256": "3612be619abe8f5e045e1dbc949df1540ba88b24a798ff17c4468e4cddefa9cd"
+    },
+    {
+      "path": "shell/myva_web_shell_bg.wasm.d.ts",
+      "bytes": 2531,
+      "gzip_bytes": 514,
+      "sha256": "a60fa1eb6b6a15ba09b7f1f2d0c37b5c9dbbb111514b295d781ca21a05249a3f"
+    },
+    {
+      "path": "shell/snippets/myva-web-shell-2f0fcbe15a87b985/web/shell-bridge.js",
+      "bytes": 5899,
+      "gzip_bytes": 2443,
+      "sha256": "3f36cdd00bebefc3bb5e66466b857a9330f257fe98be4b8ca0204112eedc59d1"
+    },
+    {
+      "path": "style.css",
+      "bytes": 2354,
+      "gzip_bytes": 1019,
+      "sha256": "9150aa1e5c5cbcb1e4673e4e54cbf129049732ea26e8a75d897f63ac12d5e165"
+    }
+  ],
+  "total_bytes": 88342886,
+  "total_gzip_bytes": 12194711
+}

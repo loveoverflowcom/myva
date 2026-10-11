@@ -1,9 +1,10 @@
 //! Fixture art D05-A trên `AssetServer` (docs/technical/asset-pipeline.md). Chỉ thể hiện: đọc
 //! [`ArenaView`] và [`SimEvent`], không ghi gì vào phiên, replay hay luật combat.
 //!
-//! Loader đọc `fixture/manifest.json`, đọc từng file qua `AssetServer`, kiểm kích thước và
+//! Catalog đọc `fixture/manifest.json` không tải texture. Runtime planner tải manifest mỗi bundle
+//! (`runtime-*.myva`) qua `AssetServer`, kiểm kích thước và
 //! SHA-256 trước khi parse/giải mã, rồi chạy cùng luật `myva_assets::check_documents` với CLI.
-//! Bất kỳ lỗi nào làm cả fixture `Failed`: cảnh giữ hình khối graybox và telemetry ghi lý do.
+//! Bundle thiết yếu lỗi sau retry làm presentation `Failed`; VFX tùy chọn giữ geometric fallback.
 //! Texture chỉ giữ ở render world (`RenderAssetUsages::RENDER_WORLD`) sau khi upload.
 //!
 //! Hình học gameplay không đổi: vùng báo, hitbox debug, viền đỡ và tường vẫn là hình khối; sprite
@@ -13,7 +14,7 @@
 use std::collections::BTreeMap;
 
 use bevy::asset::io::Reader;
-use bevy::asset::{AssetLoader, LoadContext, LoadState, RenderAssetUsages};
+use bevy::asset::{AssetLoader, LoadContext, RenderAssetUsages};
 use bevy::image::{
     CompressedImageFormats, ImageSampler, ImageType, TextureAtlas, TextureAtlasLayout,
 };
@@ -37,6 +38,15 @@ const VFX_Z: f32 = 3.5;
 const PROJECTILE_Z: f32 = 3.0;
 /// Giảm alpha khi bất tử, giống thân hình khối.
 const INVULNERABLE_ALPHA: f32 = 0.45;
+
+// Every scene-scoped entity that clones image/atlas handles carries this marker. Runtime exit
+// despawns these owners before dropping lookup tables and planner bundle handles.
+#[derive(Component)]
+pub struct ArtEntity;
+
+/// Body sprite census, distinct from gameplay mirror entities and render-only benchmarks.
+#[derive(Component)]
+pub struct ArtBody;
 
 // ---------------------------------------------------------------- Asset và loader
 
@@ -79,11 +89,15 @@ fn fail(code: &str, message: impl std::fmt::Display) -> ArtError {
     }
 }
 
-#[derive(Default, TypePath)]
-pub struct ArtLoader;
+/// Lightweight validated catalog. Loading it never fetches or decodes texture content.
+#[derive(Asset, TypePath, Debug)]
+pub struct ArtCatalog(pub Manifest);
 
-impl AssetLoader for ArtLoader {
-    type Asset = ArtFixture;
+#[derive(Default, TypePath)]
+pub struct CatalogLoader;
+
+impl AssetLoader for CatalogLoader {
+    type Asset = ArtCatalog;
     type Settings = ();
     type Error = ArtError;
 
@@ -91,6 +105,64 @@ impl AssetLoader for ArtLoader {
         &self,
         reader: &mut dyn Reader,
         _settings: &(),
+        _context: &mut LoadContext<'_>,
+    ) -> Result<ArtCatalog, ArtError> {
+        let mut bytes = Vec::new();
+        reader
+            .read_to_end(&mut bytes)
+            .await
+            .map_err(|e| fail("io", e))?;
+        let manifest = myva_assets::parse_manifest(&bytes)?;
+        let mut issues = Vec::new();
+        myva_assets::validate::check_manifest(&manifest, &mut issues);
+        if let Some(issue) = issues.into_iter().next() {
+            return Err(issue.into());
+        }
+        let expected = [
+            ("character.long_luu", myva_assets::BundleKind::Character),
+            ("boss.ke_giu_dap", myva_assets::BundleKind::Boss),
+            ("map.dap_co", myva_assets::BundleKind::Map),
+            ("vfx.combat", myva_assets::BundleKind::Vfx),
+        ];
+        if manifest.bundles.len() != expected.len()
+            || expected.iter().any(|(id, kind)| {
+                !manifest
+                    .bundles
+                    .iter()
+                    .any(|b| b.id == *id && b.kind == *kind && b.dependencies.is_empty())
+            })
+        {
+            return Err(fail(
+                "invalid",
+                "runtime requires the bounded four self-contained fixture bundles",
+            ));
+        }
+        Ok(ArtCatalog(manifest))
+    }
+
+    fn extensions(&self) -> &[&str] {
+        &["json"]
+    }
+}
+
+/// Immutable expected catalog projection, compared before any payload I/O or decode.
+#[derive(Default, serde::Serialize, serde::Deserialize)]
+pub struct ArtSettings {
+    pub expected: Option<Manifest>,
+}
+
+#[derive(Default, TypePath)]
+pub struct ArtLoader;
+
+impl AssetLoader for ArtLoader {
+    type Asset = ArtFixture;
+    type Settings = ArtSettings;
+    type Error = ArtError;
+
+    async fn load(
+        &self,
+        reader: &mut dyn Reader,
+        settings: &ArtSettings,
         context: &mut LoadContext<'_>,
     ) -> Result<ArtFixture, ArtError> {
         let mut bytes = Vec::new();
@@ -99,6 +171,17 @@ impl AssetLoader for ArtLoader {
             .await
             .map_err(|e| fail("io", e))?;
         let manifest = myva_assets::parse_manifest(&bytes)?;
+        let mut issues = Vec::new();
+        myva_assets::validate::check_manifest(&manifest, &mut issues);
+        if let Some(issue) = issues.into_iter().next() {
+            return Err(issue.into());
+        }
+        if settings.expected.as_ref() != Some(&manifest) {
+            return Err(fail(
+                "projection_mismatch",
+                "bundle differs from validated catalog before payload I/O",
+            ));
+        }
         let base = context
             .path()
             .path()
@@ -119,6 +202,23 @@ impl AssetLoader for ArtLoader {
             myva_assets::verify_bytes(asset, &data)?;
             match asset.kind {
                 AssetKind::Texture => {
+                    // Check PNG dimensions before allocating the decoded image. Hash/size alone
+                    // cannot bound a decompression bomb when the manifest itself is malformed.
+                    let Some(info) = asset.texture else {
+                        return Err(fail("texture_dims", "texture metadata missing"));
+                    };
+                    if data.len() < 24
+                        || !data.starts_with(b"\x89PNG\r\n\x1a\n")
+                        || u32::from_be_bytes(data[16..20].try_into().expect("checked length"))
+                            != info.width
+                        || u32::from_be_bytes(data[20..24].try_into().expect("checked length"))
+                            != info.height
+                    {
+                        return Err(fail(
+                            "texture_dims",
+                            format!("{}: PNG header differs from manifest", asset.id),
+                        ));
+                    }
                     let image = Image::from_buffer(
                         &data,
                         ImageType::Extension("png"),
@@ -128,6 +228,15 @@ impl AssetLoader for ArtLoader {
                         RenderAssetUsages::RENDER_WORLD,
                     )
                     .map_err(|e| fail("image", format!("{}: {e}", asset.id)))?;
+                    let Some(info) = asset.texture else {
+                        return Err(fail("texture_dims", "texture metadata missing"));
+                    };
+                    if image.size() != UVec2::new(info.width, info.height) {
+                        return Err(fail(
+                            "texture_dims",
+                            format!("{}: decoded PNG differs from manifest", asset.id),
+                        ));
+                    }
                     let handle = context.add_labeled_asset(asset.id.clone(), image);
                     textures.insert(asset.id.clone(), handle);
                 }
@@ -160,7 +269,7 @@ impl AssetLoader for ArtLoader {
     }
 
     fn extensions(&self) -> &[&str] {
-        &["json"]
+        &["myva"]
     }
 }
 
@@ -306,7 +415,6 @@ pub struct Art {
     pub status: ArtStatus,
     /// Người chơi bật/tắt bằng phím G; chỉ có tác dụng khi `Ready`.
     pub enabled: bool,
-    handle: Option<Handle<ArtFixture>>,
     pub content_version: Option<String>,
 }
 
@@ -350,7 +458,9 @@ pub struct ArtPlugin {
 
 impl Plugin for ArtPlugin {
     fn build(&self, app: &mut App) {
-        app.init_asset::<ArtFixture>()
+        app.init_asset::<ArtCatalog>()
+            .register_asset_loader(CatalogLoader)
+            .init_asset::<ArtFixture>()
             .register_asset_loader(ArtLoader)
             .init_resource::<ArtTables>()
             .add_message::<VfxRequest>()
@@ -361,15 +471,14 @@ impl Plugin for ArtPlugin {
                     ArtStatus::Off
                 },
                 enabled: self.enabled,
-                handle: None,
                 content_version: None,
             })
-            .add_systems(Startup, start_loading)
+            .add_plugins(crate::runtime::plugin)
             .add_systems(
                 Update,
                 (
-                    watch_loading,
                     toggle_art,
+                    crate::runtime::drive,
                     (
                         sync_visibility,
                         animate_fighters,
@@ -384,48 +493,12 @@ impl Plugin for ArtPlugin {
     }
 }
 
-fn start_loading(mut art: ResMut<Art>, server: Res<AssetServer>) {
-    if art.status == ArtStatus::Loading {
-        art.handle = Some(server.load(FIXTURE_MANIFEST));
-    }
-}
-
-#[allow(clippy::too_many_arguments)]
-fn watch_loading(
-    mut commands: Commands,
-    mut art: ResMut<Art>,
-    server: Res<AssetServer>,
-    fixtures: Res<Assets<ArtFixture>>,
-    mut layouts: ResMut<Assets<TextureAtlasLayout>>,
-    mut tables: ResMut<ArtTables>,
+/// Merge one validated load unit into scene-scoped tables. No hidden global handle cache.
+pub(crate) fn install_bundle(
+    built: &mut ArtTables,
+    fixture: &ArtFixture,
+    layouts: &mut Assets<TextureAtlasLayout>,
 ) {
-    if art.status != ArtStatus::Loading {
-        return;
-    }
-    let Some(handle) = art.handle.clone() else {
-        return;
-    };
-    match server.load_state(&handle) {
-        LoadState::Loaded => {}
-        LoadState::Failed(error) => {
-            let message = error.to_string();
-            // ArtError hiện `[mã] ...`; lỗi tầng AssetServer (không tìm thấy manifest) là `io`.
-            let code = message
-                .split_once('[')
-                .and_then(|(_, rest)| rest.split_once(']'))
-                .map_or("io", |(code, _)| code)
-                .to_owned();
-            warn!("Art fixture không dùng được, giữ graybox hình khối: {message}");
-            art.status = ArtStatus::Failed { code, message };
-            art.handle = None;
-            return;
-        }
-        LoadState::NotLoaded | LoadState::Loading => return,
-    }
-    let Some(fixture) = fixtures.get(&handle) else {
-        return;
-    };
-    let mut built = ArtTables::default();
     for (id, sheet) in &fixture.documents.sheets {
         let (Some(image), Some(info)) = (
             fixture.textures.get(&sheet.texture),
@@ -440,7 +513,7 @@ fn watch_loading(
             sheet,
             image.clone(),
             UVec2::new(info.width, info.height),
-            &mut layouts,
+            layouts,
         );
         if let Some(subject) = &sheet.subject
             && matches!(sheet.role, Role::Character | Role::Boss)
@@ -449,16 +522,9 @@ fn watch_loading(
         }
         built.sheets.insert(id.clone(), view);
     }
-    built.layout = fixture.documents.layouts.values().next().cloned();
-    spawn_map(&mut commands, &built);
-    info!(
-        "Art fixture {} sẵn sàng: {} sheet",
-        fixture.manifest.content_version,
-        built.sheets.len()
-    );
-    art.content_version = Some(fixture.manifest.content_version.clone());
-    *tables = built;
-    art.status = ArtStatus::Ready;
+    if let Some(layout) = fixture.documents.layouts.values().next() {
+        built.layout = Some(layout.clone());
+    }
 }
 
 fn toggle_art(keys: Res<ButtonInput<KeyCode>>, mut art: ResMut<Art>) {
@@ -495,9 +561,11 @@ pub fn tag_lift(art: &Art) -> f32 {
 // ---------------------------------------------------------------- Bản đồ
 
 #[derive(Component)]
-struct ArtLayer;
+struct ArtLayer {
+    parallax: Option<usize>,
+}
 
-fn spawn_map(commands: &mut Commands, tables: &ArtTables) {
+pub(crate) fn spawn_map(commands: &mut Commands, tables: &ArtTables) {
     let Some(layout) = &tables.layout else {
         return;
     };
@@ -516,7 +584,8 @@ fn spawn_map(commands: &mut Commands, tables: &ArtTables) {
             for column in 0..columns {
                 let (sprite, anchor) = ground.sprite(frame, false);
                 commands.spawn((
-                    ArtLayer,
+                    ArtEntity,
+                    ArtLayer { parallax: None },
                     sprite,
                     anchor,
                     Transform::from_xyz(
@@ -529,7 +598,7 @@ fn spawn_map(commands: &mut Commands, tables: &ArtTables) {
             }
         }
     }
-    for layer in &layout.layers {
+    for (depth, layer) in layout.layers.iter().enumerate() {
         let Some(sheet) = tables.sheets.get(&layer.sheet) else {
             continue;
         };
@@ -544,7 +613,10 @@ fn spawn_map(commands: &mut Commands, tables: &ArtTables) {
             let (mut sprite, anchor) = sheet.sprite(FrameView { size, ..frame }, false);
             sprite.custom_size = Some(size);
             commands.spawn((
-                ArtLayer,
+                ArtEntity,
+                ArtLayer {
+                    parallax: Some(depth),
+                },
                 sprite,
                 anchor,
                 Transform::from_xyz(width / 2.0 - size.x / 2.0, layer.y as f32, z),
@@ -556,7 +628,10 @@ fn spawn_map(commands: &mut Commands, tables: &ArtTables) {
         loop {
             let (sprite, anchor) = sheet.sprite(frame, false);
             commands.spawn((
-                ArtLayer,
+                ArtEntity,
+                ArtLayer {
+                    parallax: Some(depth),
+                },
                 sprite,
                 anchor,
                 Transform::from_xyz(x, layer.y as f32, z),
@@ -570,17 +645,24 @@ fn spawn_map(commands: &mut Commands, tables: &ArtTables) {
     }
 }
 
-fn sync_visibility(art: Res<Art>, mut layers: Query<&mut Visibility, With<ArtLayer>>) {
-    if !art.is_changed() {
-        return;
-    }
-    let shown = if art.visible() {
-        Visibility::Inherited
-    } else {
-        Visibility::Hidden
-    };
-    for mut visibility in &mut layers {
-        visibility.set_if_neq(shown);
+fn sync_visibility(
+    art: Res<Art>,
+    benchmark: Option<Res<crate::benchmark::Benchmark>>,
+    mut layers: Query<(&ArtLayer, &mut Visibility)>,
+) {
+    let limit = benchmark.as_ref().and_then(|b| b.parallax_layers());
+    // New map entities start hidden, so update even when Art itself has not changed.
+    for (layer, mut visibility) in &mut layers {
+        let visible = art.visible()
+            && !layer
+                .parallax
+                .zip(limit)
+                .is_some_and(|(depth, limit)| depth >= limit);
+        visibility.set_if_neq(if visible {
+            Visibility::Inherited
+        } else {
+            Visibility::Hidden
+        });
     }
 }
 
@@ -761,6 +843,8 @@ fn animate_fighters(
             continue;
         }
         commands.spawn((
+            ArtEntity,
+            ArtBody,
             FighterArt {
                 id: fighter.id,
                 clip: "",
@@ -835,6 +919,7 @@ fn projectiles(
     }
     for index in used..mine.len() {
         commands.spawn((
+            ArtEntity,
             ProjectileArt(index),
             Sprite::default(),
             Anchor::default(),
@@ -895,6 +980,7 @@ fn spawn_vfx(
         };
         let (sprite, anchor) = sheet.sprite(*frame, request.flip);
         commands.spawn((
+            ArtEntity,
             VfxArt {
                 clip: request.clip,
                 flip: request.flip,

@@ -4100,6 +4100,8 @@ dependencies = [
  "myva-assets",
  "myva-gameplay",
  "myva-sim",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

@@ -1,0 +1,580 @@
+{
+  "schema_version": 1,
+  "evidence_kind": "engineering_verification_ledger",
+  "captured_at": "2026-10-11T15:19:18.605773+00:00",
+  "repository": "https://github.com/loveoverflowcom/myva",
+  "branch": "feat/bevy-asset-runtime",
+  "base_commit": "2c305b6a9946d0459a1b77f79fcb3808b205fb77",
+  "source_attribution": {
+    "build_revision_is_base": false,
+    "verified_source_revision": "1152f4e521390c827a726342f24e097728984cc3",
+    "dirty": false,
+    "method": "Clean local source checkpoint at final native/WASM verification and web build; SHA-256 snapshot of affected code/config plus relevant Rust source. Canonical published commit can differ because GitHub Git Data API supplies commit metadata. Source/tree equality is checked at publication; this is not an embedded binary attestation or hermetic build manifest.",
+    "sha256": {
+      "Cargo.lock": "e124b6d4d59d11c59ca634f9d9c8303da0a8f34d2b26406013a7b7281b1cce71",
+      "Cargo.toml": "f844f149e83ab6a21712cd260f335d37d061e9a1f02b997b52102ec3fbb5cb5e",
+      "apps/web/game/Cargo.toml": "2f07e5dcb39052e365f58d9bf1bec7a83d88ae52ab5eeecf98f91c7f01c9a7f3",
+      "apps/web/game/src/browser.rs": "c1f89140654d51e0d297a6da41f719ea3ae59066504c3cfb9148eb5d993e4190",
+      "apps/web/game/src/lib.rs": "38300aeae67db419c33e757366221162627d8d775c6586aa28786054c4fddee8",
+      "apps/web/shell/Cargo.toml": "79087da79e63fc4fb0fd81e08a692dd302811e198f83de72ad4c58047b463d1b",
+      "apps/web/shell/src/lib.rs": "d450b73affbb13a75072a0840d09c9d05e7909a06e98030ef1dc29b750d85d64",
+      "assets/runtime-boss.ke_giu_dap.myva": "9556d774ebe091b71c0f53a3f318e1e11305f487a58d3224f97b2300ca0ab7be",
+      "assets/runtime-character.long_luu.myva": "0f1ee69264583582be7cd99a9baf5a782ae1965796d7b4bc6a1eef6f049390cc",
+      "assets/runtime-map.dap_co.myva": "c4c2df88aece7b88b3c1a7d50897b87eb0dd80959ef18d13f2f674a2a3b75d51",
+      "assets/runtime-vfx.combat.myva": "ad9b8da6634e244605748c3f8950c699e0afe51c76160eac4a2100863eb3c756",
+      "benchmarks/asset-performance.json": "6d7686bce56c111315cd1314b7d221f899c62c21244c8ee4314bec48024301ca",
+      "packages/assets/Cargo.toml": "ef98fbd788435400a1feb8eeb2b7756df8a03cb8d2feae83b5064d1448330b59",
+      "packages/assets/src/bin/myva-assets.rs": "eb50aa877b46dc086f6b64626825bdcb72f0ca7c48499e8bbd4c200f2875da07",
+      "packages/assets/src/files.rs": "adcae0c4dbef9e4fb0dfca24d0d4d39baae63858fd1f63bce75015834224310f",
+      "packages/assets/src/lib.rs": "2c4007b208d9407b09068a7ea690a0ea1dd6102e9b1497cc421adbd153520321",
+      "packages/assets/src/schema.rs": "1c58f04d45e1e8fe820fb1d9550994020d4261aa07c420ba95aa5d9632972194",
+      "packages/assets/src/validate.rs": "e92dff0375b2b62c578980157719ffb58adf8957eee1371fe253956fa616e60d",
+      "packages/gameplay/Cargo.toml": "9da90bcbd4a469987ba995fd7fd3c092a3a6afeaeb1ba3287a709f1e42b1450e",
+      "packages/gameplay/src/authority.rs": "70fcd319b795692ae2ee51a53b0873bc47ae3d6d476f83fb421f94d2ce542c79",
+      "packages/gameplay/src/bin/myva-headless.rs": "8f44366be01629ef6bd895dfa35ff9b3906cc359da84c3c164575296194128e6",
+      "packages/gameplay/src/components.rs": "8aa3ca8c3d2722ea51cbd99d54be19f6d55484319b6a51f72d8abb20f1567f25",
+      "packages/gameplay/src/headless.rs": "91e28cf6fcdd0ad1565236927c0eaae27a8b4b986f6ff07fa89e8410423289eb",
+      "packages/gameplay/src/input.rs": "9952cda57da7213c0046aac939b121637db99c8ad1b2651e7889dee99ada0ec7",
+      "packages/gameplay/src/lib.rs": "f7847f646760f6c968c3757d242c2d6229f1dde365a785c6b70aab432a6f0c30",
+      "packages/gameplay/src/mirror.rs": "809f9127a5411e65e2e725f6e7e955d0fa964fbc5acd54b2d5a88d91912aed23",
+      "packages/gameplay/src/view.rs": "f5cb3d5dda44b59cc8b4dacd8ebcbc2e49885ec60e80887157a992a8381b0e5e",
+      "packages/graybox/Cargo.toml": "47bc02f99bec48937bd5ec99a1771e40d04c04387987311a46603ea39f9d092f",
+      "packages/graybox/src/art.rs": "f9a2c703be762936b4858db31befb5d0b4fc3b98fe9860b724faa6fd10045d1c",
+      "packages/graybox/src/benchmark.rs": "826b6c2e2bf3e9773d9feb7021b49219bcd23f8d6055b945501021d5d7c7a1f3",
+      "packages/graybox/src/controls.rs": "1298c8ab5d4f4b688f82aee1fdc36c4b7f02ff402d81a557b377f16866e9cdaa",
+      "packages/graybox/src/fight.rs": "8acffcb554d886daeeba9943cb1df420253be654064fe28785a61c2778571a80",
+      "packages/graybox/src/hud.rs": "2056a3285e2fffc78c393e50f14daa8f0b63f6873229090bb4b8c07edd9c4852",
+      "packages/graybox/src/lib.rs": "dddf6be892f3089f53cfa7372acfbd60886b26f0a62f05857a12523d59836899",
+      "packages/graybox/src/main.rs": "89c9e8e505acf7dc1e6dd3c931d12fb23b5a09d31b80b3be26f8d4feb7a58f81",
+      "packages/graybox/src/runtime.rs": "b170fe6633a462641318a51689f44ffa70e42e78343fe622cfede89331357d2b",
+      "packages/graybox/src/scene.rs": "82ea25ff00da6819a68e1c983792fe90bccdb8941cc1b69ce28c0cf892c78d63",
+      "packages/graybox/src/streaming.rs": "b081f9c79d10ec8766020fe81b6eaea9af90e84a8fe1d4e86a68ae8aceab0e51",
+      "packages/graybox/src/telemetry.rs": "55c67168e825a796c19de370f32805ce6cb3aa7e0dcc9ea6d041639c605eaddd",
+      "packages/graybox/src/text.rs": "6f1fec4383ff103af5745caa57f5380359b9355bc7efd6aa0ccd1569b31a9283",
+      "packages/graybox/src/touch.rs": "4d80d92dd9f3de94dbf3e63cebcbd863383cf33b544a9d1b1c20487372e92dc8",
+      "packages/sim/Cargo.toml": "0d50e6b936ea1ef3623c65377633fb3e6302b37ea964841d8f548530ab68e77a",
+      "packages/sim/src/battle.rs": "cb936f9a888816eef3ced4acff51d34164e2f06781055f9d00f334809dd10147",
+      "packages/sim/src/bin/myva-replay.rs": "0a78b6d1b2e228c2a5df2cac37593c56ca080b85b556d7067fac63bb1c7a667c",
+      "packages/sim/src/boss.rs": "41bf425c2dc6670534a896dd652ca25815edca6672b58cbff8aea2f521e0d398",
+      "packages/sim/src/bot.rs": "37c9c8c125c260c37e984a892eebb536e374b557a0e5c3e545a22d4661777a86",
+      "packages/sim/src/combat_tests.rs": "e4c62d6f612f98ac68b2c2bc8fa5a32d831ebdc00e78050e23c80f21a24e88fc",
+      "packages/sim/src/control.rs": "c5065e49caa5fd2259dd16e37a6951b63abbf43c10791d51f6f22295b3829a66",
+      "packages/sim/src/fighter.rs": "6ff87dc4b5f0fc38310a496f7c74f9b423363a6628a1473a490993e3ef33527c",
+      "packages/sim/src/fixture.rs": "cd7a15f9f847795ad4450da8b9740df06b269eed04d08bc28c683682218812d9",
+      "packages/sim/src/input.rs": "d0d8f59756ec5de99baa5f318a485ce0c922d5d2a1c679f4a8d84e94c5185a30",
+      "packages/sim/src/kit.rs": "c10777a40e5d8f692ee0526186ccaceb24759d326f3cc584c21e190cef1e8880",
+      "packages/sim/src/lib.rs": "19c4bbaf97f9f84f80d9e456e0089b9e264e01b96f1ed62706df4ee82624583b",
+      "packages/sim/src/meter.rs": "878e72b8067a241c6c8bf0de0ed3141c3a8fd11021cf347a99518a3402a65bfc",
+      "packages/sim/src/monster.rs": "d73e05636a102f7d61318db1253c7fb91793af6a5494f3d7d6f1351179ed11ed",
+      "packages/sim/src/npc.rs": "4c162839db347147d568d2d9b5bed2e45c3ede5b9b2beb36bae836872daef9d6",
+      "packages/sim/src/projectile.rs": "4a23ede2db79c2cde3da445a0025a75f47e82d72046dedf7fabfdcbdfb596409",
+      "packages/sim/src/protocol.rs": "4573dea5224b859e10410369dbdae4dfd0d4700d90f36dcb4ae2132d527d4791",
+      "packages/sim/src/replay.rs": "8e407c0f75b961ccaeb45346ca1be2d1f33bc15c5735bde7d10e6053402ef0dd",
+      "packages/sim/src/rng.rs": "c5563d6abc409f4f7450087441057e6e7785efb802c404eea083cc448da07b15",
+      "packages/sim/src/session.rs": "da08966bf417f8611bc47d19a8fa2bdd368448203b447368e10a8e0dfd0d254f",
+      "packages/sim/src/snapshot.rs": "fea57191fb2312dc631e6b2f4737043b5f12969db86b7685eda8831e99206a98",
+      "packages/sim/src/status.rs": "71b989ae3cba9d77506e0bc03d6e2346077ae73aa2253d3bf0febd01df938132",
+      "packages/sim/src/tick.rs": "e378bafa1dcd871f6028a0812e3797bb6d67de65033344951540808d00a75be3",
+      "packages/sim/src/world.rs": "da64da3f4e0deda4784381181a74214c8f89fd77fec50ddea08bc276bc8e7e31",
+      "scripts/build-web-shell.sh": "91bca8462f90a7f3c04b77c30f443f7bc9899ffa44618979b6a5da45519672fd",
+      "scripts/export-streaming-manifests.py": "54e2d27d4828ee00817dbc0bd7e4bfd11e57c6ad7c5aa4c06baf1283a585ed09",
+      "tests/test_streaming_manifests.py": "f82950bf855675f0efe6566a86ce98ba6b4a5f3e09c6c47a7c551574400ebe33",
+      "tests/web/assets.spec.mjs": "c044ff03b0d306d1c667cc15d3f5bcda06b1169379df81a6aac55e1669a567aa",
+      "tests/web/runtime-performance.spec.mjs": "629bffa004b3baa71d7b8f61643992b24b876911240630d6baf88bb462eec3ad",
+      "xtask/src/plan.rs": "f22088bdf39f3043e7aac77b489dee2f8995238ea3285a3e114cfbcd71f472c0"
+    },
+    "post_build_test_only_cleanup": {
+      "path": "tests/web/runtime-performance.spec.mjs",
+      "change": "Trailing whitespace normalized, no semantic or compiled source change",
+      "affected_checks": "Node syntax and 22-case Playwright discovery rerun PASS; no browser body execution",
+      "compiled_source_unchanged": true
+    }
+  },
+  "environment": {
+    "execution": "dot cloud Linux x86_64",
+    "cpu_visible": "Intel Xeon Platinum 8573C",
+    "logical_cpu_entries": 9,
+    "ram_scope": "approximately 9.7 GiB host-reported; container scheduling/limits not controlled",
+    "rust": "1.97.1",
+    "bevy": "0.20.0",
+    "wasm_bindgen": "0.2.129",
+    "chromium": "154.0.8037.57",
+    "measured_render_adapter": null,
+    "renderer_class": "headless_cpu_tests; browser/native rendering BLOCKED"
+  },
+  "additional_checks": [
+    {
+      "command": "node --check tests/web/runtime-performance.spec.mjs; node node_modules/@playwright/test/cli.js test --list --reporter=list",
+      "status": "PASS",
+      "scope": "After whitespace-only test cleanup; 22 cases/6 files; discovery only"
+    }
+  ],
+  "native_cli_guards": {
+    "captured_at": "2026-10-11T15:19:18.827997+00:00",
+    "evidence_kind": "native_invalid_cli_guards",
+    "binary": "target/debug/myva-graybox",
+    "binary_sha256": "50e67e6724ae9a408f74310c84494e0cd9da1f97de907a6afa8f186ed4239289",
+    "scope": "Final native executable invalid argument rejection before App/DefaultPlugins; no renderer/window benchmark performed",
+    "cases": [
+      {
+        "case": "benchmark_duel",
+        "args": [
+          "--benchmark",
+          "50",
+          "--duel"
+        ],
+        "exit_code": 1,
+        "output": "--benchmark requires the boss scene with art enabled (no --duel/--no-art)",
+        "status": "PASS"
+      },
+      {
+        "case": "benchmark_no_art",
+        "args": [
+          "--benchmark",
+          "50",
+          "--no-art"
+        ],
+        "exit_code": 1,
+        "output": "--benchmark requires the boss scene with art enabled (no --duel/--no-art)",
+        "status": "PASS"
+      },
+      {
+        "case": "capture_screenshot",
+        "args": [
+          "--benchmark",
+          "50",
+          "--benchmark-output",
+          "target/reviewed-invalid-native-output.json",
+          "--screenshot",
+          "target/reviewed-invalid-native-screenshot.png"
+        ],
+        "exit_code": 1,
+        "output": "--benchmark-output cannot be combined with --screenshot (separate exit conditions)",
+        "status": "PASS"
+      }
+    ],
+    "status": "PASS",
+    "capture_files_created": false
+  },
+  "headless_assets": {
+    "artifact": "d05b-headless-assets-2026-10-11.json",
+    "status": "PASS",
+    "cycles": 30,
+    "accepted_loads": 120,
+    "final_fixture_image_atlas_assets_and_owners_and_flights": 0,
+    "scope": "Real CPU AssetServer I/O/hash/PNG plus actual map/fighter/projectile/VFX sprite owners; fixed/synthetic view and hit event only; no GPU/render-world/driver qualification",
+    "presentation_owners_exercised": [
+      "map",
+      "two fighters",
+      "projectile",
+      "hit VFX"
+    ]
+  },
+  "web_build": {
+    "status": "PASS",
+    "artifact": "d05b-web-bundle-2026-10-11.json",
+    "profile": "web",
+    "total_bytes": 88342886,
+    "total_gzip_estimate_bytes": 12194711,
+    "scope": "File sizes and deterministic gzip.compress(mtime=0) potential transfer; no actual compressed wire bytes, startup or RAM implication"
+  },
+  "unavailable": [
+    {
+      "status": "BLOCKED",
+      "metric": "Six 50/200/500 x High/Low rendered presets, quantiles/rate/RAM/visual evidence/30-cycle rendered lifecycle/600-second soak",
+      "reason": "All 22 discovered Playwright cases failed before body at Chromium AF_UNIX singleton socket EPERM; supported dot cloud CUA browser also could not reach owned loopback server (ERR_CONNECTION_REFUSED)"
+    },
+    {
+      "status": "BLOCKED",
+      "metric": "Native window/GPU runtime",
+      "reason": "No DISPLAY/Wayland/Xvfb or /dev/dri/NVIDIA device in cloud shell"
+    },
+    {
+      "status": "NOT_RUN",
+      "metric": "Presented FPS, isolated CPU/GPU time, driver GPU memory, startup with upload/first-controllable/network profile, actual wire bytes",
+      "reason": "Required instrumentation/environment absent; Update interval and texture estimate endpoints deliberately distinguished"
+    },
+    {
+      "status": "BLOCKED",
+      "metric": "Physical Android/iOS/CMP gate #10",
+      "reason": "No physical-device environment; no mobile qualification claim"
+    }
+  ],
+  "production_art_decision": "NO_GO pending rendered/GPU/device/visual/budget qualification; issue #13 remains open",
+  "historical_aggregate_before_renewed_review": {
+    "source_attribution": {
+      "build_revision_is_base": true,
+      "dirty": true,
+      "method": "SHA-256 snapshot of affected code/config plus relevant local workspace Rust source at final verification; not a hermetic build manifest or embedded final commit attestation",
+      "sha256": {
+        "Cargo.lock": "e124b6d4d59d11c59ca634f9d9c8303da0a8f34d2b26406013a7b7281b1cce71",
+        "Cargo.toml": "f844f149e83ab6a21712cd260f335d37d061e9a1f02b997b52102ec3fbb5cb5e",
+        "apps/web/game/Cargo.toml": "2f07e5dcb39052e365f58d9bf1bec7a83d88ae52ab5eeecf98f91c7f01c9a7f3",
+        "apps/web/game/src/browser.rs": "c1f89140654d51e0d297a6da41f719ea3ae59066504c3cfb9148eb5d993e4190",
+        "apps/web/game/src/lib.rs": "38300aeae67db419c33e757366221162627d8d775c6586aa28786054c4fddee8",
+        "apps/web/shell/Cargo.toml": "79087da79e63fc4fb0fd81e08a692dd302811e198f83de72ad4c58047b463d1b",
+        "apps/web/shell/src/lib.rs": "d450b73affbb13a75072a0840d09c9d05e7909a06e98030ef1dc29b750d85d64",
+        "assets/runtime-boss.ke_giu_dap.myva": "9556d774ebe091b71c0f53a3f318e1e11305f487a58d3224f97b2300ca0ab7be",
+        "assets/runtime-character.long_luu.myva": "0f1ee69264583582be7cd99a9baf5a782ae1965796d7b4bc6a1eef6f049390cc",
+        "assets/runtime-map.dap_co.myva": "c4c2df88aece7b88b3c1a7d50897b87eb0dd80959ef18d13f2f674a2a3b75d51",
+        "assets/runtime-vfx.combat.myva": "ad9b8da6634e244605748c3f8950c699e0afe51c76160eac4a2100863eb3c756",
+        "benchmarks/asset-performance.json": "6d7686bce56c111315cd1314b7d221f899c62c21244c8ee4314bec48024301ca",
+        "packages/assets/Cargo.toml": "ef98fbd788435400a1feb8eeb2b7756df8a03cb8d2feae83b5064d1448330b59",
+        "packages/assets/src/bin/myva-assets.rs": "eb50aa877b46dc086f6b64626825bdcb72f0ca7c48499e8bbd4c200f2875da07",
+        "packages/assets/src/files.rs": "adcae0c4dbef9e4fb0dfca24d0d4d39baae63858fd1f63bce75015834224310f",
+        "packages/assets/src/lib.rs": "2c4007b208d9407b09068a7ea690a0ea1dd6102e9b1497cc421adbd153520321",
+        "packages/assets/src/schema.rs": "1c58f04d45e1e8fe820fb1d9550994020d4261aa07c420ba95aa5d9632972194",
+        "packages/assets/src/validate.rs": "e92dff0375b2b62c578980157719ffb58adf8957eee1371fe253956fa616e60d",
+        "packages/gameplay/Cargo.toml": "9da90bcbd4a469987ba995fd7fd3c092a3a6afeaeb1ba3287a709f1e42b1450e",
+        "packages/gameplay/src/authority.rs": "70fcd319b795692ae2ee51a53b0873bc47ae3d6d476f83fb421f94d2ce542c79",
+        "packages/gameplay/src/bin/myva-headless.rs": "8f44366be01629ef6bd895dfa35ff9b3906cc359da84c3c164575296194128e6",
+        "packages/gameplay/src/components.rs": "8aa3ca8c3d2722ea51cbd99d54be19f6d55484319b6a51f72d8abb20f1567f25",
+        "packages/gameplay/src/headless.rs": "91e28cf6fcdd0ad1565236927c0eaae27a8b4b986f6ff07fa89e8410423289eb",
+        "packages/gameplay/src/input.rs": "9952cda57da7213c0046aac939b121637db99c8ad1b2651e7889dee99ada0ec7",
+        "packages/gameplay/src/lib.rs": "f7847f646760f6c968c3757d242c2d6229f1dde365a785c6b70aab432a6f0c30",
+        "packages/gameplay/src/mirror.rs": "809f9127a5411e65e2e725f6e7e955d0fa964fbc5acd54b2d5a88d91912aed23",
+        "packages/gameplay/src/view.rs": "f5cb3d5dda44b59cc8b4dacd8ebcbc2e49885ec60e80887157a992a8381b0e5e",
+        "packages/graybox/Cargo.toml": "47bc02f99bec48937bd5ec99a1771e40d04c04387987311a46603ea39f9d092f",
+        "packages/graybox/src/art.rs": "f9a2c703be762936b4858db31befb5d0b4fc3b98fe9860b724faa6fd10045d1c",
+        "packages/graybox/src/benchmark.rs": "7d3f46db7c3737d8141d9f70071cfc21645a0b257619fd44222bb759448e5414",
+        "packages/graybox/src/controls.rs": "1298c8ab5d4f4b688f82aee1fdc36c4b7f02ff402d81a557b377f16866e9cdaa",
+        "packages/graybox/src/fight.rs": "8acffcb554d886daeeba9943cb1df420253be654064fe28785a61c2778571a80",
+        "packages/graybox/src/hud.rs": "2056a3285e2fffc78c393e50f14daa8f0b63f6873229090bb4b8c07edd9c4852",
+        "packages/graybox/src/lib.rs": "dddf6be892f3089f53cfa7372acfbd60886b26f0a62f05857a12523d59836899",
+        "packages/graybox/src/main.rs": "89c9e8e505acf7dc1e6dd3c931d12fb23b5a09d31b80b3be26f8d4feb7a58f81",
+        "packages/graybox/src/runtime.rs": "8a672ba6bdca6dfdda4f88ad69586531805cfd2e263330d85fd28609d17d820c",
+        "packages/graybox/src/scene.rs": "82ea25ff00da6819a68e1c983792fe90bccdb8941cc1b69ce28c0cf892c78d63",
+        "packages/graybox/src/streaming.rs": "b081f9c79d10ec8766020fe81b6eaea9af90e84a8fe1d4e86a68ae8aceab0e51",
+        "packages/graybox/src/telemetry.rs": "55c67168e825a796c19de370f32805ce6cb3aa7e0dcc9ea6d041639c605eaddd",
+        "packages/graybox/src/text.rs": "6f1fec4383ff103af5745caa57f5380359b9355bc7efd6aa0ccd1569b31a9283",
+        "packages/graybox/src/touch.rs": "4d80d92dd9f3de94dbf3e63cebcbd863383cf33b544a9d1b1c20487372e92dc8",
+        "packages/sim/Cargo.toml": "0d50e6b936ea1ef3623c65377633fb3e6302b37ea964841d8f548530ab68e77a",
+        "packages/sim/src/battle.rs": "cb936f9a888816eef3ced4acff51d34164e2f06781055f9d00f334809dd10147",
+        "packages/sim/src/bin/myva-replay.rs": "0a78b6d1b2e228c2a5df2cac37593c56ca080b85b556d7067fac63bb1c7a667c",
+        "packages/sim/src/boss.rs": "41bf425c2dc6670534a896dd652ca25815edca6672b58cbff8aea2f521e0d398",
+        "packages/sim/src/bot.rs": "37c9c8c125c260c37e984a892eebb536e374b557a0e5c3e545a22d4661777a86",
+        "packages/sim/src/combat_tests.rs": "e4c62d6f612f98ac68b2c2bc8fa5a32d831ebdc00e78050e23c80f21a24e88fc",
+        "packages/sim/src/control.rs": "c5065e49caa5fd2259dd16e37a6951b63abbf43c10791d51f6f22295b3829a66",
+        "packages/sim/src/fighter.rs": "6ff87dc4b5f0fc38310a496f7c74f9b423363a6628a1473a490993e3ef33527c",
+        "packages/sim/src/fixture.rs": "cd7a15f9f847795ad4450da8b9740df06b269eed04d08bc28c683682218812d9",
+        "packages/sim/src/input.rs": "d0d8f59756ec5de99baa5f318a485ce0c922d5d2a1c679f4a8d84e94c5185a30",
+        "packages/sim/src/kit.rs": "c10777a40e5d8f692ee0526186ccaceb24759d326f3cc584c21e190cef1e8880",
+        "packages/sim/src/lib.rs": "19c4bbaf97f9f84f80d9e456e0089b9e264e01b96f1ed62706df4ee82624583b",
+        "packages/sim/src/meter.rs": "878e72b8067a241c6c8bf0de0ed3141c3a8fd11021cf347a99518a3402a65bfc",
+        "packages/sim/src/monster.rs": "d73e05636a102f7d61318db1253c7fb91793af6a5494f3d7d6f1351179ed11ed",
+        "packages/sim/src/npc.rs": "4c162839db347147d568d2d9b5bed2e45c3ede5b9b2beb36bae836872daef9d6",
+        "packages/sim/src/projectile.rs": "4a23ede2db79c2cde3da445a0025a75f47e82d72046dedf7fabfdcbdfb596409",
+        "packages/sim/src/protocol.rs": "4573dea5224b859e10410369dbdae4dfd0d4700d90f36dcb4ae2132d527d4791",
+        "packages/sim/src/replay.rs": "8e407c0f75b961ccaeb45346ca1be2d1f33bc15c5735bde7d10e6053402ef0dd",
+        "packages/sim/src/rng.rs": "c5563d6abc409f4f7450087441057e6e7785efb802c404eea083cc448da07b15",
+        "packages/sim/src/session.rs": "da08966bf417f8611bc47d19a8fa2bdd368448203b447368e10a8e0dfd0d254f",
+        "packages/sim/src/snapshot.rs": "fea57191fb2312dc631e6b2f4737043b5f12969db86b7685eda8831e99206a98",
+        "packages/sim/src/status.rs": "71b989ae3cba9d77506e0bc03d6e2346077ae73aa2253d3bf0febd01df938132",
+        "packages/sim/src/tick.rs": "e378bafa1dcd871f6028a0812e3797bb6d67de65033344951540808d00a75be3",
+        "packages/sim/src/world.rs": "da64da3f4e0deda4784381181a74214c8f89fd77fec50ddea08bc276bc8e7e31",
+        "scripts/build-web-shell.sh": "91bca8462f90a7f3c04b77c30f443f7bc9899ffa44618979b6a5da45519672fd",
+        "scripts/export-streaming-manifests.py": "54e2d27d4828ee00817dbc0bd7e4bfd11e57c6ad7c5aa4c06baf1283a585ed09",
+        "tests/test_streaming_manifests.py": "f82950bf855675f0efe6566a86ce98ba6b4a5f3e09c6c47a7c551574400ebe33",
+        "tests/web/assets.spec.mjs": "c044ff03b0d306d1c667cc15d3f5bcda06b1169379df81a6aac55e1669a567aa",
+        "tests/web/runtime-performance.spec.mjs": "2e34ec2fddf3657656db54d0fd179c6bd4860f5d14ed1acd893506c5baabd988",
+        "xtask/src/plan.rs": "f22088bdf39f3043e7aac77b489dee2f8995238ea3285a3e114cfbcd71f472c0"
+      }
+    },
+    "aggregate": {
+      "command": "cargo xtask preflight --changed-only",
+      "base_ref": "origin/develop",
+      "exit_code": 1,
+      "status": "BLOCKED",
+      "reason": "Only terminal browser E2E stage failed to launch Chromium; do not read aggregate as PASS",
+      "rust_tests_passed": 218,
+      "rust_test_group_counts": [
+        2,
+        0,
+        16,
+        12,
+        0,
+        1,
+        0,
+        14,
+        52,
+        0,
+        5,
+        81,
+        0,
+        2,
+        4,
+        8,
+        0,
+        0,
+        21,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "graybox_unit_tests": 52,
+      "graybox_parity_tests": 5,
+      "stages": [
+        {
+          "name": "Rust format",
+          "status": "PASS"
+        },
+        {
+          "name": "documentation links and anchors",
+          "status": "PASS"
+        },
+        {
+          "name": "native Rust clippy",
+          "status": "PASS"
+        },
+        {
+          "name": "native Rust tests",
+          "status": "PASS"
+        },
+        {
+          "name": "simulation replay demo",
+          "status": "PASS"
+        },
+        {
+          "name": "simulation replay verify",
+          "status": "PASS"
+        },
+        {
+          "name": "headless gameplay-1: per-tick ECS/core hashes",
+          "status": "PASS"
+        },
+        {
+          "name": "verify gameplay-1 replay",
+          "status": "PASS"
+        },
+        {
+          "name": "headless mach-1: per-tick ECS/core hashes",
+          "status": "PASS"
+        },
+        {
+          "name": "verify mach-1 replay",
+          "status": "PASS"
+        },
+        {
+          "name": "headless gameplay-7: per-tick ECS/core hashes",
+          "status": "PASS"
+        },
+        {
+          "name": "verify gameplay-7 replay",
+          "status": "PASS"
+        },
+        {
+          "name": "headless mach-7: per-tick ECS/core hashes",
+          "status": "PASS"
+        },
+        {
+          "name": "verify mach-7 replay",
+          "status": "PASS"
+        },
+        {
+          "name": "headless gameplay-12: per-tick ECS/core hashes",
+          "status": "PASS"
+        },
+        {
+          "name": "verify gameplay-12 replay",
+          "status": "PASS"
+        },
+        {
+          "name": "headless mach-12: per-tick ECS/core hashes",
+          "status": "PASS"
+        },
+        {
+          "name": "verify mach-12 replay",
+          "status": "PASS"
+        },
+        {
+          "name": "economy invariants: seed 7, 90 days",
+          "status": "PASS"
+        },
+        {
+          "name": "generated asset fixture check",
+          "status": "PASS"
+        },
+        {
+          "name": "streaming bundle projections match validated catalog",
+          "status": "PASS"
+        },
+        {
+          "name": "streaming bundle projection contract tests",
+          "status": "PASS"
+        },
+        {
+          "name": "asset manifest/provenance/hash/resource budgets",
+          "status": "PASS"
+        },
+        {
+          "name": "asset performance report contracts (synthetic tests, not measurements)",
+          "status": "PASS"
+        },
+        {
+          "name": "web prerequisites",
+          "status": "PASS"
+        },
+        {
+          "name": "native/WASM determinism: tick hashes, seed and Mach fixture",
+          "status": "PASS"
+        },
+        {
+          "name": "web test port",
+          "status": "PASS"
+        },
+        {
+          "name": "browser prerequisites",
+          "status": "PASS"
+        },
+        {
+          "name": "WASM Rust clippy + bridge compilation",
+          "status": "PASS"
+        },
+        {
+          "name": "renderer-independent WASM simulation",
+          "status": "PASS"
+        },
+        {
+          "name": "build Leptos + Bevy WASM bundles",
+          "status": "PASS"
+        },
+        {
+          "name": "Playwright web/bridge/gameplay/asset E2E",
+          "status": "BLOCKED",
+          "execution_status": "FAIL",
+          "reason": "Chromium process singleton socket() Operation not permitted; browser test bodies never ran"
+        }
+      ],
+      "log_sha256": "320a828f41340b2d43ee89419d1dda17b674038c2e85e710b52a1ce871a2d5c2"
+    },
+    "scope": "Original preflight before renewed review and three fixes; previous source snapshot superseded. Browser launch evidence remains a verified environment blocker, not execution of revised browser bodies."
+  },
+  "reviewed_final_verification": {
+    "status": "NON_BROWSER_CHECKS_PASS_RENDER_QUALIFICATION_BLOCKED",
+    "source_revision": "1152f4e521390c827a726342f24e097728984cc3",
+    "rust_tests_passed": 221,
+    "rust_test_group_counts": [
+      2,
+      0,
+      16,
+      12,
+      0,
+      1,
+      0,
+      14,
+      55,
+      0,
+      5,
+      81,
+      0,
+      2,
+      4,
+      8,
+      0,
+      0,
+      21,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "graybox_unit_tests": 55,
+    "graybox_parity_tests": 5,
+    "python_contract_tests": 38,
+    "commands": [
+      {
+        "command": "cargo xtask verify repository",
+        "exit_code": 0,
+        "status": "PASS",
+        "scope": "Native workspace formatting/clippy/tests, docs, replay/headless/economy, asset projection/provenance/resource and report contracts"
+      },
+      {
+        "command": "cargo xtask verify determinism --ticks 3600 --seeds 1,7,12",
+        "exit_code": 0,
+        "status": "PASS",
+        "scope": "Six renderer-independent native/WASM 3600-tick fixtures"
+      },
+      {
+        "command": "cargo clippy --locked -p myva-web-shell -p myva-web-game -p myva-sim -p myva-gameplay -p myva-assets --target wasm32-unknown-unknown -- -D warnings",
+        "exit_code": 0,
+        "status": "PASS"
+      },
+      {
+        "command": "cargo build --locked -p myva-sim --target wasm32-unknown-unknown",
+        "exit_code": 0,
+        "status": "PASS"
+      },
+      {
+        "command": "cargo xtask build web --profile web",
+        "exit_code": 0,
+        "status": "PASS"
+      },
+      {
+        "command": "node --check tests/web/runtime-performance.spec.mjs; node --check tests/web/assets.spec.mjs",
+        "exit_code": 0,
+        "status": "PASS"
+      },
+      {
+        "command": "node node_modules/@playwright/test/cli.js test --list --reporter=list",
+        "exit_code": 0,
+        "status": "PASS",
+        "discovered_tests": 22,
+        "files": 6,
+        "runtime_cases": 9,
+        "scope": "Discovery only; no browser test body executed"
+      }
+    ],
+    "full_preflight": {
+      "status": "BLOCKED",
+      "rerun_after_review": false,
+      "reason": "Known Chromium AF_UNIX EPERM persisted after reviewed escalation; further launch/bypass was not attempted. Final non-browser stages rerun individually; previous aggregate exit1 is historical."
+    }
+  },
+  "independent_review": {
+    "method": "Independent read-only defect-first merge-base review; runtime ownership and benchmark/capture paths reviewed separately, with build/export/config/docs/evidence integration checked",
+    "base_commit": "2c305b6a9946d0459a1b77f79fcb3808b205fb77",
+    "base_refresh": "Latest origin/develop fetched; unchanged base; rebase up to date",
+    "fixed_findings": [
+      {
+        "priority": "P2",
+        "issue": "Late optional bundle completion destroyed healthy presentation owners",
+        "fix": "Merge newly ready bundles into existing tables and preserve sprites/layouts",
+        "regression_test": "runtime::tests::installing_late_optional_bundle_preserves_existing_scene_owners"
+      },
+      {
+        "priority": "P1",
+        "issue": "Low-to-High/art-off target switch retained stale computed camera dimensions",
+        "fix": "Invalidate Projection so pinned Bevy camera_system recomputes target info",
+        "regression_test": "benchmark::tests::tier_transitions_recompute_the_real_camera_target_size_without_resize_events"
+      },
+      {
+        "priority": "P2",
+        "issue": "Resize/DPR changes mixed raster workloads under one final-resolution sample",
+        "fix": "Reset warmup/sample epoch on raster scale, physical or logical dimension changes",
+        "regression_test": "benchmark::tests::changing_raster_dimensions_discards_prior_samples_and_restarts_warmup"
+      }
+    ],
+    "final_result": "No outstanding qualifying finding after re-review",
+    "remaining_test_gaps": [
+      "GPU/browser/native window/visual QA blocked",
+      "No physical Android/iOS/CMP qualification",
+      "Cancelled transport can hang indefinitely because public abort API is absent; retained slots are not acknowledged early"
+    ]
+  },
+  "verification_log_sha256": {
+    "reviewed-final-repository.log": "aac109878452c4aa871d6955e25135acbfb29c87f6170cc8b88693b2db4a88d6",
+    "reviewed-final-determinism.log": "576b0c5b0cb611f133d9a81453dd4dc231c195c0688bf5ee01ce3ce9ff8ff110",
+    "reviewed-final-wasm-clippy.log": "9336f57917d35c37efd6bfa468242e9984a9bbb07125c9d8daf4ec19bcf32d91",
+    "reviewed-final-wasm-sim.log": "32d47f791eadf1ea833d9f8c84fbfea5cab1f438e113e93be05bd5b908e1c2ac",
+    "reviewed-final-build-web.log": "2e56258ab82efb6d68a85ee98ec1fd6683c3ed9bb877fd85484b1ed36a2a7df8",
+    "reviewed-final-playwright-discovery.log": "9792e0cdd5290a0b615d1c1393e16b9a159304aabe0fd92cec4a350fb36d29b0",
+    "preflight-changed-only-final.log": "320a828f41340b2d43ee89419d1dda17b674038c2e85e710b52a1ce871a2d5c2"
+  }
+}

@@ -6,6 +6,8 @@ use bevy::window::PrimaryWindow;
 use bevy::winit::WinitSettings;
 use myva_gameplay::SimSession;
 use myva_graybox::art::{self, Art, ArtTables};
+use myva_graybox::benchmark::{Benchmark, BenchmarkConfig, ConfigureBenchmark, QualityTier};
+use myva_graybox::runtime::{ArtCommand, StreamRuntime};
 use myva_graybox::telemetry::{self, HostStatus};
 use myva_graybox::touch::{self, ShowTouchControls, TouchUi};
 use myva_graybox::{ArenaView, GraySet, GrayboxPlugin, HostCommand, Match};
@@ -21,6 +23,12 @@ struct Bridge {
     touch_layout: String,
     replay_requested: bool,
     replay: Option<String>,
+    benchmark_command: Option<Option<BenchmarkConfig>>,
+    benchmark: String,
+    benchmark_capture_requested: bool,
+    benchmark_capture: Option<String>,
+    stream_runtime: String,
+    art_commands: Vec<ArtCommand>,
 }
 
 thread_local! {
@@ -63,7 +71,12 @@ pub fn start_game() {
         )
         .add_plugins(GrayboxPlugin::default())
         .add_systems(RunFixedMainLoop, pull_bridge.in_set(GraySet::Shortcuts))
-        .add_systems(Last, push_bridge)
+        .add_systems(
+            Last,
+            push_bridge
+                .after(myva_graybox::benchmark::CaptureSet)
+                .after(myva_graybox::runtime::AuditSet),
+        )
         .run();
 }
 
@@ -98,6 +111,62 @@ pub fn show_touch_controls(visible: bool) {
     BRIDGE.with_borrow_mut(|bridge| bridge.show_touch = Some(visible));
 }
 
+/// D05-B-only render workload. 0 disables it; other unsupported populations are rejected.
+/// This command does not add combatants, controllers, rewards, or replay input.
+#[wasm_bindgen]
+pub fn set_benchmark(population: u16, low: bool, seed: u32) -> bool {
+    let config = if population == 0 {
+        None
+    } else {
+        let tier = if low {
+            QualityTier::Low
+        } else {
+            QualityTier::High
+        };
+        let Some(config) = BenchmarkConfig::new(population, tier, seed) else {
+            return false;
+        };
+        Some(config)
+    };
+    BRIDGE.with_borrow_mut(|bridge| bridge.benchmark_command = Some(config));
+    true
+}
+
+#[wasm_bindgen]
+pub fn benchmark_telemetry() -> String {
+    BRIDGE.with_borrow(|bridge| bridge.benchmark.clone())
+}
+
+/// Request the complete raw interval array once, after the measurement window. Keeping raw
+/// serialization out of every Last frame avoids an O(n) telemetry tax during a long soak.
+#[wasm_bindgen]
+pub fn request_benchmark_capture() {
+    BRIDGE.with_borrow_mut(|bridge| {
+        bridge.benchmark_capture = None;
+        bridge.benchmark_capture_requested = true;
+    });
+}
+
+#[wasm_bindgen]
+pub fn take_benchmark_capture() -> Option<String> {
+    BRIDGE.with_borrow_mut(|bridge| bridge.benchmark_capture.take())
+}
+
+#[wasm_bindgen]
+pub fn stream_runtime() -> String {
+    BRIDGE.with_borrow(|bridge| bridge.stream_runtime.clone())
+}
+
+#[wasm_bindgen]
+pub fn set_art_enabled(enabled: bool) {
+    BRIDGE.with_borrow_mut(|bridge| bridge.art_commands.push(ArtCommand::SetEnabled(enabled)));
+}
+
+#[wasm_bindgen]
+pub fn retry_art() {
+    BRIDGE.with_borrow_mut(|bridge| bridge.art_commands.push(ArtCommand::Retry));
+}
+
 /// JSON ASCII một dòng; xem `myva_graybox::telemetry`.
 #[wasm_bindgen]
 pub fn telemetry() -> String {
@@ -124,9 +193,15 @@ pub fn take_replay() -> Option<String> {
 fn pull_bridge(
     mut commands: MessageWriter<HostCommand>,
     mut show_touch: MessageWriter<ShowTouchControls>,
+    mut benchmarks: MessageWriter<ConfigureBenchmark>,
+    mut art_commands: MessageWriter<ArtCommand>,
 ) {
     BRIDGE.with_borrow_mut(|bridge| {
         commands.write_batch(bridge.commands.drain(..));
+        art_commands.write_batch(bridge.art_commands.drain(..));
+        if let Some(config) = bridge.benchmark_command.take() {
+            benchmarks.write(ConfigureBenchmark(config));
+        }
         if let Some(visible) = bridge.show_touch.take() {
             show_touch.write(ShowTouchControls(visible));
         }
@@ -141,6 +216,8 @@ fn push_bridge(
     touch_ui: Res<TouchUi>,
     art_state: Res<Art>,
     art_tables: Res<ArtTables>,
+    stream_runtime: Res<StreamRuntime>,
+    benchmark: Res<Benchmark>,
     time: Res<Time<Virtual>>,
     gamepads: Query<(), With<Gamepad>>,
     window: Single<&Window, With<PrimaryWindow>>,
@@ -163,6 +240,11 @@ fn push_bridge(
     let layout = touch::layout(window.size()).to_json();
     BRIDGE.with_borrow_mut(|bridge| {
         bridge.telemetry = json;
+        bridge.benchmark = benchmark.summary_json();
+        if std::mem::take(&mut bridge.benchmark_capture_requested) {
+            bridge.benchmark_capture = Some(benchmark.to_json());
+        }
+        bridge.stream_runtime = stream_runtime.summary().to_json();
         bridge.touch_layout = layout;
         if std::mem::take(&mut bridge.replay_requested) {
             bridge.replay = Some(sim.get().replay().to_text());

@@ -1,0 +1,72 @@
+{
+  "format": "myva.asset-manifest",
+  "format_version": 1,
+  "content_version": "d05a-fixture-1",
+  "texels_per_unit": {
+    "gameplay": 2.0,
+    "backdrop": 1.0
+  },
+  "limits": {
+    "max_texture_side": 2048,
+    "total_texture_bytes": 33554432,
+    "total_file_bytes": 4194304
+  },
+  "assets": [
+    {
+      "id": "vfx.combat_atlas",
+      "kind": "texture",
+      "path": "fixture/vfx/atlas.png",
+      "version": 1,
+      "bytes": 45314,
+      "sha256": "8cb3070ca370163d12b5c9ed063eb171dc1566c6ad01013e16561515d3b8e3c0",
+      "dependencies": [],
+      "provenance": {
+        "origin": "procedural",
+        "tool": "scripts/generate-asset-fixture.py",
+        "author": "MyVa — Thần Mạch contributors (sinh bằng mã, không có đầu vào bên thứ ba)",
+        "license": "LicenseRef-MyVa-Unreleased",
+        "redistribution": "Chỉ dùng trong repo MyVa; chủ dự án chưa chọn license phát hành.",
+        "created": "2026-10-11"
+      },
+      "texture": {
+        "width": 404,
+        "height": 504,
+        "format": "rgba8_srgb"
+      }
+    },
+    {
+      "id": "vfx.combat",
+      "kind": "sprite_sheet",
+      "path": "fixture/vfx/sheet.json",
+      "version": 1,
+      "bytes": 3680,
+      "sha256": "9f8f9ef6e00ad130109572ccfaaa60d090ed46135889eecc4e5458efbac594d2",
+      "dependencies": [
+        "vfx.combat_atlas"
+      ],
+      "provenance": {
+        "origin": "procedural",
+        "tool": "scripts/generate-asset-fixture.py",
+        "author": "MyVa — Thần Mạch contributors (sinh bằng mã, không có đầu vào bên thứ ba)",
+        "license": "LicenseRef-MyVa-Unreleased",
+        "redistribution": "Chỉ dùng trong repo MyVa; chủ dự án chưa chọn license phát hành.",
+        "created": "2026-10-11"
+      }
+    }
+  ],
+  "bundles": [
+    {
+      "id": "vfx.combat",
+      "kind": "vfx",
+      "assets": [
+        "vfx.combat",
+        "vfx.combat_atlas"
+      ],
+      "dependencies": [],
+      "budget": {
+        "texture_bytes": 2097152,
+        "file_bytes": 524288
+      }
+    }
+  ]
+}

@@ -39,13 +39,14 @@ test('art fixture loads through AssetServer, toggles with G, combat state unaffe
     const { errors, assets } = collect(page);
     await page.goto('/');
     const frame = await enter(page);
-    await expect.poll(async () => (await state(frame)).art.status).toBe('ready');
+    await expect.poll(async () => (await state(frame)).art.sheets).toBe(5);
     const ready = await state(frame);
     expect(ready.art).toEqual({ status: 'ready', visible: true, sheets: 5, failure: null });
-    // Manifest, 5 atlas, 5 sheet và layout đều tải đúng một lần, không có request .meta.
+    // Catalog plus four independent load units; textures/sheet/layout remain single-copy.
     const fetched = assets.map(item => item.url).sort();
     expect(fetched.filter(url => url.endsWith('.png'))).toHaveLength(5);
     expect(fetched.filter(url => url.endsWith('.json'))).toHaveLength(7);
+    expect(fetched.filter(url => url.endsWith('.myva'))).toHaveLength(4);
     expect(assets.every(item => item.status === 200)).toBe(true);
     expect(fetched.some(url => url.endsWith('.meta'))).toBe(false);
 
@@ -57,6 +58,7 @@ test('art fixture loads through AssetServer, toggles with G, combat state unaffe
     await expect.poll(async () => (await state(frame)).art.visible).toBe(false);
     await page.screenshot({ path: 'target/web-evidence/art-off.png' });
     await page.keyboard.press('KeyG');
+    await expect.poll(async () => (await state(frame)).art.sheets).toBe(5);
     await expect.poll(async () => (await state(frame)).art.visible).toBe(true);
 
     const after = await state(frame);
@@ -97,4 +99,46 @@ test('missing manifest reports io failure without breaking the match', async ({ 
     await expect.poll(async () => (await state(frame)).tick).toBeGreaterThan(failed.tick + 30);
     // Trình duyệt ghi 404 của request bị chặn; Bevy ghi lỗi tải manifest.
     expect(errors.filter(text => !/404 \(Not Found\)|manifest\.json/.test(text))).toEqual([]);
+});
+
+async function streaming(frame) {
+    return frame.evaluate(async () => JSON.parse((await import('./pkg/myva_web_game.js')).stream_runtime()));
+}
+
+test('optional VFX preload cannot delay required-ready art', async ({ page }) => {
+    let release;
+    const gate = new Promise(resolve => { release = resolve; });
+    await page.route('**/game/assets/runtime-vfx.combat.myva', async route => {
+        await gate;
+        await route.continue();
+    });
+    await page.goto('/');
+    const frame = await enter(page);
+    try {
+        await expect.poll(async () => (await state(frame)).art.status).toBe('ready');
+        const pending = await state(frame);
+        expect(pending.art.sheets).toBe(4);
+        expect(pending.art.failure).toBe(null);
+        expect((await streaming(frame)).scene).toBe('ready');
+        expect((await streaming(frame)).flights).toBe(1);
+    } finally {
+        release();
+    }
+    await expect.poll(async () => (await state(frame)).art.sheets).toBe(5);
+    await expect.poll(async () => (await streaming(frame)).flights).toBe(0);
+});
+
+test('missing optional VFX exhausts finite retries and keeps geometric combat feedback', async ({ page }) => {
+    const { errors } = collect(page);
+    await page.route('**/game/assets/fixture/vfx/atlas.png', route => route.fulfill({ status: 404, body: 'missing' }));
+    await page.goto('/');
+    const frame = await enter(page);
+    await expect.poll(async () => (await streaming(frame)).failed_loads).toBe(3);
+    await expect.poll(async () => (await streaming(frame)).flights).toBe(0);
+    const ready = await state(frame);
+    expect(ready.art).toEqual({ status: 'ready', visible: true, sheets: 4, failure: null });
+    expect((await streaming(frame)).planner_owners).toBe(3);
+    expect((await streaming(frame)).retries).toBe(2);
+    await expect.poll(async () => (await state(frame)).tick).toBeGreaterThan(ready.tick + 30);
+    expect(errors.filter(text => !/404 \(Not Found\)|\[io\]|vfx\/atlas\.png/.test(text))).toEqual([]);
 });
