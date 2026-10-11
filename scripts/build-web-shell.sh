@@ -23,7 +23,9 @@ cp "$root/apps/web/public/game/"* "$out/game/"
 cargo run --locked --quiet --manifest-path "$root/Cargo.toml" -p myva-assets -- validate "$root/assets/fixture/manifest.json" >/dev/null
 rm -rf "$out/game/assets"
 mkdir -p "$out/game/assets"
+python3 "$root/scripts/export-streaming-manifests.py" --check
 cp -R "$root/assets/fixture" "$out/game/assets/fixture"
+cp "$root/assets/"runtime-*.myva "$out/game/assets/"
 wasm-bindgen --target web --out-dir "$out/shell" "$target/myva_web_shell.wasm"
 wasm-bindgen --target web --out-dir "$out/game/pkg" "$target/myva_web_game.wasm"
 python3 "$root/scripts/web-bundle-report.py" "$out" "$profile"

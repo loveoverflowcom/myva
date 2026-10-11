@@ -1,0 +1,136 @@
+{
+  "format": "myva.asset-manifest",
+  "format_version": 1,
+  "content_version": "d05a-fixture-1",
+  "texels_per_unit": {
+    "gameplay": 2.0,
+    "backdrop": 1.0
+  },
+  "limits": {
+    "max_texture_side": 2048,
+    "total_texture_bytes": 33554432,
+    "total_file_bytes": 4194304
+  },
+  "assets": [
+    {
+      "id": "dap_co.ground_atlas",
+      "kind": "texture",
+      "path": "fixture/dap_co/ground/atlas.png",
+      "version": 1,
+      "bytes": 2787,
+      "sha256": "d76016704bbb5794062556fda4d065e6d01594bc027b0234f7fd3ed8533d8fd7",
+      "dependencies": [],
+      "provenance": {
+        "origin": "procedural",
+        "tool": "scripts/generate-asset-fixture.py",
+        "author": "MyVa — Thần Mạch contributors (sinh bằng mã, không có đầu vào bên thứ ba)",
+        "license": "LicenseRef-MyVa-Unreleased",
+        "redistribution": "Chỉ dùng trong repo MyVa; chủ dự án chưa chọn license phát hành.",
+        "created": "2026-10-11"
+      },
+      "texture": {
+        "width": 268,
+        "height": 136,
+        "format": "rgba8_srgb"
+      }
+    },
+    {
+      "id": "dap_co.ground",
+      "kind": "sprite_sheet",
+      "path": "fixture/dap_co/ground/sheet.json",
+      "version": 1,
+      "bytes": 576,
+      "sha256": "a5961cec305a70c5d575b3f6f8478dd95680202a33769f74bfe909217fb93373",
+      "dependencies": [
+        "dap_co.ground_atlas"
+      ],
+      "provenance": {
+        "origin": "procedural",
+        "tool": "scripts/generate-asset-fixture.py",
+        "author": "MyVa — Thần Mạch contributors (sinh bằng mã, không có đầu vào bên thứ ba)",
+        "license": "LicenseRef-MyVa-Unreleased",
+        "redistribution": "Chỉ dùng trong repo MyVa; chủ dự án chưa chọn license phát hành.",
+        "created": "2026-10-11"
+      }
+    },
+    {
+      "id": "dap_co.backdrop_atlas",
+      "kind": "texture",
+      "path": "fixture/dap_co/backdrop/atlas.png",
+      "version": 1,
+      "bytes": 17498,
+      "sha256": "24a37cd76c7c3cc892adc630c9a227480e1ebac90620334638b754931fa8ccc3",
+      "dependencies": [],
+      "provenance": {
+        "origin": "procedural",
+        "tool": "scripts/generate-asset-fixture.py",
+        "author": "MyVa — Thần Mạch contributors (sinh bằng mã, không có đầu vào bên thứ ba)",
+        "license": "LicenseRef-MyVa-Unreleased",
+        "redistribution": "Chỉ dùng trong repo MyVa; chủ dự án chưa chọn license phát hành.",
+        "created": "2026-10-11"
+      },
+      "texture": {
+        "width": 520,
+        "height": 820,
+        "format": "rgba8_srgb"
+      }
+    },
+    {
+      "id": "dap_co.backdrop",
+      "kind": "sprite_sheet",
+      "path": "fixture/dap_co/backdrop/sheet.json",
+      "version": 1,
+      "bytes": 883,
+      "sha256": "da8ee639facc39298fdf0d060854de2d0f4af43e29146878be6367b804936825",
+      "dependencies": [
+        "dap_co.backdrop_atlas"
+      ],
+      "provenance": {
+        "origin": "procedural",
+        "tool": "scripts/generate-asset-fixture.py",
+        "author": "MyVa — Thần Mạch contributors (sinh bằng mã, không có đầu vào bên thứ ba)",
+        "license": "LicenseRef-MyVa-Unreleased",
+        "redistribution": "Chỉ dùng trong repo MyVa; chủ dự án chưa chọn license phát hành.",
+        "created": "2026-10-11"
+      }
+    },
+    {
+      "id": "dap_co.layout",
+      "kind": "map_layout",
+      "path": "fixture/dap_co/layout.json",
+      "version": 1,
+      "bytes": 802,
+      "sha256": "14f7e094e19b106467ad43e0f8b06d124f63fd4f1f2a3d65c7d177b3597e101f",
+      "dependencies": [
+        "dap_co.ground",
+        "dap_co.backdrop"
+      ],
+      "provenance": {
+        "origin": "procedural",
+        "tool": "scripts/generate-asset-fixture.py",
+        "author": "MyVa — Thần Mạch contributors (sinh bằng mã, không có đầu vào bên thứ ba)",
+        "license": "LicenseRef-MyVa-Unreleased",
+        "redistribution": "Chỉ dùng trong repo MyVa; chủ dự án chưa chọn license phát hành.",
+        "created": "2026-10-11"
+      }
+    }
+  ],
+  "bundles": [
+    {
+      "id": "map.dap_co",
+      "kind": "map",
+      "assets": [
+        "dap_co.ground",
+        "dap_co.ground_atlas",
+        "dap_co.backdrop",
+        "dap_co.backdrop_atlas",
+        "dap_co.layout"
+      ],
+      "dependencies": [],
+      "budget": {
+        "texture_bytes": 4194304,
+        "file_bytes": 1048576
+      }
+    }
+  ]
+}

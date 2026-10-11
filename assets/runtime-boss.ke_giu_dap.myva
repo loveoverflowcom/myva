@@ -1,0 +1,72 @@
+{
+  "format": "myva.asset-manifest",
+  "format_version": 1,
+  "content_version": "d05a-fixture-1",
+  "texels_per_unit": {
+    "gameplay": 2.0,
+    "backdrop": 1.0
+  },
+  "limits": {
+    "max_texture_side": 2048,
+    "total_texture_bytes": 33554432,
+    "total_file_bytes": 4194304
+  },
+  "assets": [
+    {
+      "id": "ke_giu_dap.atlas",
+      "kind": "texture",
+      "path": "fixture/ke_giu_dap/atlas.png",
+      "version": 1,
+      "bytes": 230620,
+      "sha256": "eb85df50086de849b555df46bbf5d2e507326bb84ea1336e904c5e9bbcf89bad",
+      "dependencies": [],
+      "provenance": {
+        "origin": "procedural",
+        "tool": "scripts/generate-asset-fixture.py",
+        "author": "MyVa — Thần Mạch contributors (sinh bằng mã, không có đầu vào bên thứ ba)",
+        "license": "LicenseRef-MyVa-Unreleased",
+        "redistribution": "Chỉ dùng trong repo MyVa; chủ dự án chưa chọn license phát hành.",
+        "created": "2026-10-11"
+      },
+      "texture": {
+        "width": 2024,
+        "height": 1168,
+        "format": "rgba8_srgb"
+      }
+    },
+    {
+      "id": "ke_giu_dap.sheet",
+      "kind": "sprite_sheet",
+      "path": "fixture/ke_giu_dap/sheet.json",
+      "version": 1,
+      "bytes": 3080,
+      "sha256": "3ebc85c3982278b372137db4cf303f4f89db226550ff720f9acac3eb8961420c",
+      "dependencies": [
+        "ke_giu_dap.atlas"
+      ],
+      "provenance": {
+        "origin": "procedural",
+        "tool": "scripts/generate-asset-fixture.py",
+        "author": "MyVa — Thần Mạch contributors (sinh bằng mã, không có đầu vào bên thứ ba)",
+        "license": "LicenseRef-MyVa-Unreleased",
+        "redistribution": "Chỉ dùng trong repo MyVa; chủ dự án chưa chọn license phát hành.",
+        "created": "2026-10-11"
+      }
+    }
+  ],
+  "bundles": [
+    {
+      "id": "boss.ke_giu_dap",
+      "kind": "boss",
+      "assets": [
+        "ke_giu_dap.sheet",
+        "ke_giu_dap.atlas"
+      ],
+      "dependencies": [],
+      "budget": {
+        "texture_bytes": 12582912,
+        "file_bytes": 1048576
+      }
+    }
+  ]
+}

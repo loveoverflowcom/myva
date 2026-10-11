@@ -1,0 +1,122 @@
+{
+  "schema_version": 1,
+  "evidence_kind": "pull_request_review_verification",
+  "captured_at": "2026-10-11T17:13:20.325531+00:00",
+  "repository": "https://github.com/loveoverflowcom/myva",
+  "pull_request": "https://github.com/loveoverflowcom/myva/pull/25",
+  "base_commit": "2c305b6a9946d0459a1b77f79fcb3808b205fb77",
+  "reviewed_code_commit": "f60a9894c10c440cc299e63d72119fa1ba0756dc",
+  "reviewed_tree": "28ecef32c1a3bb547474ccfd3b83a70fcbd3db63",
+  "source_attribution": "Fresh verification and independent review on the published PR code at f60a989. Subsequent changes are only this evidence file, the D05-B report and work-plan status; no compiled source or gameplay semantics changed. Remote publication and merge tree are verified separately.",
+  "github_review_state": {
+    "observed_at": "2026-10-11T17:07:48Z",
+    "conversation_comments": 0,
+    "review_submissions": 0,
+    "inline_review_threads": 0
+  },
+  "independent_review": {
+    "method": "Two read-only defect-first complete merge-base diff reviews; runtime/art/export and benchmark/native/web acquisition reviewed separately with callers and tests. Build/config/docs/evidence integration checked.",
+    "result": "No findings. No introduced actionable defect confirmed.",
+    "new_functional_changes": false,
+    "previous_fixes_rechecked": [
+      "Late optional bundle completion preserves active presentation owners",
+      "Low-to-High/art-off invalidates projection and recomputes viewport",
+      "Physical/logical resize or DPR change restarts acquisition warmup/sample epoch"
+    ],
+    "repository_instructions": "CONTRIBUTING and xtask Single Surface Rule read; no repository AGENTS.md or .agents/skills present"
+  },
+  "checks": [
+    {
+      "command": "cargo xtask verify repository",
+      "status": "PASS",
+      "exit_code": 0,
+      "scope": "Native format/docs/clippy, 221 Rust tests, replay/headless/economy/assets and 38 Python contracts",
+      "log_sha256": "5391398db2fa39ea0350933c6cbd1b30b97d7af85ded6c78aff4cded9db1af7a"
+    },
+    {
+      "command": "cargo xtask verify determinism --ticks 3600 --seeds 1,7,12",
+      "status": "PASS",
+      "exit_code": 0,
+      "scope": "Six renderer-independent native/WASM fixtures, 3600 ticks each",
+      "log_sha256": "28172f47a8ba23f1293db85a962aa036e8719b93b0dbd123dddf9df92ee81cbd"
+    },
+    {
+      "command": "cargo clippy --locked -p myva-web-shell -p myva-web-game -p myva-sim -p myva-gameplay -p myva-assets --target wasm32-unknown-unknown -- -D warnings",
+      "status": "PASS",
+      "exit_code": 0,
+      "scope": "WASM compilation and lint only",
+      "log_sha256": "dccad65a474a0e64d7c677fc96c87f30265067841005a793f4d82605fea6fe77"
+    },
+    {
+      "command": "cargo build --locked -p myva-sim --target wasm32-unknown-unknown",
+      "status": "PASS",
+      "exit_code": 0,
+      "scope": "Pure simulation WASM build",
+      "log_sha256": "f2066ca264b9a8598ecd436c70919e1efe1acea4098ad2a13b5d82d67bc049ec"
+    },
+    {
+      "command": "cargo xtask build web --profile web",
+      "status": "PASS",
+      "exit_code": 0,
+      "scope": "Optimized Leptos/Bevy bundle build; no browser runtime",
+      "log_sha256": "52db6c14979616715f2d0325548fa0ce0b1059e72be702b44f91c709b8bd6d07"
+    },
+    {
+      "command": "node --check tests/web/runtime-performance.spec.mjs; node --check tests/web/assets.spec.mjs; node node_modules/@playwright/test/cli.js test --list --reporter=list",
+      "status": "PASS",
+      "exit_code": 0,
+      "scope": "Syntax/discovery only; 22 tests in 6 files; no browser body",
+      "log_sha256": "9792e0cdd5290a0b615d1c1393e16b9a159304aabe0fd92cec4a350fb36d29b0"
+    }
+  ],
+  "rust_tests_passed": 221,
+  "python_contract_tests_passed": 38,
+  "headless_assets": {
+    "status": "PASS",
+    "cycles": 30,
+    "completed_loads": 120,
+    "terminal_assets_and_owners": {
+      "fixture_assets": 0,
+      "image_assets": 0,
+      "atlas_assets": 0,
+      "planner_owners": 0,
+      "flights": 0,
+      "sprite_image_owners": 0,
+      "table_image_owners": 0,
+      "table_layout_owners": 0
+    },
+    "scope": "Actual AssetServer filesystem/hash/PNG and map/fighter/projectile/VFX owner lifecycle without renderer/GPU; no FPS/driver-memory claim"
+  },
+  "aggregate_preflight": {
+    "status": "NOT_RUN",
+    "reason": "Renewed review reran applicable non-browser checks separately; known Chromium AF_UNIX EPERM and cloud-browser loopback access restriction were not retried or bypassed. Historical full aggregate remains BLOCKED."
+  },
+  "ci": {
+    "status": "NOT_RUN",
+    "reason": "User explicitly skipped CI checks/polling for this request"
+  },
+  "remaining_gates": [
+    {
+      "status": "BLOCKED",
+      "gate": "Rendered 50/200/500 x High/Low, browser/native visual inspection and rendered lifecycle",
+      "reason": "Previously verified Chromium socket denial, cloud-browser loopback limitation, no native display/GPU device"
+    },
+    {
+      "status": "NOT_RUN",
+      "gate": "Presented FPS, isolated CPU/GPU timestamps, driver allocation/release, actual compressed network transfer and first-controllable startup",
+      "reason": "No suitable instrumented rendered capture"
+    },
+    {
+      "status": "NOT_RUN",
+      "gate": "600-second rendered soak",
+      "reason": "No suitable rendered runtime; headless cycles are not a render soak"
+    },
+    {
+      "status": "BLOCKED",
+      "gate": "Physical Android/iOS/CMP qualification",
+      "reason": "No physical-device environment"
+    }
+  ],
+  "production_art_decision": "NO_GO",
+  "issue_13": "Keep open; acceptance is not complete"
+}

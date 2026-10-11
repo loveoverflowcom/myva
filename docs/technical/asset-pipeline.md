@@ -1,6 +1,6 @@
 # Pipeline asset 2D — D05-A
 
-**Trạng thái:** đã triển khai cho fixture, ngày 2026-10-11. Issue [#13](https://github.com/loveoverflowcom/myva/issues/13). Phạm vi: một bộ asset mẫu có provenance, định dạng atlas/manifest, validator và loader Bevy `0.20.0`. Không phải art thành phẩm, CDN, cache bền vững, streaming theo bundle (D05-B) hay skeletal runtime. Kết quả chạy thật nằm trong [báo cáo D05-A](../reports/asset-pipeline.md).
+**Trạng thái:** đã triển khai cho fixture, ngày 2026-10-11. Issue [#13](https://github.com/loveoverflowcom/myva/issues/13). Phạm vi: một bộ asset mẫu có provenance, định dạng atlas/manifest, validator và loader Bevy `0.20.0`. Không phải art thành phẩm, CDN, cache bền vững hay skeletal runtime. D05-B nối loader với bounded streaming runtime ([báo cáo](../reports/asset-streaming-performance.md)). Kết quả chạy thật nằm trong [báo cáo D05-A](../reports/asset-pipeline.md).
 
 Pipeline hiện thực hóa đường `nguồn có provenance → export → validate → pack → hash → manifest` của [assets-performance §4](assets-performance.md#4-pipeline-nội-dung-đề-xuất). Asset chỉ thể hiện trạng thái của lõi: hitbox, thời gian đòn, replay và giao thức không đọc file asset nào.
 
@@ -96,14 +96,14 @@ Client chỉ chạy nhóm luật trên tài liệu (`check_documents`) và kiể
 
 ## 6. Loader runtime và fallback
 
-- Loader đăng ký đuôi `json`; host tải `fixture/manifest.json`. Mỗi file đọc qua `LoadContext::read_asset_bytes`, nên hoạt động giống nhau trên native (file) và web (`fetch`).
+- Catalog loader đăng ký `json`, chỉ đọc `fixture/manifest.json` để kiểm metadata. D05-B fixture loader đăng ký `myva` và tải bốn projection `runtime-*.myva` độc lập qua planner. Expected projection được truyền bằng Bevy `load_builder().with_settings(...).load()`, so trước payload I/O. Mỗi payload đọc qua `LoadContext::read_asset_bytes` trên native (file) hoặc web (`fetch`).
 - Texture giải mã bằng `Image::from_buffer`, sampler linear, sRGB, `RenderAssetUsages::RENDER_WORLD`: bản CPU bị bỏ sau upload. Texture là sub-asset gắn nhãn của fixture nên `LoadState::Loaded` đồng nghĩa mọi texture đã có trong `Assets<Image>`; chưa đồng nghĩa GPU upload xong.
-- Bất kỳ lỗi nào (manifest thiếu, hash sai, PNG hỏng, luật tài liệu) làm cả fixture `Failed`. Client ghi `warn`, giữ cảnh hình khối và telemetry trả `art.status = "failed"` cùng mã (`io`, `hash_mismatch`, `size_mismatch`, `json`, `image`, hoặc mã validator). Trận không bị chặn vì art là cosmetic trong graybox; với asset thiết yếu ở slice, chính sách chặn ở điểm an toàn thuộc D05-B.
+- Lỗi required bundle sau retry hữu hạn (manifest thiếu, hash sai, PNG hỏng, luật tài liệu) làm art presentation `Failed`; VFX optional lỗi không chặn character/map/boss Ready. Client ghi `warn`, giữ cảnh hình khối và telemetry trả `art.status = "failed"` cùng mã (`io`, `hash_mismatch`, `size_mismatch`, `json`, `image`, hoặc mã validator). Trận không bị chặn vì art là cosmetic trong graybox; với asset thiết yếu ở slice, chính sách chặn ở điểm an toàn thuộc D05-B.
 - Art chỉ thay khối thân, nền và đạn của người chơi. Vùng báo/vùng nguy hiểm của boss, thanh tiến trình báo đòn, viền đỡ, tường và hitbox debug luôn vẽ bằng hình khối phía trên phông.
 
 ## 7. Giới hạn đã biết
 
 - Placeholder sinh bằng mã: đủ kiểm chứng pivot, padding, scale, clip và fallback; không chứng minh chất lượng art hay chi phí sản xuất bằng tay.
 - Chưa có mipmap; ở màn 1280×720 DPR 1 sprite bị thu khoảng 2,6 lần với lọc tuyến tính. Cần thử mipmap/tier texture trước art slice.
-- Một manifest tải trọn: bundle là đơn vị kế toán và ownership, chưa là đơn vị tải riêng. Planner D05-B nối với `AssetServer` sau.
+- Streaming hiện chỉ dành cho bốn self-contained fixture bundles, chưa là CDN/cache/production content system. Bevy không có public transport abort; cancelled loads drain tới terminal state. Despawn/drop owners không chứng minh driver đã trả GPU memory.
 - PNG thêm decoder vào WASM; số đo trong báo cáo D05-A.

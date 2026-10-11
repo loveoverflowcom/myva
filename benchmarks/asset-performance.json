@@ -3,15 +3,31 @@
   "id": "myva-d05b-bounded-scene-v1",
   "seed": 7,
   "pipeline_prerequisite": {
-    "status": "BLOCKED",
-    "reason": "D05-A exported fixtures and validated manifest are not yet on develop."
+    "status": "IMPLEMENTED",
+    "reason": "D05-A fixture and validator are on develop; D05-B has a bounded AssetServer adapter and render harness. Runtime hardware/mobile qualification still requires actual captures."
   },
-  "entity_count_basis": "Baseline/stress counts include one gameplay player plus render-only actors and monsters; exclude particles, backgrounds and HUD.",
+  "entity_count_basis": "Preset 50/200/500 counts one gameplay player+render-only actors/monsters; actual atlas body census includes one additional gameplay rival, recorded separately. Particles/background/HUD are separate.",
   "presets": {
-    "baseline": {"gameplay_players": 1, "render_only_actors": 19, "render_only_monsters": 30},
-    "stress_50": {"gameplay_players": 1, "render_only_actors": 19, "render_only_monsters": 30},
-    "stress_200": {"gameplay_players": 1, "render_only_actors": 79, "render_only_monsters": 120},
-    "stress_500": {"gameplay_players": 1, "render_only_actors": 199, "render_only_monsters": 300}
+    "baseline": {
+      "gameplay_players": 1,
+      "render_only_actors": 19,
+      "render_only_monsters": 30
+    },
+    "stress_50": {
+      "gameplay_players": 1,
+      "render_only_actors": 19,
+      "render_only_monsters": 30
+    },
+    "stress_200": {
+      "gameplay_players": 1,
+      "render_only_actors": 79,
+      "render_only_monsters": 120
+    },
+    "stress_500": {
+      "gameplay_players": 1,
+      "render_only_actors": 199,
+      "render_only_monsters": 300
+    }
   },
   "tiers": {
     "High": {
@@ -36,12 +52,22 @@
     "sample_seconds": 60,
     "soak_seconds": 600,
     "load_unload_cycles": 30,
-    "cold_network": {"down_mbps": 15, "rtt_ms": 100},
+    "cold_network": {
+      "down_mbps": 15,
+      "rtt_ms": 100
+    },
     "exclusive_resource_window_required": true
   },
   "budgets": {
-    "High": {"presented_fps_min": 60, "frame_p95_ms_max": 16.67, "frame_p99_ms_max": 25},
-    "Low": {"presented_fps_min": 30, "frame_p95_ms_max": 33.33},
+    "High": {
+      "presented_fps_min": 60,
+      "frame_p95_ms_max": 16.67,
+      "frame_p99_ms_max": 25
+    },
+    "Low": {
+      "presented_fps_min": 30,
+      "frame_p95_ms_max": 33.33
+    },
     "wasm_memory_bytes_max": 201326592,
     "native_rss_bytes_max": 367001600,
     "estimated_gpu_bytes_max": 134217728,
@@ -57,6 +83,7 @@
     "Start timings cover click-play through first-controllable, including fetch/decode/GPU-upload phases even when cache hits skip work.",
     "Dropping strong handles or despawning does not prove physical GPU memory reclamation.",
     "No mobile conclusions from desktop, emulation or software rendering.",
-    "A 60-second sample does not establish the 600-second soak or 30 load/unload cycles."
+    "A 60-second sample does not establish the 600-second soak or 30 load/unload cycles.",
+    "Bevy request timeouts invalidate ownership; cancellation waits for terminal load state because public transport abort is unavailable. Permanently hung requests can keep slots occupied and require host teardown."
   ]
 }

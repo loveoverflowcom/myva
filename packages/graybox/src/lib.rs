@@ -1,5 +1,5 @@
 //! Client graybox Bevy của MyVa — Thần Mạch (work-plan 020, ADR 0003): một arena phẳng, Long Lưu
-//! do người chơi điều khiển, đánh boss Kẻ Giữ Đập hoặc đấu tập với bot. Chỉ vẽ hình khối; mọi
+//! do người chơi điều khiển, đánh boss Kẻ Giữ Đập hoặc đấu tập với bot. Fixture art theo bundle hoặc fallback hình khối; mọi
 //! luật nằm trong `myva-sim`, client gom input và thể hiện trạng thái.
 //!
 //! Ranh giới (D04, `docs/technical/gameplay-foundation.md`): `GameplayPlugin` của `myva-gameplay`
@@ -14,11 +14,13 @@
 //! [`telemetry::json`].
 
 pub mod art;
+pub mod benchmark;
 mod controls;
 mod fight;
 mod hud;
+pub mod runtime;
 pub mod scene;
-// D05-B planner only; no AssetServer backend or scene integration yet.
+// Bounded planner and Bevy backend keep presentation ownership separate from gameplay.
 pub mod streaming;
 pub mod telemetry;
 pub mod text;
@@ -58,7 +60,8 @@ impl Plugin for GrayboxPlugin {
             // Client chơi offline/dự đoán: cùng luật với server nhưng không cấp phần thưởng.
             .add_plugins((GameplayPlugin::new(Authority::Client), MatchPlugin))
             .add_plugins((controls::plugin, touch::plugin, scene::plugin, hud::plugin))
-            .add_plugins(art::ArtPlugin { enabled: self.art });
+            .add_plugins(art::ArtPlugin { enabled: self.art })
+            .add_plugins(benchmark::plugin);
         fight::insert(app, bout, session);
     }
 }

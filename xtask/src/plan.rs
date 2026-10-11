@@ -571,6 +571,31 @@ fn assets(w: &Workspace) -> Vec<Step> {
             ),
         ),
         Step::command(
+            "streaming bundle projections match validated catalog",
+            CommandSpec::new(
+                w,
+                "python3",
+                &["scripts/export-streaming-manifests.py", "--check"],
+            ),
+        ),
+        Step::command(
+            "streaming bundle projection contract tests",
+            CommandSpec::new(
+                w,
+                "python3",
+                &[
+                    "-m",
+                    "unittest",
+                    "discover",
+                    "-s",
+                    "tests",
+                    "-p",
+                    "test_streaming_manifests.py",
+                    "-v",
+                ],
+            ),
+        ),
+        Step::command(
             "asset manifest/provenance/hash/resource budgets",
             CommandSpec::new(
                 w,

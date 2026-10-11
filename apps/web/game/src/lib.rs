@@ -10,6 +10,8 @@ mod browser;
 
 #[cfg(target_arch = "wasm32")]
 pub use browser::{
-    rematch, request_replay, set_autopilot, set_paused, show_touch_controls, start_game,
-    switch_mode, take_replay, telemetry, toggle_hitboxes, touch_layout,
+    benchmark_telemetry, rematch, request_benchmark_capture, request_replay, retry_art,
+    set_art_enabled, set_autopilot, set_benchmark, set_paused, show_touch_controls, start_game,
+    stream_runtime, switch_mode, take_benchmark_capture, take_replay, telemetry, toggle_hitboxes,
+    touch_layout,
 };
