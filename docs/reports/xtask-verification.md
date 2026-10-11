@@ -45,6 +45,7 @@ NDK 27.0.12077973, Gradle wrapper 9.7.0 và dependency cache hiện có. Gradle 
 | Native/WASM determinism | PASS | Sáu run × 3.600 ticks, không có tick mismatch; hash cuối ở bảng dưới |
 | WASM / web | PASS | WASM clippy và pure sim; Leptos + Bevy bằng profile `web`, wasm-bindgen và output cũ |
 | Playwright | PASS | 11/11; skipped/flaky/unexpected đều 0; 30 document lifecycles, keyboard/gamepad/touch emulation, Mạch, stale bridge, asset failures, context loss và native replay |
+| Mạch sau test synchronization fix | PASS | `verify web --port 8187 -- tests/web/mach.spec.mjs --repeat-each 3`: 6/6, không skipped/flaky/failing; WASM clippy/build và managed server cùng chạy |
 | `cargo xtask build all` | PASS | Native root build rồi hai web bundles, tuần tự |
 | `cargo xtask run web --port 8188` | PASS lifecycle | Incremental build, dashboard sau HTTP 200 + token + matching report; Ctrl+C exit 0 và port đóng |
 | `preflight --changed-only --dry-run` | PASS discovery / NOT_RUN gates | Git + Cargo metadata thật chọn full root và native gates cho diff này; 39 planned stages đều ghi NOT_RUN |
@@ -69,6 +70,16 @@ port bận hoặc readiness sai. Full CI ở bảng là run sau cùng đã PASS 
 Một manual run đã bị dừng lúc wasm-bindgen còn packaging: xtask trả FAIL cho
 build và NOT_RUN cho serve. Run lifecycle ở bảng đợi dashboard ready rồi mới
 probe/shutdown, đã PASS.
+
+GitHub run [38132426266](https://github.com/loveoverflowcom/myva/actions/runs/38132426266)
+FAIL ở Mạch keyboard, sau khi các gate trước và 10 web tests khác PASS. Trace ghi
+`waitForTimeout(100)` thực tế kéo dài khoảng 1,9 giây trên software renderer;
+gesture trước đã tạo denial `Some(Mach)` và `presses=1`. Poll của gesture tiếp
+theo đọc denial cũ sau khoảng 57 ms, nhả R quá sớm và gây normal cast. Test nay
+đòi `presses` tăng so với snapshot trước key-down cùng denial đúng trong cùng
+snapshot; không bỏ assertion action/energy/cooldown, không thêm retry và không
+đổi gameplay/bridge. Kết quả full local CI ở bảng được ghi trước test-only fix này;
+CI của PR kiểm chứng revision sau cùng riêng.
 
 ## Determinism và artifacts
 
