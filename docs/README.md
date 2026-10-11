@@ -54,7 +54,9 @@ Chờ duyệt qua [quyết định 0002](decisions/0002-lineages-world-structure
 | [Combat graybox](reports/combat-graybox.md) | Trận Bevy chơi được tới đâu; keyboard/gamepad/touch, replay và số đo nào đã có, playtest nào còn thiếu? |
 | [Web feasibility](reports/web-feasibility.md) | Spike Bevy + Leptos chạy/kiểm thử gì, còn thiếu browser/device nào? |
 | [Native feasibility](reports/native-feasibility.md) | Standalone build, CMP embedding và Android/iOS thật có bằng chứng hoặc blocker gì? |
-| [D05-B preparation](reports/asset-streaming-performance.md) | Planner/report contract độc lập; D05-A, runtime và benchmark còn bị chặn ở đâu? |
+| [Asset pipeline](technical/asset-pipeline.md) | Atlas, pivot/padding/scale, clip, manifest và validator asset 2D được quy ước thế nào? (D05-A) |
+| [D05-A report](reports/asset-pipeline.md) | Fixture, validator và loader Bevy đã chạy gì trên native/web; còn gì BLOCKED/NOT_RUN? |
+| [D05-B preparation](reports/asset-streaming-performance.md) | Planner/report contract độc lập; runtime và benchmark còn bị chặn ở đâu? |
 | [Assets & Performance](technical/assets-performance.md) | Tải gì, giữ gì trong RAM/VRAM và đo hiệu năng thế nào? |
 | [Vertical slice](production/vertical-slice.md) | Bản thử đầu tiên phải chơi được gì và khi nào đủ điều kiện tiến tiếp? |
 | [Roadmap](production/roadmap.md) | Thứ tự từ thiết kế đến MMORPG nhiều linh vực là gì? |

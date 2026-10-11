@@ -1,9 +1,11 @@
 use std::cell::{Cell, RefCell};
 
+use bevy::asset::AssetMetaCheck;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use bevy::winit::WinitSettings;
 use myva_gameplay::SimSession;
+use myva_graybox::art::{self, Art, ArtTables};
 use myva_graybox::telemetry::{self, HostStatus};
 use myva_graybox::touch::{self, ShowTouchControls, TouchUi};
 use myva_graybox::{ArenaView, GraySet, GrayboxPlugin, HostCommand, Match};
@@ -39,18 +41,26 @@ pub fn start_game() {
 
     App::new()
         .insert_resource(WinitSettings::continuous())
-        .add_plugins(DefaultPlugins.set(WindowPlugin {
-            primary_window: Some(Window {
-                title: "MyVa · trận graybox".into(),
-                canvas: Some("#game-canvas".into()),
-                resolution: (1280, 720).into(),
-                fit_canvas_to_parent: true,
-                // Tab, phím tắt trình duyệt và IME của shell vẫn hoạt động.
-                prevent_default_event_handling: false,
-                ..default()
-            }),
-            ..default()
-        }))
+        .add_plugins(
+            DefaultPlugins
+                .set(WindowPlugin {
+                    primary_window: Some(Window {
+                        title: "MyVa · trận graybox".into(),
+                        canvas: Some("#game-canvas".into()),
+                        resolution: (1280, 720).into(),
+                        fit_canvas_to_parent: true,
+                        // Tab, phím tắt trình duyệt và IME của shell vẫn hoạt động.
+                        prevent_default_event_handling: false,
+                        ..default()
+                    }),
+                    ..default()
+                })
+                // Asset ở `assets/` cạnh game document; không có file .meta nên không tạo 404.
+                .set(AssetPlugin {
+                    meta_check: AssetMetaCheck::Never,
+                    ..default()
+                }),
+        )
         .add_plugins(GrayboxPlugin::default())
         .add_systems(RunFixedMainLoop, pull_bridge.in_set(GraySet::Shortcuts))
         .add_systems(Last, push_bridge)
@@ -129,6 +139,8 @@ fn push_bridge(
     arena: Res<ArenaView>,
     sim: Res<SimSession>,
     touch_ui: Res<TouchUi>,
+    art_state: Res<Art>,
+    art_tables: Res<ArtTables>,
     time: Res<Time<Virtual>>,
     gamepads: Query<(), With<Gamepad>>,
     window: Single<&Window, With<PrimaryWindow>>,
@@ -142,7 +154,12 @@ fn push_bridge(
         touch: touch_ui.visible,
         gamepads: gamepads.iter().count(),
     };
-    let json = telemetry::json(&game, &arena, status);
+    let json = telemetry::json(
+        &game,
+        &arena,
+        status,
+        &art::summary(&art_state, &art_tables),
+    );
     let layout = touch::layout(window.size()).to_json();
     BRIDGE.with_borrow_mut(|bridge| {
         bridge.telemetry = json;

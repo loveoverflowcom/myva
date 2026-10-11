@@ -46,6 +46,8 @@ Bevy `0.20.0` cung cấp sprite/texture atlas và material 2D qua các module ri
 
 `Nguồn có provenance → export chuẩn → validate → pack → hash → manifest → phát hành`.
 
+D05-A hiện thực hóa đường này cho một fixture (chưa phát hành): xem [asset-pipeline](asset-pipeline.md).
+
 Mỗi asset có ID ổn định, loại, kích thước, hash, dependency, variant chất lượng, version format, license/provenance và attribution nếu có. Validator phát hiện trùng ID, thiếu dependency, clip thiếu mốc combat, kích thước quá budget và reference qua bundle ngoài dự kiến.
 
 Manifest được version hóa; client lấy root từ origin tin cậy qua TLS, kiểm chữ ký nếu dùng kho phân phối tách origin, sau đó kiểm hash từng chunk. Hash xác nhận toàn vẹn; chữ ký/root tin cậy xác nhận nguồn. Không chấp nhận manifest bất kỳ do một người chơi cung cấp.

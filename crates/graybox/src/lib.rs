@@ -9,10 +9,11 @@
 //! ghi lệnh của mọi bên và được chạy lại để kiểm chứng khi trận lắng.
 //!
 //! Host (bin native hoặc `myva-web-game`) tạo `App` với `DefaultPlugins` và cửa sổ của mình, rồi
-//! thêm [`GrayboxPlugin`]. Lệnh từ host đi qua message [`HostCommand`] và
+//! thêm [`GrayboxPlugin`]. Art fixture D05-A ([`art`]) chỉ thay phần thể hiện. Lệnh từ host đi qua message [`HostCommand`] và
 //! [`touch::ShowTouchControls`]; host đọc trạng thái qua [`ArenaView`], [`Match`] hoặc
 //! [`telemetry::json`].
 
+pub mod art;
 mod controls;
 mod fight;
 mod hud;
@@ -35,6 +36,8 @@ pub struct GrayboxPlugin {
     pub mode: Mode,
     /// Bot lái người chơi từ đầu (B1 khi đánh boss, B0 khi đấu tập).
     pub autopilot: bool,
+    /// Tải fixture art D05-A qua `AssetServer`; lỗi tải giữ cảnh hình khối.
+    pub art: bool,
 }
 
 impl Default for GrayboxPlugin {
@@ -42,6 +45,7 @@ impl Default for GrayboxPlugin {
         Self {
             mode: Mode::Boss,
             autopilot: false,
+            art: true,
         }
     }
 }
@@ -53,7 +57,8 @@ impl Plugin for GrayboxPlugin {
         app.insert_resource(ClearColor(scene::BACKGROUND))
             // Client chơi offline/dự đoán: cùng luật với server nhưng không cấp phần thưởng.
             .add_plugins((GameplayPlugin::new(Authority::Client), MatchPlugin))
-            .add_plugins((controls::plugin, touch::plugin, scene::plugin, hud::plugin));
+            .add_plugins((controls::plugin, touch::plugin, scene::plugin, hud::plugin))
+            .add_plugins(art::ArtPlugin { enabled: self.art });
         fight::insert(app, bout, session);
     }
 }

@@ -16,6 +16,12 @@ out="$root/target/web-shell"
 mkdir -p "$out/shell" "$out/game/pkg"
 cp "$root/web/index.html" "$root/web/style.css" "$root/web/bootstrap.js" "$out/"
 cp "$root/web/game/"* "$out/game/"
+# Fixture art D05-A: AssetServer trên web đọc `assets/` cạnh game document. Validator chạy trước để
+# không phát hành bộ asset lỗi hash/metadata.
+cargo run --locked --quiet --manifest-path "$root/Cargo.toml" -p myva-assets -- validate "$root/assets/fixture/manifest.json" >/dev/null
+rm -rf "$out/game/assets"
+mkdir -p "$out/game/assets"
+cp -R "$root/assets/fixture" "$out/game/assets/fixture"
 wasm-bindgen --target web --out-dir "$out/shell" "$target/myva_web_shell.wasm"
 wasm-bindgen --target web --out-dir "$out/game/pkg" "$target/myva_web_game.wasm"
 python3 "$root/scripts/web-bundle-report.py" "$out" "$profile"

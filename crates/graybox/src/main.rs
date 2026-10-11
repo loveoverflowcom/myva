@@ -6,8 +6,10 @@
 //!
 //! `--demo` để bot lái người chơi (B1 khi đánh boss, B0 khi đấu tập);
 //! `--screenshot <file.png>` chạy demo tới lúc boss đang báo đòn, lưu ảnh màn hình cùng replay
-//! rồi thoát.
+//! rồi thoát; `--no-art` giữ cảnh hình khối, không tải fixture art (phím G bật/tắt khi chạy).
+//! Asset đọc từ `assets/` của repo; đặt `MYVA_ASSET_DIR` để dùng thư mục khác.
 
+use bevy::asset::AssetMetaCheck;
 use bevy::prelude::*;
 use bevy::render::view::screenshot::{Screenshot, save_to_disk};
 use myva_gameplay::SimSession;
@@ -30,11 +32,13 @@ fn main() -> AppExit {
     let mut args = std::env::args().skip(1);
     let mut mode = Mode::Boss;
     let mut demo = false;
+    let mut art = true;
     let mut capture = None;
     while let Some(arg) = args.next() {
         match arg.as_str() {
             "--duel" => mode = Mode::Duel,
             "--demo" => demo = true,
+            "--no-art" => art = false,
             "--screenshot" => match args.next() {
                 Some(path) => {
                     capture = Some(Capture {
@@ -51,17 +55,29 @@ fn main() -> AppExit {
     }
 
     let mut app = App::new();
-    app.add_plugins(DefaultPlugins.set(WindowPlugin {
-        primary_window: Some(Window {
-            title: "MyVa — Thần Mạch · graybox Bevy".into(),
-            resolution: (1280, 720).into(),
-            ..default()
-        }),
-        ..default()
-    }))
+    let asset_dir = std::env::var("MYVA_ASSET_DIR")
+        .unwrap_or_else(|_| concat!(env!("CARGO_MANIFEST_DIR"), "/../../assets").to_owned());
+    app.add_plugins(
+        DefaultPlugins
+            .set(WindowPlugin {
+                primary_window: Some(Window {
+                    title: "MyVa — Thần Mạch · graybox Bevy".into(),
+                    resolution: (1280, 720).into(),
+                    ..default()
+                }),
+                ..default()
+            })
+            .set(AssetPlugin {
+                file_path: asset_dir,
+                // Fixture không dùng file .meta; manifest giữ hash và metadata.
+                meta_check: AssetMetaCheck::Never,
+                ..default()
+            }),
+    )
     .add_plugins(GrayboxPlugin {
         mode,
         autopilot: demo,
+        art,
     })
     .add_systems(Update, native_keys);
     if let Some(capture) = capture {

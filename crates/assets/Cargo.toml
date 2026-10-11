@@ -1,0 +1,25 @@
+[package]
+name = "myva-assets"
+description = "Schema manifest/atlas và validator asset 2D của MyVa — Thần Mạch (D05-A); không phụ thuộc Bevy."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[features]
+default = ["fs"]
+# Đọc thư mục asset, giải mã PNG để kiểm viền frame/extrude; client chỉ cần schema và hash.
+fs = ["dep:png"]
+
+[dependencies]
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.151"
+sha2 = "0.10.9"
+png = { version = "0.18.1", optional = true }
+
+[[bin]]
+name = "myva-assets"
+required-features = ["fs"]
+
+[lints]
+workspace = true

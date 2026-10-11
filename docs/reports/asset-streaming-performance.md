@@ -1,6 +1,6 @@
 # D05-B — Asset streaming và performance baseline
 
-**Trạng thái:** chuẩn bị độc lập; runtime/benchmark **BLOCKED**, ngày 2026-10-11. Issue [#13](https://github.com/loveoverflowcom/myva/issues/13). Base `develop` đã xác minh: `33c77e1e7e507c8a76723c14fa9731f4b5b45875`. Không đóng #13. D05-A vẫn chưa tồn tại; [work item](../work-plan/015-bevy-asset-baseline.md) giữ ranh giới predecessor.
+**Trạng thái:** chuẩn bị độc lập; runtime/benchmark **BLOCKED**, ngày 2026-10-11. Issue [#13](https://github.com/loveoverflowcom/myva/issues/13). Base `develop` đã xác minh: `33c77e1e7e507c8a76723c14fa9731f4b5b45875`. Không đóng #13. D05-A vẫn chưa tồn tại; [work item](../work-plan/015-bevy-asset-baseline.md) giữ ranh giới predecessor. **Cập nhật 2026-10-11:** D05-A đã có trên nhánh `feat/bevy-asset-pipeline` ([báo cáo](asset-pipeline.md)); nội dung dưới đây giữ nguyên ở thời điểm chuẩn bị D05-B.
 
 ## Kết quả hiện tại
 

@@ -1,0 +1,279 @@
+{
+  "format": "myva.sprite-sheet",
+  "format_version": 1,
+  "id": "vfx.combat",
+  "texture": "vfx.combat_atlas",
+  "role": "vfx",
+  "plane": "gameplay",
+  "texels_per_unit": 2.0,
+  "padding": 4,
+  "extrude": 0,
+  "frames": [
+    {
+      "name": "hit.0",
+      "rect": [
+        4,
+        4,
+        96,
+        96
+      ],
+      "pivot": [
+        48,
+        48
+      ]
+    },
+    {
+      "name": "hit.1",
+      "rect": [
+        104,
+        4,
+        96,
+        96
+      ],
+      "pivot": [
+        48,
+        48
+      ]
+    },
+    {
+      "name": "hit.2",
+      "rect": [
+        204,
+        4,
+        96,
+        96
+      ],
+      "pivot": [
+        48,
+        48
+      ]
+    },
+    {
+      "name": "hit.3",
+      "rect": [
+        304,
+        4,
+        96,
+        96
+      ],
+      "pivot": [
+        48,
+        48
+      ]
+    },
+    {
+      "name": "guard.0",
+      "rect": [
+        4,
+        104,
+        96,
+        96
+      ],
+      "pivot": [
+        48,
+        48
+      ]
+    },
+    {
+      "name": "guard.1",
+      "rect": [
+        104,
+        104,
+        96,
+        96
+      ],
+      "pivot": [
+        48,
+        48
+      ]
+    },
+    {
+      "name": "guard.2",
+      "rect": [
+        204,
+        104,
+        96,
+        96
+      ],
+      "pivot": [
+        48,
+        48
+      ]
+    },
+    {
+      "name": "slash.0",
+      "rect": [
+        4,
+        204,
+        96,
+        96
+      ],
+      "pivot": [
+        48,
+        48
+      ]
+    },
+    {
+      "name": "slash.1",
+      "rect": [
+        104,
+        204,
+        96,
+        96
+      ],
+      "pivot": [
+        48,
+        48
+      ]
+    },
+    {
+      "name": "slash.2",
+      "rect": [
+        204,
+        204,
+        96,
+        96
+      ],
+      "pivot": [
+        48,
+        48
+      ]
+    },
+    {
+      "name": "dust.0",
+      "rect": [
+        4,
+        304,
+        96,
+        96
+      ],
+      "pivot": [
+        48,
+        48
+      ]
+    },
+    {
+      "name": "dust.1",
+      "rect": [
+        104,
+        304,
+        96,
+        96
+      ],
+      "pivot": [
+        48,
+        48
+      ]
+    },
+    {
+      "name": "dust.2",
+      "rect": [
+        204,
+        304,
+        96,
+        96
+      ],
+      "pivot": [
+        48,
+        48
+      ]
+    },
+    {
+      "name": "dust.3",
+      "rect": [
+        304,
+        304,
+        96,
+        96
+      ],
+      "pivot": [
+        48,
+        48
+      ]
+    },
+    {
+      "name": "bolt.0",
+      "rect": [
+        4,
+        404,
+        96,
+        96
+      ],
+      "pivot": [
+        48,
+        48
+      ]
+    },
+    {
+      "name": "bolt.1",
+      "rect": [
+        104,
+        404,
+        96,
+        96
+      ],
+      "pivot": [
+        48,
+        48
+      ]
+    }
+  ],
+  "clips": [
+    {
+      "name": "hit",
+      "frames": [
+        "hit.0",
+        "hit.1",
+        "hit.2",
+        "hit.3"
+      ],
+      "frame_ms": 60,
+      "loop": false,
+      "events": []
+    },
+    {
+      "name": "guard",
+      "frames": [
+        "guard.0",
+        "guard.1",
+        "guard.2"
+      ],
+      "frame_ms": 70,
+      "loop": false,
+      "events": []
+    },
+    {
+      "name": "slash",
+      "frames": [
+        "slash.0",
+        "slash.1",
+        "slash.2"
+      ],
+      "frame_ms": 60,
+      "loop": false,
+      "events": []
+    },
+    {
+      "name": "dust",
+      "frames": [
+        "dust.0",
+        "dust.1",
+        "dust.2",
+        "dust.3"
+      ],
+      "frame_ms": 80,
+      "loop": false,
+      "events": []
+    },
+    {
+      "name": "bolt",
+      "frames": [
+        "bolt.0",
+        "bolt.1"
+      ],
+      "frame_ms": 90,
+      "loop": true,
+      "events": []
+    }
+  ]
+}

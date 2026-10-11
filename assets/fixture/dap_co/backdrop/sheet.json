@@ -1,0 +1,66 @@
+{
+  "format": "myva.sprite-sheet",
+  "format_version": 1,
+  "id": "dap_co.backdrop",
+  "texture": "dap_co.backdrop_atlas",
+  "role": "backdrop",
+  "plane": "backdrop",
+  "texels_per_unit": 1.0,
+  "padding": 4,
+  "extrude": 2,
+  "frames": [
+    {
+      "name": "sky",
+      "rect": [
+        4,
+        4,
+        64,
+        256
+      ],
+      "pivot": [
+        0,
+        256
+      ]
+    },
+    {
+      "name": "hills",
+      "rect": [
+        4,
+        264,
+        512,
+        192
+      ],
+      "pivot": [
+        0,
+        192
+      ]
+    },
+    {
+      "name": "dam",
+      "rect": [
+        4,
+        460,
+        512,
+        256
+      ],
+      "pivot": [
+        0,
+        256
+      ]
+    },
+    {
+      "name": "reeds",
+      "rect": [
+        4,
+        720,
+        256,
+        96
+      ],
+      "pivot": [
+        0,
+        96
+      ]
+    }
+  ],
+  "clips": []
+}

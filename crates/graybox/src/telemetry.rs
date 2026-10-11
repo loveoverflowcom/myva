@@ -5,6 +5,7 @@ use myva_sim::State;
 use myva_sim::battle::Tally;
 use myva_sim::snapshot::FighterView;
 
+use crate::art::ArtSummary;
 use crate::fight::{ArenaView, Match};
 use crate::scene::px;
 use crate::text::ascii;
@@ -78,8 +79,20 @@ fn tally_json(tally: &Tally) -> String {
     )
 }
 
+fn art_json(art: &ArtSummary) -> String {
+    let failure = art
+        .failure
+        .as_deref()
+        .filter(|code| code.bytes().all(|b| b.is_ascii_lowercase() || b == b'_'))
+        .map_or("null".to_owned(), |code| format!("\"{code}\""));
+    format!(
+        "{{\"status\":\"{}\",\"visible\":{},\"sheets\":{},\"failure\":{failure}}}",
+        art.status, art.visible, art.sheets
+    )
+}
+
 /// JSON một dòng, chỉ gồm số, boolean và chuỗi ASCII không cần escape.
-pub fn json(game: &Match, arena: &ArenaView, host: HostStatus) -> String {
+pub fn json(game: &Match, arena: &ArenaView, host: HostStatus, art: &ArtSummary) -> String {
     let bout = &game.bout;
     let (player, rival) = (bout.player(), bout.rival());
     let outcome = bout
@@ -95,7 +108,7 @@ pub fn json(game: &Match, arena: &ArenaView, host: HostStatus) -> String {
         .sparring
         .map_or("null".to_owned(), |on| on.to_string());
     format!(
-        "{{\"v\":2,\"ready\":{},\"paused\":{},\"updates\":{},\"touch\":{},\"gamepads\":{},\"mode\":\"{}\",\"round\":{},\"tick\":{},\"autopilot\":{},\"sparring\":{sparring},\"hitboxes\":{},\"phase\":{phase},\"projectiles\":{},\"outcome\":{outcome},\"settled\":{},\"verified\":{verified},\"verified_ticks\":{verified_ticks},\"hash\":\"{:016x}\",\"presses\":{},\"player\":{},\"rival\":{},\"tally\":{{\"player\":{},\"rival\":{}}}}}",
+        "{{\"v\":2,\"ready\":{},\"paused\":{},\"updates\":{},\"touch\":{},\"gamepads\":{},\"mode\":\"{}\",\"round\":{},\"tick\":{},\"autopilot\":{},\"sparring\":{sparring},\"hitboxes\":{},\"phase\":{phase},\"projectiles\":{},\"outcome\":{outcome},\"settled\":{},\"verified\":{verified},\"verified_ticks\":{verified_ticks},\"hash\":\"{:016x}\",\"presses\":{},\"art\":{},\"player\":{},\"rival\":{},\"tally\":{{\"player\":{},\"rival\":{}}}}}",
         host.ready,
         host.paused,
         host.updates,
@@ -110,6 +123,7 @@ pub fn json(game: &Match, arena: &ArenaView, host: HostStatus) -> String {
         bout.is_settled(arena.tick),
         arena.hash,
         game.applied_presses,
+        art_json(art),
         fighter_json(arena.fighter(player)),
         fighter_json(arena.fighter(rival)),
         tally_json(bout.tally(player)),
@@ -126,7 +140,13 @@ mod tests {
     fn telemetry_is_plain_ascii_json() {
         let battle = Battle::new(Mode::Boss, 1);
         let game = Match::new(battle.bout().clone());
-        let text = json(&game, &ArenaView::of(&battle), HostStatus::default());
+        let art = ArtSummary {
+            status: "failed",
+            failure: Some("hash_mismatch".to_owned()),
+            ..ArtSummary::default()
+        };
+        let text = json(&game, &ArenaView::of(&battle), HostStatus::default(), &art);
+        assert!(text.contains("\"art\":{\"status\":\"failed\",\"visible\":false,\"sheets\":0,\"failure\":\"hash_mismatch\"}"));
         assert!(text.is_ascii());
         assert!(text.starts_with("{\"v\":2,"));
         assert!(text.contains("\"mode\":\"boss\""));

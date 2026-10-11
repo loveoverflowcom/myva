@@ -4023,6 +4023,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bc0287524726960e07b119cebd01678f852f147742ae0d925e6a520dca956126"
 
 [[package]]
+name = "myva-assets"
+version = "0.1.0"
+dependencies = [
+ "png",
+ "serde",
+ "serde_json",
+ "sha2",
+]
+
+[[package]]
 name = "myva-economy"
 version = "0.1.0"
 
@@ -4041,6 +4051,7 @@ name = "myva-graybox"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "myva-assets",
  "myva-gameplay",
  "myva-sim",
 ]

@@ -1,0 +1,40 @@
+{
+  "format": "myva.sprite-sheet",
+  "format_version": 1,
+  "id": "dap_co.ground",
+  "texture": "dap_co.ground_atlas",
+  "role": "tileset",
+  "plane": "gameplay",
+  "texels_per_unit": 2.0,
+  "padding": 4,
+  "extrude": 2,
+  "frames": [
+    {
+      "name": "ground.top",
+      "rect": [
+        4,
+        4,
+        128,
+        128
+      ],
+      "pivot": [
+        0,
+        0
+      ]
+    },
+    {
+      "name": "ground.fill",
+      "rect": [
+        136,
+        4,
+        128,
+        128
+      ],
+      "pivot": [
+        0,
+        0
+      ]
+    }
+  ],
+  "clips": []
+}
