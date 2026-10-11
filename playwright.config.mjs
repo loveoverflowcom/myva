@@ -1,5 +1,9 @@
 import { defineConfig } from '@playwright/test';
 
+const port = Number(process.env.MYVA_WEB_TEST_PORT || 8080);
+if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error('Invalid MYVA_WEB_TEST_PORT');
+const baseURL = `http://127.0.0.1:${port}`;
+
 export default defineConfig({
     testDir: './tests/web',
     workers: 1,
@@ -7,7 +11,7 @@ export default defineConfig({
     expect: { timeout: 90000 },
     reporter: [['list'], ['json', { outputFile: 'target/web-evidence/test-results.json' }]],
     use: {
-        baseURL: 'http://127.0.0.1:8080',
+        baseURL,
         viewport: { width: 1280, height: 900 },
         screenshot: 'only-on-failure',
         trace: 'retain-on-failure',
@@ -18,8 +22,8 @@ export default defineConfig({
     },
     outputDir: 'target/web-evidence/artifacts',
     webServer: {
-        command: 'python3 scripts/serve-web-shell.py',
-        url: 'http://127.0.0.1:8080/bundle-report.json',
+        command: `python3 scripts/serve-web-shell.py --port ${port}`,
+        url: `${baseURL}/bundle-report.json`,
         reuseExistingServer: !process.env.CI,
     },
 });

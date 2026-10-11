@@ -20,5 +20,6 @@ wasm-bindgen --target nodejs --out-dir "$out/pkg" \
 cargo build --locked --manifest-path "$root/Cargo.toml" -p myva-gameplay --bin myva-headless --release
 for seed in "${seeds[@]}"; do
   "$root/target/release/myva-headless" --seed "$seed" --ticks "$ticks" --hashes "$out/native-$seed.txt" >/dev/null
+  "$root/target/release/myva-headless" --mach --seed "$seed" --ticks "$ticks" --hashes "$out/mach-$seed.txt" >/dev/null
 done
 node "$root/scripts/check-wasm-determinism.mjs" "$out" "$ticks" "${seeds[@]}"

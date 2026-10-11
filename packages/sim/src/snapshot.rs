@@ -4,7 +4,7 @@
 //! trúng, bộ đếm hồi tài nguyên). Lưu/khôi phục trong process dùng `World: Clone`; định dạng lưu
 //! bền vững và snapshot mạng đầy đủ là việc của prototype online.
 
-use crate::fighter::{Fighter, FighterId, State, Team};
+use crate::fighter::{CombatFeedback, Fighter, FighterId, State, Team};
 use crate::kit::{ActionKind, ActionSpec, Kit, Phase, Rect};
 use crate::meter::Meter;
 use crate::monster::AiState;
@@ -69,6 +69,7 @@ pub struct FighterView {
     pub state: State,
     pub action: Option<ActionView>,
     pub cooldowns: [u32; 3],
+    pub feedback: CombatFeedback,
     pub statuses: Vec<StatusEffect>,
     pub hurtbox: Rect,
     pub attack_box: Option<Rect>,
@@ -184,6 +185,7 @@ fn view(f: &Fighter, role: Role, ai: Option<AiState>) -> FighterView {
             _ => None,
         },
         cooldowns: f.cooldowns,
+        feedback: f.feedback,
         statuses: f.statuses.as_slice().to_vec(),
         hurtbox: f.hurtbox(),
         attack_box: f.attack_box(),

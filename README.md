@@ -101,6 +101,8 @@ cargo run -p myva-graybox            # thêm --duel, --demo, --no-art, --screens
 
 Phím: A/D di chuyển, Space nhảy, Shift lướt, giữ L đỡ, J/K nhẹ/nặng, Q/E/R thuật; Enter đấu lại, M đổi chế độ, H hitbox, G bật/tắt art. Bản native lưu replay bằng F9, bản web bằng nút “Tải replay”. Khi trận kết thúc, client tự chạy lại replay và hiện kết quả kiểm chứng; `myva-replay verify <file>` chạy lại ngoài client, `myva-replay events <file>` in từng đòn ra, trúng, đỡ theo tick. Replay ghi trên WASM kiểm chứng được bằng bản native cùng revision.
 
+Long Lưu có đại thuật ở ô 3: chạm rồi thả R / RB+B / nút Triều dùng thường, giữ 450 ms yêu cầu tăng cường (100 Mạch + 35 năng lượng). Nhấn đỡ mới sau khi vào hitstun để Thoát Mạch (50 Mạch, hồi 20 s). DR/budget theo mục tiêu và feedback trúng/bị đỡ/hụt dùng cùng lõi; thông số là GT. [Báo cáo #19](docs/reports/combat-mach.md) ghi bằng chứng và các gate người thật/mạng còn thiếu.
+
 ## Đọc tài liệu
 
 1. [Review draft và quyết định cần kiểm chứng](docs/design/review.md).

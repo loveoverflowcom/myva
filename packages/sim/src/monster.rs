@@ -46,6 +46,7 @@ const MUD_SHOT: ActionSpec = ActionSpec {
 
 /// Ô đòn: nhẹ = Cào Bùn, thuật 1 = Phun Bùn. Ô còn lại lặp lại vì bộ não không dùng.
 pub const QUAI_BUN: Kit = Kit {
+    ultimate: None,
     id: "quai-bun",
     lineage: "Quái bùn lệch nhịp",
     body: Body {

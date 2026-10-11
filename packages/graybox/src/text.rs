@@ -8,6 +8,39 @@ use myva_sim::State;
 use myva_sim::boss::BossPhase;
 use myva_sim::snapshot::FighterView;
 
+pub fn denial(reason: myva_sim::fighter::Denial) -> &'static str {
+    use myva_sim::fighter::Denial;
+    match reason {
+        Denial::State => "trang thai khong cho phep",
+        Denial::HitRequired => "can trung don",
+        Denial::Window => "ngoai cua noi",
+        Denial::Stamina => "thieu suc ben",
+        Denial::Energy => "thieu nang luong",
+        Denial::Mach => "thieu Mach",
+        Denial::Cooldown => "dang hoi chieu",
+        Denial::Unsupported => "o nay khong co dai thuat",
+        Denial::FreshGuardRequired => "tha va nhan do lai sau khi choang",
+    }
+}
+
+pub fn training(fighter: &FighterView) -> String {
+    use myva_sim::fighter::Contact;
+    let contact = match fighter.feedback.contact {
+        Contact::Pending => "cho ket qua",
+        Contact::Hit => "TRUNG",
+        Contact::Blocked => "BI DO",
+        Contact::Whiff => "HUT",
+        Contact::Countered => "BI PHAN",
+    };
+    let denied = fighter.feedback.denial.map(denial).unwrap_or("");
+    format!(
+        "{} | {contact} {denied} | Mach {} | Thoat {}",
+        state_label(fighter),
+        fighter.mach.points(),
+        seconds(fighter.feedback.escape_cooldown)
+    )
+}
+
 /// Bỏ dấu tiếng Việt để hiển thị bằng font mặc định.
 pub fn ascii(text: &str) -> String {
     const GROUPS: [(&str, char); 14] = [
@@ -69,6 +102,7 @@ pub fn state_label(fighter: &FighterView) -> String {
         (State::Dash { .. }, _) => "Luot".to_owned(),
         (State::Hitstun { .. }, _) => "Choang".to_owned(),
         (State::GuardBreak { .. }, _) => "Vo the do".to_owned(),
+        (State::Escape { .. }, _) => "Thoat Mach - bao ve don danh".to_owned(),
         (State::Downed, _) => "Bi ha".to_owned(),
         (State::Attack { .. }, None) => unreachable!("trạng thái đánh luôn có đòn"),
     }

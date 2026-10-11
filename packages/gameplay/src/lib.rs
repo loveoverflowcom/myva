@@ -63,6 +63,14 @@ impl SimSession {
         &self.session
     }
 
+    /// Gửi ý định qua cổng phiên (fixture nhiều tác nhân/transport); không expose state mutable.
+    pub fn submit(
+        &mut self,
+        command: myva_sim::CommandEnvelope,
+    ) -> Result<myva_sim::protocol::CommandAck, myva_sim::protocol::Rejection> {
+        self.session.submit(command)
+    }
+
     pub(crate) fn session_mut(&mut self) -> &mut Session {
         &mut self.session
     }

@@ -20,6 +20,7 @@ Yêu cầu đã chốt: MyVa / Thần Mạch; hậu duệ hoặc người kế t
 | [Review](design/review.md) | Draft mạnh ở đâu, mâu thuẫn nào cần giải và ưu tiên nào giảm rủi ro? |
 | [GDD](design/gdd.md) | Người chơi làm gì, vui ở đâu và vòng chơi được giới hạn thế nào? |
 | [World Bible](design/world-bible.md) | Thần Mạch là gì, nhân vật muốn gì và linh vực có bản sắc ra sao? |
+| [Mạch công/thủ — #19](reports/combat-mach.md) | Đại thuật, Thoát Mạch, CC budget, feedback và giới hạn bằng chứng tự động |
 | [Combat](design/combat.md) | Di chuyển, combo, phòng thủ và đọc boss hoạt động thế nào? |
 | [Progression & Social](design/progression-social.md) | Solo, bang hội, build và chiến dịch liên vùng cùng tồn tại thế nào? |
 | [Economy](design/economy.md) | Tài nguyên hồi phục mà tồn kho, ngân sách phát hành và tiền tệ vẫn được kiểm soát thế nào? |

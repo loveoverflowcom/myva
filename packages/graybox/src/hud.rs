@@ -63,6 +63,7 @@ enum Slot {
     /// Hồi chiêu với người chơi, pha với boss.
     Detail(Side),
     State(Side),
+    Training,
     Banner,
     BannerDetail,
     Log,
@@ -178,6 +179,9 @@ fn spawn_panel(parent: &mut ChildSpawnerCommands, side: Side) {
             }
             panel.spawn(text(Slot::Detail(side), 13.0, DIM));
             panel.spawn(text(Slot::State(side), 13.0, DIM));
+            if side == Side::Player {
+                panel.spawn(text(Slot::Training, 12.0, TEXT));
+            }
         });
 }
 
@@ -413,6 +417,9 @@ fn update_texts(
             Slot::State(side) => fighter_for(&arena, &game, side)
                 .map(state_label)
                 .unwrap_or_default(),
+            Slot::Training => fighter_for(&arena, &game, Side::Player)
+                .map(crate::text::training)
+                .unwrap_or_default(),
             Slot::Banner => banner.as_ref().map(|b| b.0.clone()).unwrap_or_default(),
             Slot::BannerDetail => banner.as_ref().map(|b| b.1.clone()).unwrap_or_default(),
             Slot::Log => log.lines.iter().cloned().collect::<Vec<_>>().join("\n"),
@@ -424,8 +431,9 @@ fn update_texts(
                     }
                 };
                 format!(
-                    "A/D di chuyen  Space nhay  Shift luot  L do  J/K nhe/nang  Q/E/R thuat\n\
+                    "A/D di chuyen  Space nhay  Shift luot  L do (nhan moi khi choang: Thoat Mach)  J/K nhe/nang  Q/E/R thuat\n\
                      Tay cam: A nhay  B luot  LB do  X/Y nhe/nang  RB+X/Y/B thuat\n\
+                     R / RB+B / Trieu: cham khi tha = thuong, giu 0.45s = dai thuat (100 Mach + 35 NL)\n\
                      Enter dau lai  {mode}  H hitbox"
                 )
             }

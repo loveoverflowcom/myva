@@ -1,13 +1,13 @@
 # MyVa — Thần Mạch: combat theo truyền thừa, tiến triển và cân bằng
 
-> Đề xuất v0.2, 2026-10-09. Mục **E** của [báo cáo thiết kế](worldbuilding-report.md).
+> Đề xuất v0.2, cập nhật 2026-10-11 cho [#19](https://github.com/loveoverflowcom/myva/issues/19). Mục **E** của [báo cáo thiết kế](worldbuilding-report.md).
 > [combat.md](combat.md) vẫn là nguồn sự thật cho luật lõi (tick, timing, guard, cancel, DR khống chế, điều khiển). Tài liệu này bổ sung lớp truyền thừa, thuật khách, tiến triển và **phương pháp kiểm chứng cân bằng**.
 > **Không truyền thừa nào được tuyên bố là đã cân bằng.** Mọi chỉ số dưới đây là giả thuyết (GT) để graybox và mô phỏng.
 
 ## 1. Nguyên tắc
 
 1. **Kỹ năng quyết định trong cùng dải; chỉ số tạo lợi thế có giới hạn.** Giữ dải ±15% từ trang bị trong PvE cùng tier ([combat.md §13](combat.md#13-chỉ-số-pvp-và-nghiệm-thu)).
-2. **Không thêm nút.** Mọi khác biệt truyền thừa đi qua 8 nút mobile: di chuyển, nhảy, lướt, đỡ, nhẹ, nặng, 3 thuật.
+2. **Không thêm nút.** Mọi khác biệt truyền thừa đi qua **8 nút hành động + joystick**: nhảy, lướt, đỡ, nhẹ, nặng, 3 thuật; di chuyển bằng joystick. Đại thuật dùng chung một ô thuật, nội tại không thêm nút.
 3. **Cơ chế chung trước, cơ chế riêng sau.** Người mới học di chuyển–đỡ–lướt–đánh giống nhau ở mọi truyền thừa; khác biệt nằm ở nội tại, bộ pháp và thuật.
 4. **Khắc chế mềm.** Mỗi cặp đối đầu có chênh lệch nhỏ và có công cụ phản ứng; không có trận "biết thua trước khi đánh".
 5. **Mỗi đòn mạnh có điểm yếu đọc được:** startup, hướng, khoảng cách, tài nguyên hoặc hồi chiêu.
@@ -27,13 +27,13 @@ Các biến thể này là **nội tại**, không cần thao tác mới. Timing
 
 ### Chuỗi định sẵn có đường thoát
 
-Mortal Kombat 3 (1995) nổi tiếng với nút chạy và các chuỗi combo định sẵn ("dial-a-combo") mà khi trúng nhịp đầu thì đối thủ không ngắt được ([nguồn](https://en.wikipedia.org/wiki/Mortal_Kombat_3)). MyVa mượn **sự dễ đọc** của chuỗi định sẵn nhưng **không** mượn tính không thể ngắt, vì [combat.md §6](combat.md#6-combo-và-cancel) yêu cầu chuỗi dài phải có đoạn thoát.
+Mortal Kombat 3 (1995) nổi tiếng với nút chạy và các chuỗi combo định sẵn ("dial-a-combo") mà khi trúng nhịp đầu có tính cam kết cao. Đây chỉ là cảm hứng về nhịp đối kháng; không quy hit-confirm, parry hoặc guard-resource break thành cơ chế độc quyền của MK3. MyVa mượn **sự dễ đọc** của chuỗi định sẵn nhưng **không** mượn tính không thể ngắt, vì [combat.md §6](combat.md#6-combo-và-cancel) yêu cầu chuỗi dài phải có đoạn thoát.
 
 Mỗi truyền thừa có 2–3 chuỗi gợi ý (GT):
 
 | Truyền thừa | Chuỗi khởi đầu | Chuỗi nâng cao | Đường thoát của đối thủ |
 | --- | --- | --- | --- |
-| Long Lưu | Nhẹ ×3 → Lưu Tiễn | Nhẹ ×2 → Dòng Xiết → Triều Dâng | Giữa Dòng Xiết và Triều Dâng có khoảng 180 ms đỡ được |
+| Long Lưu | Nhẹ ×3 → Lưu Tiễn | Nhẹ ×2 → Hồi Thế → Triều Dâng (đề xuất) | Cần cửa đỡ/né thực sự theo [combat.md §6](combat.md#6-combo-và-cancel), chưa là true combo đã kiểm chứng |
 | Sơn Cốt | Nhẹ ×2 → Cốt Kích | Đỡ hoàn hảo → Sơn Băng (giáp) → Thạch Chấn | Thạch Chấn chỉ trúng mục tiêu trên nền: nhảy là thoát |
 | Phong Vũ | Nhẹ ×3 → Gió Ngược | Phong Tiễn (trên không) → Vũ Bộ → Phong Tiễn | Vũ Bộ có recovery trên không, có thể bị phạt |
 | Lâm Trảo | Nhẹ ×3 → Vồ Mồi | Lướt → Nanh Kép (đổi bên) → Nhẹ ×2 → Rễ Siết | Rễ Siết tính DR chung; nhịp đổi bên có tín hiệu bóng |
@@ -41,9 +41,9 @@ Mỗi truyền thừa có 2–3 chuỗi gợi ý (GT):
 
 ### Thoát Mạch — cơ chế thoát combo (GT)
 
-- **Thao tác:** nhấn **đỡ** trong lúc hitstun khi thanh Mạch ≥ 50. Không thêm nút.
-- **Hiệu ứng:** đẩy lùi ngắn quanh nhân vật, không gây sát thương, cắt hitstun; 200 ms bất tử với đòn đánh, không với hazard.
-- **Cái giá:** tiêu 50 Mạch (nửa thanh đại thuật). PvP: hồi 20 s. PvE: dùng được với địch thường, không dùng trong đòn nắm của boss.
+- **Thao tác:** nhấn mới **đỡ sau khi vào hitstun** khi thanh Mạch ≥ 50. Giữ/toggle đỡ từ trước và buffer cũ không kích hoạt; không thêm nút.
+- **Hiệu ứng:** tách hai bên trong arena, không gây sát thương, cắt hitstun; bảo vệ và khóa tấn công trong cửa ngắn theo [combat.md §6](combat.md#6-combo-và-cancel). Không đẩy boss có giáp, không miễn hazard; không reset DR/ngân sách chuỗi.
+- **Cái giá:** dùng giá trị SSOT của [combat.md §3](combat.md#3-tài-nguyên-chiến-đấu) và §6. Mạch là đánh đổi công/thủ: đại thuật dùng toàn thanh + chi phí thuật; thoát dùng một phần. Phòng thử hiện dùng một luật cho mọi cơ thể không giáp; phân biệt PvE/PvP production và đòn nắm boss còn thiếu.
 - **Lý do:** biến Mạch thành lựa chọn công/thủ (đại thuật hay thoát), giống quyết định tài nguyên ở [combat.md §1](combat.md#1-mục-tiêu); bảo vệ người bị chuỗi nhiều người.
 - **Rủi ro:** làm combo vô nghĩa nếu quá rẻ, hoặc vô dụng nếu quá đắt. Đo bằng mô phỏng (§11) và graybox trước khi chốt.
 
@@ -54,6 +54,8 @@ Mỗi truyền thừa có 2–3 chuỗi gợi ý (GT):
 ### Đổi bên và đánh lừa
 
 Hai cơ chế đổi bên (Nanh Kép của Lâm Trảo, Hồi Vọng của Tơ Vọng) tạo tình huống đoán hướng đỡ kiểu game đối kháng. Giới hạn: một lần đổi bên trong mỗi chuỗi; có tín hiệu bóng 100 ms (GT); không dùng được khi mục tiêu sát vách hoặc mép bản đồ.
+
+**Trạng thái #19:** một đại thuật Long Lưu, Thoát Mạch, DR/budget và feedback đã có lát cắt tự động kiểm chứng; baseline/thiếu/GT ở [combat.md §14](combat.md#14-lát-cắt-19-và-trạng-thái-triển-khai), bằng chứng ở [báo cáo](../reports/combat-mach.md). Root không cấm đỡ/đánh như stun. Launcher/air follow-up chỉ bật sau gate CC; bảng combo của các truyền thừa là đề xuất, chưa là API hoặc kit đã chạy.
 
 ## 4. Khắc chế giữa các phong cách
 
@@ -209,7 +211,7 @@ kịch bản (YAML/RON: bản đồ, truyền thừa, build, bot, seed, cấu h�
 ```
 
 - Mỗi lần chạy ghi: build/commit, hash cấu hình, seed, phiên bản bot. Kết quả không có các trường này không được dùng làm bằng chứng.
-- Chỉ so sánh kết quả trên **cùng một target** (native server build); không suy ra từ khác biệt float giữa WASM và native ([architecture.md §5](../technical/architecture.md#5-tick-prediction-và-chiến-đấu-online)).
+- So hash trong cùng revision/config; harness số nguyên đối chiếu từng tick trên native/WASM. Không suy ra hiệu năng, latency online hoặc công bằng từ hash bằng nhau ([architecture.md §5](../technical/architecture.md#5-tick-prediction-và-chiến-đấu-online)).
 - Bot gửi **cùng loại input** như người chơi qua hàng đợi command; không gọi thẳng hàm gây sát thương.
 
 ### Các bậc bot

@@ -30,6 +30,7 @@ pub struct LocalInput {
     move_x: i8,
     guard: bool,
     pressed: Buttons,
+    cancel_pending: bool,
 }
 
 impl LocalInput {
@@ -42,6 +43,7 @@ impl LocalInput {
             move_x: 0,
             guard: false,
             pressed: Buttons::NONE,
+            cancel_pending: false,
         }
     }
 
@@ -89,6 +91,12 @@ impl LocalInput {
         self.pressed = Buttons::NONE;
     }
 
+    /// UI/pause: gửi một ý định được replay để bỏ buffer lõi ở tick kế tiếp.
+    pub fn discard_pending(&mut self) {
+        self.release_all();
+        self.cancel_pending = true;
+    }
+
     pub(crate) fn take(&mut self, tick: Tick) -> CommandEnvelope {
         self.seq += 1;
         let frame = CommandFrame::from_input(&InputFrame {
@@ -99,9 +107,14 @@ impl LocalInput {
             } else {
                 Buttons::NONE
             },
-            pressed: self.pressed,
+            pressed: if self.cancel_pending {
+                Buttons::CANCEL_PENDING
+            } else {
+                self.pressed
+            },
         });
         self.pressed = Buttons::NONE;
+        self.cancel_pending = false;
         CommandEnvelope::new(self.session, self.actor, self.seq, tick, frame)
     }
 }

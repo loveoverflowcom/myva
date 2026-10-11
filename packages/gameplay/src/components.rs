@@ -96,6 +96,10 @@ pub struct CurrentAction(pub Option<ActionView>);
 #[component(immutable)]
 pub struct Cooldowns(pub [u32; 3]);
 
+#[derive(Component, Clone, Copy, Debug, PartialEq, Eq)]
+#[component(immutable)]
+pub struct CombatFeedback(pub myva_sim::fighter::CombatFeedback);
+
 /// Buff/debuff đang hiệu lực, tối đa một mỗi loại.
 #[derive(Component, Clone, Debug, PartialEq, Eq)]
 #[component(immutable)]

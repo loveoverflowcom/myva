@@ -113,6 +113,7 @@ mod browser {
                         <p><strong>"Bàn phím"</strong>" (nhấp vào đấu trường trước): A/D hoặc ←/→ di chuyển · Space nhảy · Shift lướt · giữ L đỡ · J/K đòn nhẹ/nặng · Q/E/R thuật Lưu Tiễn, Hồi Thế, Triều Dâng · Enter đấu lại · M đổi chế độ · H hitbox."</p>
                         <p><strong>"Gamepad"</strong>": stick trái/D-pad di chuyển · A nhảy · B lướt · giữ LB đỡ · X/Y nhẹ/nặng · giữ RB + X/Y/B thuật 1/2/3 · Start đấu lại sau khi kết thúc."</p>
                         <p><strong>"Cảm ứng"</strong>": kéo ở nửa trái để di chuyển; cụm nút bên phải cho đòn, thuật, nhảy, lướt và đỡ (giữ). Màn hình ngang dễ chơi hơn."</p>
+                        <p><strong>"Mạch công/thủ"</strong>": chạm rồi thả R / RB+B / Triều dùng thuật thường; giữ 450 ms yêu cầu đại thuật (100 Mạch + 35 năng lượng, hồi chiêu chung). Khi bị choáng, thả rồi nhấn đỡ mới để Thoát Mạch (50 Mạch, hồi 20 giây). Trúng, bị đỡ, hụt và lý do không nối hiện trong luyện tập. Các giá trị đang thử nghiệm."</p>
                         <p>"Tab để trở về các nút điều hướng. Replay ghi mọi input; kiểm tra file bằng "<code>"myva-replay verify"</code>"."</p>
                     </div>
                     <label for="chat">"Thử nhập tiếng Việt"</label>

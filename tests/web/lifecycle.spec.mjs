@@ -1,3 +1,4 @@
+const BASE_URL = `http://127.0.0.1:${process.env.MYVA_WEB_TEST_PORT || 8080}`;
 import { test, expect } from '@playwright/test';
 import fs from 'node:fs/promises';
 import { execFileSync } from 'node:child_process';
@@ -149,7 +150,7 @@ test('touch controls, cancel, DPR, unsupported renderer, load failure and contex
         const page = await context.newPage();
         const errors = [];
         page.on('pageerror', error => errors.push(error.message));
-        await page.goto('http://127.0.0.1:8080');
+        await page.goto(BASE_URL);
         const frame = await enter(page);
         // Con trỏ thô: lớp nút cảm ứng hiện ngay khi vào trận.
         await expect.poll(async () => (await state(frame)).touch).toBe(true);
@@ -206,7 +207,7 @@ test('touch controls, cancel, DPR, unsupported renderer, load failure and contex
         const page = await landscape.newPage();
         const errors = [];
         page.on('pageerror', error => errors.push(error.message));
-        await page.goto('http://127.0.0.1:8080');
+        await page.goto(BASE_URL);
         const frame = await enter(page);
         await page.locator('#fullscreen-game').click();
         await expect.poll(() => page.evaluate(() => document.fullscreenElement?.id)).toBe('game-frame');
@@ -238,7 +239,7 @@ test('touch controls, cancel, DPR, unsupported renderer, load failure and contex
         };
     });
     const unsupportedPage = await unsupported.newPage();
-    await unsupportedPage.goto('http://127.0.0.1:8080');
+    await unsupportedPage.goto(BASE_URL);
     await unsupportedPage.locator('#enter-game').click();
     await expect(unsupportedPage.locator('#shell-status')).toContainText('chưa hỗ trợ WebGL2');
     await unsupported.close();
@@ -248,7 +249,7 @@ test('touch controls, cancel, DPR, unsupported renderer, load failure and contex
     const failedPage = await failed.newPage();
     const failedErrors = [];
     failedPage.on('pageerror', error => failedErrors.push(error.message));
-    await failedPage.goto('http://127.0.0.1:8080');
+    await failedPage.goto(BASE_URL);
     await failedPage.locator('#enter-game').click();
     await expect(failedPage.locator('#shell-status')).toContainText('Không thể mở trận');
     expect(failedErrors).toEqual([]);

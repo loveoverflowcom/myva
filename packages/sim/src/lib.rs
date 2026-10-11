@@ -11,12 +11,13 @@
 //! - Mọi thông số trong [`kit`], [`monster`] và [`status`] là giả thuyết (GT) cho graybox, chưa
 //!   được cân bằng.
 //!
-//! Chưa làm: đại thuật, Thoát Mạch, DR khống chế, coyote time/jump buffer, đòn không trung riêng,
+//! Chưa làm: root/launch, coyote time/jump buffer, đòn không trung riêng,
 //! spawn giữa trận và phần thưởng (thuộc server nghiệp vụ).
 
 pub mod battle;
 pub mod boss;
 pub mod bot;
+pub mod control;
 pub mod fighter;
 pub mod fixture;
 pub mod input;
@@ -40,3 +41,6 @@ pub use kit::{ActionKind, Kit, LONG_LUU, PX, Phase};
 pub use protocol::{CommandEnvelope, CommandFrame, EntityRef, SessionEpoch, TickReport};
 pub use session::{Role, Session, SessionConfig};
 pub use world::{Event, World};
+
+#[cfg(test)]
+mod combat_tests;

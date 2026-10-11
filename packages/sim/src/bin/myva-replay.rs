@@ -68,6 +68,14 @@ fn describe(world: &World, event: &Event) -> String {
     let who = |id: FighterId| format!("#{} {}", id.0, world.fighter(id).kit.lineage);
     let action = |id: FighterId, action| world.fighter(id).kit.spec(action).name;
     match *event {
+        Event::Whiff { fighter, action } => format!("{} hụt {:?}", fighter.0, action),
+        Event::ActionDenied { fighter, reason } => format!("{} từ chối: {:?}", fighter.0, reason),
+        Event::MachEscaped { fighter } => format!("{} Thoát Mạch: -50 Mạch", fighter.0),
+        Event::ControlLimited {
+            fighter,
+            ticks,
+            damage,
+        } => format!("{} giới hạn CC: {ticks} tick, {damage} damage", fighter.0),
         Event::InputRejected { fighter, seq } => {
             format!("{} input seq {seq} bị từ chối", who(fighter))
         }

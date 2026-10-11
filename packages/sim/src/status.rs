@@ -2,7 +2,7 @@
 //!
 //! Graybox chỉ có Slow: không cộng dồn, chỉ hiệu lực mạnh nhất đang còn tác dụng, giới hạn 25% như
 //! PvP prototype. Slow yếu hơn đến khi đang có Slow mạnh hơn bị bỏ qua thay vì xếp hàng chờ (GT
-//! đơn giản hóa). Root, stun, launch và DR khống chế mạnh chưa làm.
+//! đơn giản hóa). Hitstun/guard break dùng DR/ngân sách tại `control`; root và launch chưa làm.
 //!
 //! Thời lượng tính như hitstun: `remaining` đếm từ tick trúng, bước status cuối tick trừ dần.
 

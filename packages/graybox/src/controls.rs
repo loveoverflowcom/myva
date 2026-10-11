@@ -6,9 +6,11 @@
 //! Mọi gamepad đang nối đều điều khiển người chơi, theo thứ tự input thực tế.
 
 use bevy::prelude::*;
+use bevy::window::WindowFocused;
+use myva_gameplay::LocalInput;
 use myva_sim::Buttons;
 
-use crate::fight::{GraySet, HostCommand, Intent, Match};
+use crate::fight::{GraySet, HostCommand, Intent, Match, SkillGesture};
 
 pub const MOVE_LEFT: [KeyCode; 2] = [KeyCode::KeyA, KeyCode::ArrowLeft];
 pub const MOVE_RIGHT: [KeyCode; 2] = [KeyCode::KeyD, KeyCode::ArrowRight];
@@ -42,10 +44,25 @@ pub fn plugin(app: &mut App) {
     app.add_systems(
         RunFixedMainLoop,
         (
+            cancel_on_blur
+                .after(GraySet::Commands)
+                .before(GraySet::Devices),
             shortcuts.in_set(GraySet::Shortcuts),
             (keyboard, gamepads).in_set(GraySet::Devices),
         ),
     );
+}
+
+fn cancel_on_blur(
+    mut focus: MessageReader<WindowFocused>,
+    mut input: ResMut<LocalInput>,
+    mut gesture: ResMut<SkillGesture>,
+) {
+    if focus.read().any(|event| !event.focused) {
+        // winit thả phím khi mất focus; không coi lần thả này là chạm ngắn để cast.
+        input.discard_pending();
+        gesture.cancel();
+    }
 }
 
 /// Ý định từ bàn phím, đọc qua các hàm truy vấn để test không cần `ButtonInput`.
@@ -55,12 +72,18 @@ pub fn keyboard_intent(
 ) -> (i8, Buttons, Buttons) {
     let left = MOVE_LEFT.into_iter().any(&pressed);
     let right = MOVE_RIGHT.into_iter().any(&pressed);
-    let held = if pressed(GUARD_KEY) {
+    let mut held = if pressed(GUARD_KEY) {
         Buttons::GUARD
     } else {
         Buttons::NONE
     };
+    if pressed(KeyCode::KeyR) {
+        held |= Buttons::SKILL3;
+    }
     let mut fresh = Buttons::NONE;
+    if just_pressed(GUARD_KEY) {
+        fresh |= Buttons::GUARD;
+    }
     for (key, button) in PRESS_KEYS {
         if just_pressed(key) {
             fresh |= button;
@@ -79,12 +102,15 @@ pub fn gamepad_intent(
 ) -> (i8, Buttons, Buttons) {
     let left = pressed(GamepadButton::DPadLeft) || stick_x <= -STICK_DEADZONE;
     let right = pressed(GamepadButton::DPadRight) || stick_x >= STICK_DEADZONE;
-    let held = if pressed(PAD_GUARD) {
+    let mut held = if pressed(PAD_GUARD) {
         Buttons::GUARD
     } else {
         Buttons::NONE
     };
     let chord = pressed(PAD_SKILL_MODIFIER);
+    if chord && pressed(GamepadButton::East) {
+        held |= Buttons::SKILL3;
+    }
     let face = [
         (GamepadButton::West, Buttons::LIGHT, Buttons::SKILL1),
         (GamepadButton::North, Buttons::HEAVY, Buttons::SKILL2),
@@ -96,6 +122,9 @@ pub fn gamepad_intent(
         if just_pressed(button) {
             fresh |= if chord { with_modifier } else { plain };
         }
+    }
+    if just_pressed(PAD_GUARD) {
+        fresh |= Buttons::GUARD;
     }
     (i8::from(right) - i8::from(left), held, fresh)
 }
@@ -200,6 +229,6 @@ mod tests {
         assert_eq!(gamepad_intent(set(&[]), set(&[]), -0.6).0, -1);
         assert_eq!(gamepad_intent(set(&[DPadRight]), set(&[]), 0.0).0, 1);
         let (_, held, pressed) = gamepad_intent(set(&[LeftTrigger]), set(&[LeftTrigger]), 0.0);
-        assert_eq!((held, pressed), (Buttons::GUARD, Buttons::NONE));
+        assert_eq!((held, pressed), (Buttons::GUARD, Buttons::GUARD));
     }
 }

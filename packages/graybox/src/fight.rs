@@ -78,6 +78,59 @@ pub struct Intent {
     pub pressed: Buttons,
 }
 
+/// Một cử chỉ chung cho R, RB+B và thuật 3 cảm ứng. Chạm ngắn phát bản thường khi thả;
+/// giữ 450 ms phát đúng một ý định tăng cường. Không có bản thường ở touch-down.
+#[derive(Resource, Default)]
+pub struct SkillGesture {
+    elapsed: Option<f32>,
+    fired: bool,
+    blocked: bool,
+}
+
+pub const ULTIMATE_HOLD_SECONDS: f32 = 0.45;
+
+impl SkillGesture {
+    pub fn cancel(&mut self) {
+        self.elapsed = None;
+        self.fired = false;
+        self.blocked = true;
+    }
+
+    pub fn resolve(&mut self, held: Buttons, pressed: Buttons, seconds: f32) -> Buttons {
+        let mut result = pressed.without(Buttons::SKILL3 | Buttons::ULTIMATE);
+        let down = held.contains(Buttons::SKILL3);
+        if self.blocked {
+            if !down {
+                self.blocked = false;
+            }
+            return result;
+        }
+        let fresh = pressed.contains(Buttons::SKILL3);
+        if fresh {
+            self.elapsed = Some(0.0);
+            self.fired = false;
+        }
+        if let Some(elapsed) = &mut self.elapsed {
+            if down {
+                if !fresh {
+                    *elapsed += seconds;
+                }
+                if !self.fired && *elapsed >= ULTIMATE_HOLD_SECONDS {
+                    result |= Buttons::SKILL3 | Buttons::ULTIMATE;
+                    self.fired = true;
+                }
+            } else {
+                if !self.fired {
+                    result |= Buttons::SKILL3;
+                }
+                self.elapsed = None;
+                self.fired = false;
+            }
+        }
+        result
+    }
+}
+
 impl Intent {
     pub fn add(&mut self, move_x: i8, held: Buttons, pressed: Buttons) {
         self.move_x += i32::from(move_x);
@@ -172,6 +225,7 @@ pub enum GraySet {
 /// Luật client của trận, không cần cửa sổ hay thiết bị; test headless dùng trực tiếp.
 pub fn plugin(app: &mut App) {
     app.init_resource::<Intent>()
+        .init_resource::<SkillGesture>()
         .init_resource::<CombatLog>()
         .init_resource::<ArenaView>()
         .add_message::<HostCommand>()
@@ -211,13 +265,26 @@ fn begin_intent(mut intent: ResMut<Intent>) {
     *intent = Intent::default();
 }
 
-fn flush_intent(intent: Res<Intent>, mut input: ResMut<LocalInput>, time: Res<Time<Virtual>>) {
+fn flush_intent(
+    intent: Res<Intent>,
+    mut input: ResMut<LocalInput>,
+    time: Res<Time<Virtual>>,
+    real: Res<Time<Real>>,
+    mut gesture: ResMut<SkillGesture>,
+) {
     // Nút nhấn trong lúc tạm dừng không được phát lại khi tiếp tục.
     if time.is_paused() {
         input.release_all();
+        gesture.cancel();
         return;
     }
-    let command = intent.command();
+    let pressed = gesture.resolve(intent.held, intent.pressed, real.delta_secs());
+    let command = CommandFrame::from_input(&InputFrame {
+        seq: 0,
+        move_x: intent.move_x.signum() as i8,
+        held: intent.held,
+        pressed,
+    });
     input.set_move(command.move_x);
     input.set_guard(command.guard);
     if let Some(action) = command.action {
@@ -234,6 +301,7 @@ fn apply_host_commands(
     mut input: ResMut<LocalInput>,
     mut log: ResMut<CombatLog>,
     mut time: ResMut<Time<Virtual>>,
+    mut gesture: ResMut<SkillGesture>,
 ) {
     for message in messages.read() {
         match *message {
@@ -270,6 +338,10 @@ fn apply_host_commands(
         }
         // Đổi trận hoặc tạm dừng không mang theo nút đã nhấn cho trận cũ.
         input.release_all();
+        if matches!(message, HostCommand::SetPaused(_)) {
+            input.discard_pending();
+        }
+        gesture.cancel();
     }
 }
 
@@ -344,6 +416,23 @@ fn describe(game: &Match, world: &myva_sim::World, event: &Event) -> Option<Stri
         } => format!("{} phan cong {} -{damage}", name(counterer), name(attacker)),
         Event::GuardBroken { fighter } => format!("{} vo the do", name(fighter)),
         Event::Downed { fighter } => format!("{} bi ha", name(fighter)),
+        Event::Whiff { fighter, action: a } => {
+            format!("{} hut: {}", name(fighter), action(fighter, a))
+        }
+        Event::ActionDenied { fighter, reason } => format!(
+            "{} khong noi: {}",
+            name(fighter),
+            crate::text::denial(reason)
+        ),
+        Event::MachEscaped { fighter } => format!("{} Thoat Mach -50", name(fighter)),
+        Event::ControlLimited {
+            fighter,
+            ticks,
+            damage,
+        } => format!(
+            "{} CC gioi han: {ticks} tick, {damage} damage",
+            name(fighter)
+        ),
         Event::InputRejected { .. }
         | Event::ActionStarted { .. }
         | Event::StatusApplied { .. }
@@ -373,6 +462,99 @@ fn refresh_view(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn short_tap_and_long_hold_emit_exactly_one_variant() {
+        let mut gesture = SkillGesture::default();
+        assert!(
+            gesture
+                .resolve(Buttons::SKILL3, Buttons::SKILL3, 0.01)
+                .is_empty()
+        );
+        assert_eq!(
+            gesture.resolve(Buttons::NONE, Buttons::NONE, 0.1),
+            Buttons::SKILL3
+        );
+        assert!(
+            gesture
+                .resolve(Buttons::NONE, Buttons::NONE, 0.1)
+                .is_empty()
+        );
+        assert!(
+            gesture
+                .resolve(Buttons::SKILL3, Buttons::SKILL3, 0.01)
+                .is_empty()
+        );
+        assert_eq!(
+            gesture.resolve(Buttons::SKILL3, Buttons::NONE, 0.45),
+            Buttons::SKILL3 | Buttons::ULTIMATE
+        );
+        assert!(
+            gesture
+                .resolve(Buttons::SKILL3, Buttons::NONE, 2.0)
+                .is_empty()
+        );
+        assert!(
+            gesture
+                .resolve(Buttons::NONE, Buttons::NONE, 0.1)
+                .is_empty()
+        );
+    }
+
+    #[test]
+    fn a_slow_frame_before_touch_down_does_not_count_as_holding() {
+        let mut gesture = SkillGesture::default();
+        assert!(
+            gesture
+                .resolve(Buttons::SKILL3, Buttons::SKILL3, 2.0)
+                .is_empty()
+        );
+        assert!(
+            gesture
+                .resolve(Buttons::SKILL3, Buttons::NONE, 0.1)
+                .is_empty()
+        );
+        assert_eq!(
+            gesture.resolve(Buttons::NONE, Buttons::NONE, 0.01),
+            Buttons::SKILL3
+        );
+    }
+
+    #[test]
+    fn canceled_hold_never_casts_on_release_or_from_stale_held_input() {
+        let mut gesture = SkillGesture::default();
+        gesture.resolve(Buttons::SKILL3, Buttons::SKILL3, 0.2);
+        gesture.cancel();
+        assert!(
+            gesture
+                .resolve(Buttons::SKILL3, Buttons::NONE, 2.0)
+                .is_empty()
+        );
+        assert!(
+            gesture
+                .resolve(Buttons::NONE, Buttons::NONE, 0.1)
+                .is_empty()
+        );
+        assert!(
+            gesture
+                .resolve(Buttons::SKILL3, Buttons::NONE, 2.0)
+                .is_empty()
+        );
+        assert!(
+            gesture
+                .resolve(Buttons::NONE, Buttons::NONE, 0.1)
+                .is_empty()
+        );
+        assert!(
+            gesture
+                .resolve(Buttons::SKILL3, Buttons::SKILL3, 0.01)
+                .is_empty()
+        );
+        assert_eq!(
+            gesture.resolve(Buttons::NONE, Buttons::NONE, 0.01),
+            Buttons::SKILL3
+        );
+    }
 
     #[test]
     fn devices_merge_into_one_command_by_core_priority() {

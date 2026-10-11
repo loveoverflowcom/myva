@@ -29,6 +29,7 @@ fn state_kind(fighter: &FighterView) -> &'static str {
         State::Dash { .. } => "dash",
         State::Hitstun { .. } => "hitstun",
         State::GuardBreak { .. } => "guard_break",
+        State::Escape { .. } => "escape",
         State::Downed => "downed",
     }
 }
@@ -49,7 +50,7 @@ fn fighter_json(fighter: Option<&FighterView>) -> String {
                 )
             });
     format!(
-        "{{\"x\":{:.1},\"y\":{:.1},\"facing\":{},\"hp\":{},\"max_hp\":{},\"stamina\":{},\"energy\":{},\"mach\":{},\"cooldowns\":[{},{},{}],\"state\":\"{}\",\"action\":{action}}}",
+        "{{\"x\":{:.1},\"y\":{:.1},\"facing\":{},\"hp\":{},\"max_hp\":{},\"stamina\":{},\"energy\":{},\"mach\":{},\"cooldowns\":[{},{},{}],\"state\":\"{}\",\"action\":{action},\"contact\":\"{:?}\",\"denial\":\"{:?}\",\"escape_cooldown\":{},\"control_ticks\":{},\"control_damage\":{}}}",
         px(fighter.x),
         px(fighter.y),
         fighter.facing,
@@ -62,6 +63,11 @@ fn fighter_json(fighter: Option<&FighterView>) -> String {
         fighter.cooldowns[1],
         fighter.cooldowns[2],
         state_kind(fighter),
+        fighter.feedback.contact,
+        fighter.feedback.denial,
+        fighter.feedback.escape_cooldown,
+        fighter.feedback.control.locked_ticks,
+        fighter.feedback.control.damage,
     )
 }
 

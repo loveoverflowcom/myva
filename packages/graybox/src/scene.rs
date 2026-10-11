@@ -473,7 +473,11 @@ fn spawn_popups(
             } => (attacker, format!("PHAN CONG -{damage}"), STARTUP),
             Event::GuardBroken { fighter } => (fighter, "VO THE DO".to_owned(), GUARD_BREAK),
             Event::Downed { fighter } => (fighter, "BI HA".to_owned(), ACTIVE),
+            Event::Whiff { fighter, .. } => (fighter, "HUT".to_owned(), RECOVERY),
+            Event::MachEscaped { fighter } => (fighter, "THOAT MACH".to_owned(), GUARD),
             Event::ActionStarted { .. }
+            | Event::ActionDenied { .. }
+            | Event::ControlLimited { .. }
             | Event::InputRejected { .. }
             | Event::StatusApplied { .. }
             | Event::StatusEnded { .. }

@@ -252,3 +252,40 @@ fn paused_time_holds_the_tick_and_drops_presses() {
         "cú bấm lúc tạm dừng không được phát lại"
     );
 }
+
+#[test]
+fn pause_discards_the_core_buffer_and_the_cancellation_replays() {
+    use myva_sim::protocol::{Action, Attack};
+    let mut script = vec![CommandFrame::IDLE; 120];
+    script[0].action = Some(Action::Attack(Attack::Light));
+    script[24].action = Some(Action::Skill(2));
+    let mut app = client(Mode::Boss, false, script);
+    run(&mut app, 25);
+    app.world_mut().write_message(HostCommand::SetPaused(true));
+    app.update();
+    for _ in 0..5 {
+        app.update();
+    }
+    app.world_mut().write_message(HostCommand::SetPaused(false));
+    run(&mut app, 120);
+    let events = &app.world().resource::<Collected>().0;
+    assert!(!events.iter().any(|r| matches!(
+        r.event,
+        myva_sim::Event::ActionStarted {
+            action: myva_sim::ActionKind::Skill(2),
+            ..
+        }
+    )));
+    let session = app.world().resource::<SimSession>().get();
+    assert!(
+        session
+            .replay()
+            .inputs
+            .iter()
+            .any(|(_, _, f)| f.pressed.contains(myva_sim::Buttons::CANCEL_PENDING))
+    );
+    assert_eq!(
+        session.replay().play().unwrap().world.state_hash(),
+        session.world().state_hash()
+    );
+}

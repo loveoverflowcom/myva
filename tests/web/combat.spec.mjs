@@ -1,3 +1,4 @@
+const BASE_URL = `http://127.0.0.1:${process.env.MYVA_WEB_TEST_PORT || 8080}`;
 import { test, expect } from '@playwright/test';
 import fs from 'node:fs/promises';
 import { execFileSync } from 'node:child_process';
@@ -92,7 +93,7 @@ test('gamepad: stick moves, X light, RB+X is Lưu Tiễn without a stray light (
     const page = await context.newPage();
     const errors = collectErrors(page);
     try {
-        await page.goto('http://127.0.0.1:8080/');
+        await page.goto(BASE_URL);
         const frame = await enter(page);
         await expect.poll(async () => (await state(frame)).gamepads).toBe(1);
         const set = (index, pressed) => frame.evaluate(([i, p]) => {
@@ -130,10 +131,22 @@ test('gamepad: stick moves, X light, RB+X is Lưu Tiễn without a stray light (
         expect(after.tally.player.actions).toBe(preSkill.tally.player.actions + 1);
         expect(after.player.energy).toBeLessThan(preSkill.player.energy);
 
+        // RB+B giữ: yêu cầu đại thuật, thiếu Mạch thì không phát bản thường hay trừ NL.
+        const preUltimate = await state(frame);
+        await set(5, true);
+        await set(1, true);
+        await expect.poll(async () => (await state(frame)).player.denial).toBe('Some(Mach)');
+        await set(1, false);
+        await set(5, false);
+        await frame.waitForTimeout(600);
+        const deniedUltimate = await state(frame);
+        expect(deniedUltimate.tally.player.actions).toBe(preUltimate.tally.player.actions);
+        expect(deniedUltimate.player.cooldowns[2]).toBe(0);
+
         await evidence('combat-gamepad', {
             browser: browser.version(),
             disclaimer: 'Mocked navigator.getGamepads() with Standard Gamepad mapping; verifies gilrs → Bevy → sim wiring, not a physical controller.',
-            before, preSkill, after, errors,
+            before, preSkill, after, deniedUltimate, errors,
         });
         expect(errors).toEqual([]);
     } finally {
