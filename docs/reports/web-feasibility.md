@@ -2,6 +2,8 @@
 
 Ngày thực hiện: **2026-10-09**. Issue [#11](https://github.com/loveoverflowcom/myva/issues/11), quyết định [ADR 0003](../decisions/0003-bevy-engine-adoption.md). Đây là prototype tích hợp; cảnh thu thập linh lực chỉ kiểm tra render/input, không thay luật combat hoặc kinh tế. **Từ 2026-10-10**, [#2](https://github.com/loveoverflowcom/myva/issues/2) thay cảnh này bằng trận graybox và nâng bridge lên v2; số đo dưới đây vẫn thuộc revision của D03. Bằng chứng mới nằm trong [báo cáo combat](combat-graybox.md).
 
+Đường dẫn source trong phần mô tả đã theo [layout hiện hành](../technical/repository-layout.md): `crates/web-shell` → `apps/web/shell`, `crates/web-game` → `apps/web/game`, `web` → `apps/web/public`. Evidence và command của run gốc giữ nguyên revision; việc di chuyển không bổ sung bằng chứng browser mới.
+
 ## Cách tái lập
 
 ```bash
@@ -30,7 +32,7 @@ Harness tự start server và chờ HTTP `bundle-report.json` nếu chưa có se
 - Game là iframe **cùng origin** `/game/`; mỗi lần vào tạo document/session mới, mỗi lần ra xóa document và listener trên shell. Đây là boundary hủy Winit/WASM/GPU, không gọi lại `App::run()` trong cùng document. Đổi lại có chi phí compile/khởi tạo mỗi lần vào và giới hạn focus/fullscreen của iframe. Không có WebView mobile.
 - Envelope `{v: 1, session, type}` hỗ trợ `init/ready/command/event/pause/exit/error`; cả hai phía kiểm origin, source window, version và session. `command` hiện chỉ có `reset`; mỗi 500 ms gửi score/pause, không serialize ECS world. Session phân biệt lần mount, không phải credential hoặc chứng minh quyền game/server.
 - JS adapter chỉ nhận phím khi canvas có focus; Tab và shortcut vẫn dành cho browser. Pointer có capture, active pointer ID và cancel; blur/hidden/pause xóa input cũ. Leptos nhận text/IME trong DOM. `set_input` clamp/normalize/loại NaN; WASM giữ state scene và Bevy cập nhật sprite.
-- Renderer duy nhất của spike là **WebGL2** với feature tối thiểu trong `crates/web-game/Cargo.toml`; không tự fallback sang WebGPU. Kiểm khả năng trước tải game, hiện lỗi khi không hỗ trợ. WebGPU/support matrix hardware chưa được đo.
+- Renderer duy nhất của spike là **WebGL2** với feature tối thiểu trong manifest hiện ở `apps/web/game/Cargo.toml`; không tự fallback sang WebGPU. Kiểm khả năng trước tải game, hiện lỗi khi không hỗ trợ. WebGPU/support matrix hardware chưa được đo.
 - `fit_canvas_to_parent` theo kích thước/DPR; context loss giữ lỗi và yêu cầu rời/vào lại. Pause dừng scene input/movement, không hứa GPU render loop đã ngủ. Thoát document mới là teardown toàn runtime.
 - Server phục vụ WASM bằng `application/wasm`, JS đúng MIME; CSP cho cùng origin và `wasm-unsafe-eval`, không bật JS `unsafe-eval`. `style-src 'unsafe-inline'` cần cho style động của window/canvas. Filename ổn định dùng `no-cache` để revalidate, không cache bất biến khi chưa có content hash deployment. Không có service worker hoặc network game background.
 

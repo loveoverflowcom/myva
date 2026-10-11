@@ -6,6 +6,8 @@
 
 Luật combat chỉ nằm trong `myva-sim`. `myva-gameplay` là adapter ECS: nhận lệnh, gọi `Session::step` đúng một lần mỗi tick cố định, mirror kết quả sang entity/component và phát sự kiện. Không có system ECS nào tính di chuyển, va chạm, damage, cooldown hay hiệu ứng.
 
+Đường dẫn hiện hành là `packages/sim` và `packages/gameplay`; [cấu trúc repository](repository-layout.md) ghi mapping sau refactor. Tên crate, luật và bằng chứng theo revision của D04 giữ nguyên.
+
 | Crate / module | Sở hữu | Không sở hữu |
 | --- | --- | --- |
 | `myva-sim::world` | `World::step`: `input → movement → collision → combat → status → events` | Vai trò người chơi/quái, phiên mạng |
@@ -98,7 +100,7 @@ Client không có đường tạo claim: constructor là nội bộ crate, `Rewa
 | Bot lái hộ người chơi | `LocalInput::set_frame` trước `GameplaySet::Input` | Cổng lệnh |
 | Đọc trạng thái riêng của bộ não (pha boss) | `Session::controller::<T>()` | Snapshot |
 
-#2 đã dựng client Bevy theo đúng đường này (2026-10-11): `DefaultPlugins` + `GameplayPlugin::new(Authority::Client)` + `MatchPlugin` của graybox. Boss Kẻ Giữ Đập (`BossController`) và bot đấu tập B0 (`SparringBot`) là `Controller` của phiên; bot B1/B0 lái hộ người chơi chạy phía client và gửi lệnh qua `LocalInput`. Trọng tài (`Bout::observe`) đọc `TickReport` trong `GameplaySet::Events`; cảnh và HUD đọc khung nhìn từ mirror. Graybox không ghi component mirror và không có system tính luật. Test `crates/graybox/tests/parity.rs` chạy đúng các plugin đó không cửa sổ và so từng tick với `Battle` chạy thẳng trên lõi.
+#2 đã dựng client Bevy theo đúng đường này (2026-10-11): `DefaultPlugins` + `GameplayPlugin::new(Authority::Client)` + `MatchPlugin` của graybox. Boss Kẻ Giữ Đập (`BossController`) và bot đấu tập B0 (`SparringBot`) là `Controller` của phiên; bot B1/B0 lái hộ người chơi chạy phía client và gửi lệnh qua `LocalInput`. Trọng tài (`Bout::observe`) đọc `TickReport` trong `GameplaySet::Events`; cảnh và HUD đọc khung nhìn từ mirror. Graybox không ghi component mirror và không có system tính luật. Test hiện ở `packages/graybox/tests/parity.rs` chạy đúng các plugin đó không cửa sổ và so từng tick với `Battle` chạy thẳng trên lõi.
 
 ## 9. Bằng chứng
 

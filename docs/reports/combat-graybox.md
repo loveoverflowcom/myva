@@ -4,6 +4,8 @@ Ngày thực hiện: **2026-10-10**, cập nhật **2026-10-11** khi graybox chu
 
 Báo cáo này xác nhận một trận Long Lưu đấu Kẻ Giữ Đập **chơi được và kiểm chứng được bằng replay** trên trình duyệt và native desktop. Nó **không** thay playtest người thật, không đo thiết bị mobile thật và không cân bằng lại thông số: mọi luật dùng nguyên lõi `myva-sim` hiện có.
 
+Đường dẫn source trong phần mô tả đã theo [layout hiện hành](../technical/repository-layout.md): `crates/graybox` → `packages/graybox`. Evidence, commands, SHA và số đo vẫn thuộc run gốc; refactor đường dẫn có [báo cáo kiểm chứng riêng](repository-layout.md).
+
 ## Cách tái lập
 
 ```bash
@@ -26,7 +28,7 @@ Harness ghi JSON, ảnh và replay vào `target/web-evidence/`; CI upload thư m
 
 ## Điều khiển
 
-Mapping mặc định theo [combat.md §12](../design/combat.md#12-điều-khiển-và-khả-năng-tiếp-cận); bảng hằng nằm ở `crates/graybox/src/controls.rs`. Khác biệt và lựa chọn cần playtest:
+Mapping mặc định theo [combat.md §12](../design/combat.md#12-điều-khiển-và-khả-năng-tiếp-cận); bảng hằng hiện nằm ở `packages/graybox/src/controls.rs`. Khác biệt và lựa chọn cần playtest:
 
 - Đấu lại bằng **Enter** vì F5 là phím tải lại trang; Start của gamepad chỉ đấu lại khi trận đã có kết quả, tránh bấm nhầm. M đổi chế độ, B bật/tắt bot đấu tập, H hitbox. Native thêm F9 lưu replay, Esc thoát.
 - **Chord gamepad**: giữ RB, hoặc nhấn RB cùng khung với X/Y/B, thì ra thuật 1/2/3 và không kèm đòn cơ bản; thả RB khi còn giữ X không phát thêm đòn nhẹ. Không có cửa sổ trễ để chờ chord, nên X nhấn trước RB một khung vẫn là đòn nhẹ.
@@ -40,13 +42,13 @@ Replay ghi lệnh của mọi bên theo định dạng `myva-replay 2` của D04
 
 Run E2E: bot B1 (phản ứng 250 ms) hạ boss sau **3.773 tick**, không mất máu, đi qua cả ba pha; trình duyệt báo khớp; file `myva-boss-r1-t3773.myva-replay` ghi trên **wasm32** được `myva-replay verify` bản **native** chạy lại khớp **63 mốc hash**, hash cuối `fabc0e52bccb31a2`. Replay của ảnh native (`graybox-r1-t950`) cũng khớp 16 mốc hash.
 
-Đối chứng client với lõi (`crates/graybox/tests/parity.rs`): app chỉ gồm `TimePlugin` + `GameplayPlugin` + `MatchPlugin`, input đi qua `Intent` → `LocalInput` như thiết bị thật, so với `Battle` chạy thẳng trên lõi. Cả bốn kịch bản cho cùng hash **từng tick**, cùng số liệu từng bên và replay **giống từng byte**: bot B1 đánh boss tới thắng và tự kiểm chứng; 2.400 tick input ngẫu nhiên có đủ đi, đỡ, nhảy, lướt, đòn và thuật (sự kiện không lặp, mỗi cú bấm vào đúng một tick); đổi chế độ rồi tắt bot đấu tập giữa trận; tạm dừng bỏ cú bấm. Đây là bằng chứng hash ổn định giữa native 64-bit và wasm32 ở revision này, không phải lời hứa cho mọi build hoặc phần luật dùng float sau này.
+Đối chứng client với lõi (test hiện ở `packages/graybox/tests/parity.rs`): app chỉ gồm `TimePlugin` + `GameplayPlugin` + `MatchPlugin`, input đi qua `Intent` → `LocalInput` như thiết bị thật, so với `Battle` chạy thẳng trên lõi. Cả bốn kịch bản cho cùng hash **từng tick**, cùng số liệu từng bên và replay **giống từng byte**: bot B1 đánh boss tới thắng và tự kiểm chứng; 2.400 tick input ngẫu nhiên có đủ đi, đỡ, nhảy, lướt, đòn và thuật (sự kiện không lặp, mỗi cú bấm vào đúng một tick); đổi chế độ rồi tắt bot đấu tập giữa trận; tạm dừng bỏ cú bấm. Đây là bằng chứng hash ổn định giữa native 64-bit và wasm32 ở revision này, không phải lời hứa cho mọi build hoặc phần luật dùng float sau này.
 
 ## Trạng thái nghiệm thu
 
 | Hạng mục | Kết quả | Phạm vi bằng chứng |
 | --- | --- | --- |
-| Chuyển graybox Macroquad sang Bevy | PASS | `crates/graybox` là Bevy 0.20; Macroquad và bản web cũ bị gỡ, lịch sử còn trong git |
+| Chuyển graybox Macroquad sang Bevy | PASS | Crate hiện ở `packages/graybox` là Bevy 0.20; Macroquad và bản web cũ bị gỡ, lịch sử còn trong git |
 | Chạy trên nền ECS D04 (#12) | PASS | `GameplayPlugin` + `Session`; boss là `Controller`; presentation đọc mirror; đối chứng từng tick với lõi ở trên |
 | Kit Long Lưu, boss Kẻ Giữ Đập | PASS | Dùng nguyên dữ liệu và luật lõi; không đổi thông số |
 | Nhân vật, đòn, đạn, vùng cảnh báo boss | PASS | Hàm `shapes()` có test: vùng báo trùng hộp đòn thật khi active, đạn báo cả làn bay; [ảnh native](evidence/combat-native.png) |

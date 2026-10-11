@@ -2,6 +2,8 @@
 
 **Trạng thái:** fixture, validator và loader chạy được trên native desktop và Chrome desktop (WebGL2 software), ngày 2026-10-11. Issue [#13](https://github.com/loveoverflowcom/myva/issues/13). Run revision `ac6c6c491adf2cdd4803eef4d82f71fc3c0dbd32`, `dirty=false`, base `develop` `c96a7c4`. Đặc tả: [asset-pipeline](../technical/asset-pipeline.md). Evidence: [JSON](evidence/d05a-2026-10-11.json). Không đóng #13: D05-B, mobile thật và đo hiệu năng vẫn còn.
 
+Path/commands trong báo cáo và raw evidence thuộc run revision `ac6c6c491adf2cdd4803eef4d82f71fc3c0dbd32`. [Layout hiện hành](../technical/repository-layout.md) chuyển `crates/assets` → `packages/assets` và `crates/graybox` → `packages/graybox`; root fixture và generated URL không đổi. Giữ evidence và commands gốc để tái lập revision đó; refactor có [báo cáo kiểm chứng riêng](repository-layout.md).
+
 ## Kết quả
 
 - **Asset mẫu:** Long Lưu (idle 4, run 6, jump 3 có mốc `apex`, attack 5 có mốc `hit`), Kẻ Giữ Đập (idle 4, run 4, attack 5), bản đồ Đập Cổ (2 tile + 4 lớp phông + layout) và VFX (hit, guard, slash, dust, đạn Lưu Tiễn). Sinh bằng mã trong repo, không có đầu vào bên thứ ba; license `LicenseRef-MyVa-Unreleased` vì chủ dự án chưa chọn license.

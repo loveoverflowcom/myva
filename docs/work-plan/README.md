@@ -24,4 +24,8 @@ Số `010`, `020`, ... biểu thị **thứ tự khuyến nghị hiện tại**,
 - [Online pilot](backlog/online-pilot.md) chỉ được đưa vào active queue khi slice và integrity prerequisites đạt.
 - [World expansion và chiến dịch](backlog/world-expansion.md) chờ pilot có bằng chứng tải, kinh tế và solo progression.
 
+## Boundary chờ consumer
+
+[Repository boundaries](backlog/repository-boundaries.md) giữ các khả năng tách desktop/native entry, contracts và asset pipeline sau [refactor đường dẫn](../technical/repository-layout.md). Chỉ promote công việc có consumer và gate tương ứng; thứ tự D02/D05/slice ở trên tiếp tục theo bằng chứng platform và nội dung.
+
 Sau mỗi prototype, cập nhật các giả thuyết bị bác bỏ và follow-up cần thiết. Việc này ưu tiên lỗi ảnh hưởng người chơi trước tối ưu hoặc tổng quát hóa kiến trúc.
