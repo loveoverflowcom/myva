@@ -34,7 +34,7 @@ mkdir -p "$probe_dir/android/app/src/main/jniLibs/arm64-v8a"
 cp "$CARGO_TARGET_DIR/aarch64-linux-android/debug/libmyva_native_probe.so" \
   "$probe_dir/android/app/src/main/jniLibs/arm64-v8a/"
 if [[ "$mode" == apk ]]; then
-  "$probe_dir/android/gradlew" -p "$probe_dir/android" :app:assembleDebug
+  "$probe_dir/android/gradlew" --no-daemon -p "$probe_dir/android" :app:assembleDebug
 elif [[ "$mode" == cmp ]]; then
-  "$probe_dir/android/gradlew" -p "$probe_dir/android" :cmp-shell:assembleDebug
+  "$probe_dir/android/gradlew" --no-daemon -p "$probe_dir/android" :cmp-shell:assembleDebug
 fi

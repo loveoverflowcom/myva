@@ -176,7 +176,7 @@ test('autopilot B1 beats the boss; replay verifies in the browser and natively',
     const path = `target/web-evidence/${download.suggestedFilename()}`;
     await download.saveAs(path);
     // Replay ghi trên wasm32 được công cụ native chạy lại: so mọi mốc hash và hash cuối.
-    const verify = execFileSync('cargo', ['run', '--quiet', '--locked', '-p', 'myva-sim', '--bin', 'myva-replay', '--', 'verify', path],
+    const verify = execFileSync('cargo', ['xtask', 'run', 'replay', '--', 'verify', path],
         { encoding: 'utf8' });
     expect(verify).toContain(`hash cuối ${final.hash}`);
     expect(verify).toContain('Kẻ Giữ Đập: HP 0/2400, Downed');

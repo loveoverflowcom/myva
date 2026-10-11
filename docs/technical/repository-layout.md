@@ -84,6 +84,7 @@ myva/
 | `apps/web/shell` | Leptos DOM/navigation/IME và shell lifecycle; giao tiếp qua bridge, không import combat rules. |
 | `apps/web/public` | Documents, CSS, bootstrap/runtime JS phục vụ cùng origin. Không chứa domain state SSOT. |
 | `prototypes/native` | CMP native shell và Bevy/Winit feasibility probes; Android/iOS có gate riêng, chưa production. |
+| `xtask` | Repository orchestration/CLI/process ownership; không chứa luật gameplay. Xem [build contract](../architecture/xtask-build-contract.md). |
 | `assets/fixture` | Nội dung placeholder tái lập được, metadata/manifest/provenance của D05-A; không là chứng nhận art production hoặc performance D05-B. |
 
 Packages có thể sở hữu CLI nhỏ dùng để kiểm chứng chính library đó: `myva-replay`, `myva-headless`, `myva-econ-sim`, `myva-assets` và desktop graybox. Giữ các target này cùng crate tránh thêm wrapper crate không có consumer mới. Khi desktop/native production có lifecycle và packaging thật, entry đó có thể chuyển sang app trong PR riêng.
@@ -94,12 +95,12 @@ Không tạo `contracts/`: domain types đã ở `sim::{protocol,session,replay}
 
 ## Consumer và output compatibility
 
-- Workspace dùng bảy member tường minh. Package names, lib/bin/example/test target names, versions/features và `Cargo.lock` giữ nguyên so với base cuối.
+- Workspace sau refactor dùng bảy member; PR unified xtask thêm member thứ tám `xtask` và dependencies tooling vào lockfile. Package/game target names, versions/features và domain logic giữ nguyên.
 - Dependencies trong `packages` vẫn dùng sibling paths. `apps/web/game` dùng `../../../packages/gameplay` và `../../../packages/graybox`.
 - `scripts/build-web-shell.sh` copy từ `apps/web/public`; output vẫn là `target/web-shell/{index.html,style.css,bootstrap.js,shell/,game/}`. WASM vẫn là `myva_web_shell.wasm` và `myva_web_game.wasm`; generated imports vẫn là `shell/myva_web_shell.js` và `game/pkg/myva_web_game.js`.
 - `#[wasm_bindgen(module = "/web/shell-bridge.js")]` là file relative với crate shell, giữ tại `apps/web/shell/web/shell-bridge.js`. Generated wrapper tham chiếu `snippets/`; không hard-code opaque folder hash hoặc dùng hash đó thay cho kiểm chứng bundle.
 - URL `/game/`, bridge version/session/origin/source checks và replay bytes không đổi.
-- CI hiện có chọn package bằng name, gọi root scripts và upload `target/*`; Playwright giữ `tests/web`, root npm manifest và `target/web-evidence`. Không cần sửa đường dẫn CI/test đã hợp lệ hoặc thêm job mới.
+- CI provision tools rồi gọi `cargo xtask ci`, planner chọn package bằng name và reuse root scripts; Playwright giữ `tests/web`, root npm manifest và `target/web-evidence`. Web server/readiness/cleanup thuộc xtask, upload artifacts vẫn thuộc Actions.
 - Native workspaces không phụ thuộc moved packages. Probe-root anchors, CMP `../app/src/main/jniLibs`, Android settings và Gradle paths còn nguyên.
 - D05-A asset paths giữ nguyên: validator test `../../assets/fixture`, graybox default `CARGO_MANIFEST_DIR/../../assets`, art test `../../../assets/fixture/long_luu/sheet.json`. `crates` → `packages` không đổi độ sâu. Build vẫn validate root manifest rồi copy sang `target/web-shell/game/assets/fixture`; URLs, hash/provenance và loading/fallback/streaming behavior giữ nguyên.
 - Crate-local integration tests/examples đi cùng package; browser/report tests ở root `tests`. Xóa cây cũ bằng `git mv` sau khi cập nhật consumer và kiểm tra không còn active path.

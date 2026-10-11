@@ -1,6 +1,7 @@
 [workspace]
 resolver = "3"
 members = [
+    "xtask",
     "apps/web/shell",
     "apps/web/game",
     "packages/sim",

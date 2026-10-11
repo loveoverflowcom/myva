@@ -12,14 +12,16 @@ if [[ "$(wasm-bindgen --version 2>/dev/null || true)" != "wasm-bindgen 0.2.129" 
   exit 1
 fi
 out="$root/target/wasm-determinism"
+cargo_target="${CARGO_TARGET_DIR:-$root/target}"
+[[ "$cargo_target" = /* ]] || cargo_target="$PWD/$cargo_target"
 mkdir -p "$out"
 cargo build --locked --manifest-path "$root/Cargo.toml" -p myva-sim --example wasm-fingerprint \
   --target wasm32-unknown-unknown --release
 wasm-bindgen --target nodejs --out-dir "$out/pkg" \
-  "$root/target/wasm32-unknown-unknown/release/examples/wasm_fingerprint.wasm"
+  "$cargo_target/wasm32-unknown-unknown/release/examples/wasm_fingerprint.wasm"
 cargo build --locked --manifest-path "$root/Cargo.toml" -p myva-gameplay --bin myva-headless --release
 for seed in "${seeds[@]}"; do
-  "$root/target/release/myva-headless" --seed "$seed" --ticks "$ticks" --hashes "$out/native-$seed.txt" >/dev/null
-  "$root/target/release/myva-headless" --mach --seed "$seed" --ticks "$ticks" --hashes "$out/mach-$seed.txt" >/dev/null
+  "$cargo_target/release/myva-headless" --seed "$seed" --ticks "$ticks" --hashes "$out/native-$seed.txt" >/dev/null
+  "$cargo_target/release/myva-headless" --mach --seed "$seed" --ticks "$ticks" --hashes "$out/mach-$seed.txt" >/dev/null
 done
 node "$root/scripts/check-wasm-determinism.mjs" "$out" "$ticks" "${seeds[@]}"

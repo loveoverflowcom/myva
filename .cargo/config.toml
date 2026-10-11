@@ -1,0 +1,6 @@
+[alias]
+xtask = "run --locked -p xtask --"
+
+[build]
+# Bevy compilation is memory intensive. CARGO_BUILD_JOBS / cargo -j still override this.
+jobs = 2

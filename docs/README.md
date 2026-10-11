@@ -52,6 +52,8 @@ Chờ duyệt qua [quyết định 0002](decisions/0002-lineages-world-structure
 | --- | --- |
 | [Architecture](technical/architecture.md) | Ai sở hữu state, native integration cần chứng minh gì và giao dịch được phục hồi ra sao? |
 | [Repository layout](technical/repository-layout.md) | Mã nguồn hiện nằm ở đâu, apps/packages/prototypes sở hữu gì và dependency đi theo hướng nào? |
+| [xtask build contract](architecture/xtask-build-contract.md) | Entrypoint development, CI, process ownership và changed-only dependency impact |
+| [xtask verification](reports/xtask-verification.md) | Những command đã thực thi, PASS/FAIL/BLOCKED/NOT_RUN và giới hạn native feasibility |
 | [Repository refactor report](reports/repository-layout.md) | Mapping trước/sau, consumer compatibility và kiểm chứng nào đã chạy hoặc còn bị chặn? |
 | [Gameplay foundation](technical/gameplay-foundation.md) | Adapter ECS gọi luật lõi thế nào, lệnh/sự kiện/ID ra sao, và headless/replay/WASM đã chứng minh gì? (D04) |
 | [Combat graybox](reports/combat-graybox.md) | Trận Bevy chơi được tới đâu; keyboard/gamepad/touch, replay và số đo nào đã có, playtest nào còn thiếu? |
