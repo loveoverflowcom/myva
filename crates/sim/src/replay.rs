@@ -4,28 +4,35 @@
 //! bên, kể cả boss, đều được ghi, nên chạy lại không cần bộ não boss hay bot.
 //!
 //! ```text
-//! myva-replay 1
-//! fighter long-luu 640000 1
+//! myva-replay 2
+//! seed 7                   # seed phiên đã sinh lệnh AI; chỉ để truy vết
+//! fighter long-luu 640000 1 1   # kit, x, hướng, phe (bỏ trống: không phe)
+//! npc huong-dan 900000     # NPC, x
 //! input 0 0 1 1 0 8        # tick, nhân vật, seq, move_x, held, pressed (bitflag)
 //! check 60 9f0c...         # hash sau khi chạy xong tick 60
 //! end 3600
 //! ```
 //!
-//! Hash chỉ so được trong cùng build và cùng target (combat-progression-balance.md §11).
+//! Bản 1 (không có seed, phe, NPC) vẫn đọc được. Hash chỉ so được trong cùng build và cùng target
+//! (combat-progression-balance.md §11).
 
 use std::fmt::{self, Write as _};
 
 use crate::boss::KE_GIU_DAP;
-use crate::fighter::FighterId;
+use crate::fighter::{FighterId, Team};
 use crate::input::{Buttons, InputFrame};
 use crate::kit::{Kit, LONG_LUU};
+use crate::monster::QUAI_BUN;
+use crate::npc::{NpcSpec, npc_by_id};
 use crate::tick::Tick;
 use crate::world::{Event, World};
 
-pub const HEADER: &str = "myva-replay 1";
+pub const HEADER: &str = "myva-replay 2";
+/// Header bản cũ vẫn được chấp nhận khi đọc.
+pub const HEADER_V1: &str = "myva-replay 1";
 
 /// Các kit có thể xuất hiện trong replay.
-pub const KITS: [&Kit; 2] = [&LONG_LUU, &KE_GIU_DAP];
+pub const KITS: [&Kit; 3] = [&LONG_LUU, &KE_GIU_DAP, &QUAI_BUN];
 
 pub fn kit_by_id(id: &str) -> Option<&'static Kit> {
     KITS.into_iter().find(|kit| kit.id == id)
@@ -36,11 +43,21 @@ pub struct Spawn {
     pub kit: &'static Kit,
     pub x: i32,
     pub facing: i8,
+    pub team: Option<Team>,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct NpcSpawn {
+    pub spec: &'static NpcSpec,
+    pub x: i32,
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct Replay {
+    /// Seed phiên đã sinh lệnh AI; chạy lại không cần nó vì mọi lệnh đã được ghi.
+    pub seed: Option<u64>,
     pub spawns: Vec<Spawn>,
+    pub npcs: Vec<NpcSpawn>,
     /// Theo thứ tự tick tăng dần.
     pub inputs: Vec<(Tick, FighterId, InputFrame)>,
     /// Hash của thế giới sau khi chạy xong tick tương ứng.
@@ -90,7 +107,10 @@ impl Replay {
     pub fn world(&self) -> World {
         let mut world = World::new();
         for spawn in &self.spawns {
-            world.spawn(spawn.kit, spawn.x, spawn.facing);
+            world.spawn_in_team(spawn.kit, spawn.x, spawn.facing, spawn.team);
+        }
+        for npc in &self.npcs {
+            world.spawn_npc(npc.spec, npc.x);
         }
         world
     }
@@ -126,8 +146,18 @@ impl Replay {
     pub fn to_text(&self) -> String {
         let mut out = String::new();
         let _ = writeln!(out, "{HEADER}");
+        if let Some(seed) = self.seed {
+            let _ = writeln!(out, "seed {seed}");
+        }
         for spawn in &self.spawns {
-            let _ = writeln!(out, "fighter {} {} {}", spawn.kit.id, spawn.x, spawn.facing);
+            let _ = write!(out, "fighter {} {} {}", spawn.kit.id, spawn.x, spawn.facing);
+            if let Some(Team(team)) = spawn.team {
+                let _ = write!(out, " {team}");
+            }
+            let _ = writeln!(out);
+        }
+        for npc in &self.npcs {
+            let _ = writeln!(out, "npc {} {}", npc.spec.id, npc.x);
         }
         let mut checkpoints = self.checkpoints.iter().peekable();
         for &(tick, id, input) in &self.inputs {
@@ -159,7 +189,7 @@ impl Replay {
             .map(|(i, line)| (i + 1, line.split('#').next().unwrap_or("").trim()))
             .filter(|(_, line)| !line.is_empty());
         match lines.next() {
-            Some((_, HEADER)) => {}
+            Some((_, HEADER | HEADER_V1)) => {}
             other => {
                 return Err(ReplayError::Parse {
                     line: other.map_or(1, |(line, _)| line),
@@ -183,15 +213,38 @@ impl Replay {
             };
             let narrow = |value: i64, what: &str| error(format!("{what} ngoài phạm vi: {value}"));
             match fields[0] {
+                "seed" => {
+                    let seed = fields
+                        .get(1)
+                        .ok_or_else(|| error("thiếu seed".to_owned()))?;
+                    replay.seed = Some(seed.parse().map_err(|e| error(format!("seed: {e}")))?);
+                }
                 "fighter" => {
                     let id = fields.get(1).copied().unwrap_or("");
                     let kit = kit_by_id(id).ok_or_else(|| error(format!("kit lạ: {id}")))?;
                     let x = number(2)?;
                     let facing = number(3)?;
+                    let team = match fields.get(4) {
+                        None => None,
+                        Some(_) => {
+                            let team = number(4)?;
+                            Some(Team(u8::try_from(team).map_err(|_| narrow(team, "phe"))?))
+                        }
+                    };
                     replay.spawns.push(Spawn {
                         kit,
                         x: i32::try_from(x).map_err(|_| narrow(x, "x"))?,
                         facing: i8::try_from(facing).map_err(|_| narrow(facing, "hướng"))?,
+                        team,
+                    });
+                }
+                "npc" => {
+                    let id = fields.get(1).copied().unwrap_or("");
+                    let spec = npc_by_id(id).ok_or_else(|| error(format!("NPC lạ: {id}")))?;
+                    let x = number(2)?;
+                    replay.npcs.push(NpcSpawn {
+                        spec,
+                        x: i32::try_from(x).map_err(|_| narrow(x, "x"))?,
                     });
                 }
                 "input" => {
@@ -245,24 +298,7 @@ impl Replay {
 }
 
 fn buttons(bits: i64) -> Option<Buttons> {
-    let bits = u16::try_from(bits).ok()?;
-    let all = [
-        Buttons::JUMP,
-        Buttons::DASH,
-        Buttons::GUARD,
-        Buttons::LIGHT,
-        Buttons::HEAVY,
-        Buttons::SKILL1,
-        Buttons::SKILL2,
-        Buttons::SKILL3,
-    ];
-    let mut out = Buttons::NONE;
-    for button in all {
-        if bits & button.bits() != 0 {
-            out |= button;
-        }
-    }
-    (out.bits() == bits).then_some(out)
+    Buttons::from_bits(u16::try_from(bits).ok()?)
 }
 
 /// Ghi replay trong khi chạy: thay `world.step(...)` bằng `recorder.step(&mut world, ...)`.
@@ -285,6 +321,15 @@ impl Recorder {
                         kit: f.kit,
                         x: f.x,
                         facing: f.facing,
+                        team: f.team,
+                    })
+                    .collect(),
+                npcs: world
+                    .npcs()
+                    .iter()
+                    .map(|n| NpcSpawn {
+                        spec: n.spec,
+                        x: n.x,
                     })
                     .collect(),
                 ..Replay::default()
@@ -397,11 +442,47 @@ mod tests {
             Err(ReplayError::Parse { line: 2, .. })
         ));
         let bad_buttons = format!("{HEADER}\ninput 0 0 1 0 0 65535\nend 1\n");
+        let bad_npc = format!("{HEADER}\nnpc ai-do 0\nend 0\n");
+        assert!(matches!(
+            Replay::parse(&bad_npc),
+            Err(ReplayError::Parse { line: 2, .. })
+        ));
         assert!(matches!(
             Replay::parse(&bad_buttons),
             Err(ReplayError::Parse { line: 2, .. })
         ));
         assert!(Replay::parse("myva-replay 9\nend 0\n").is_err());
         assert!(Replay::parse(&format!("{HEADER}\n")).is_err());
+    }
+
+    #[test]
+    fn version_1_files_still_play() {
+        let v1 = format!("{HEADER_V1}\nfighter long-luu 640000 1\ninput 0 0 1 1 0 8\nend 30\n");
+        let replay = Replay::parse(&v1).unwrap();
+        assert_eq!(replay.spawns[0].team, None);
+        assert_eq!(replay.play().unwrap().world.tick(), 30);
+    }
+
+    #[test]
+    fn teams_npcs_and_seed_roundtrip() {
+        use crate::npc::GUIDE;
+
+        let mut world = World::new();
+        world.spawn_in_team(&LONG_LUU, 600 * PX, 1, Some(Team(1)));
+        world.spawn_in_team(&QUAI_BUN, 900 * PX, -1, Some(Team(2)));
+        world.spawn_npc(&GUIDE, 300 * PX);
+        let mut recorder = Recorder::new(&world, 30);
+        let mut bot = RandomBot::new(11);
+        for _ in 0..300 {
+            recorder.step(&mut world, &[(FighterId(0), bot.next_frame())]);
+        }
+        let mut replay = recorder.snapshot(&world);
+        replay.seed = Some(42);
+        let parsed = Replay::parse(&replay.to_text()).unwrap();
+        assert_eq!(parsed, replay);
+        assert_eq!(
+            parsed.play().unwrap().world.state_hash(),
+            world.state_hash()
+        );
     }
 }

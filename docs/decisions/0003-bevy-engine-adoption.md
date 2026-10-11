@@ -39,7 +39,8 @@ Pin trực tiếp trong manifest và commit `Cargo.lock`; dùng `rust-toolchain.
 | Rust | `1.97.1` | `bevy 0.20.0` khai báo `rust-version = "1.97.1"`; Rust `1.96.1` cũ của máy không đáp ứng |
 | Bevy client | `=0.20.0`, `default-features = false` | Version/feature xác nhận từ package; compile/run ghi trong báo cáo platform |
 | Leptos shell | `=0.8.22`, feature `csr` | D03 dùng CSR; chưa đưa SSR/hydration vào spike |
-| Pure core | `myva-sim`, `myva-economy`, không phụ thuộc Bevy | Giữ test CLI/headless; D04 mới bổ sung adapter/schema |
+| Pure core | `myva-sim`, `myva-economy`, không phụ thuộc Bevy | Giữ test CLI/headless; schema lệnh/sự kiện thuộc `myva-sim` |
+| ECS adapter (D04) | `myva-gameplay`: `bevy_app`, `bevy_ecs`, `bevy_time` `=0.20.0`, `default-features = false`, `std` | Headless native và build wasm32; chưa chạy trong client render |
 | CMP/Kotlin | CMP `1.12.0`, Kotlin/Compose compiler `2.4.20`, activity-compose `1.12.4` | D02 đã compile/package Android shell phương án B; runtime/device và iOS chưa được xác nhận |
 | Android/iOS tooling | Theo [báo cáo native](../reports/native-feasibility.md) và manifest prototype | Version build standalone không chứng minh CMP embedding |
 
@@ -64,7 +65,8 @@ Source audit D02 tìm blocker cụ thể ở winit `0.30.13`: runner iOS kiểm 
 | Hạng mục | Trạng thái | Bằng chứng / phần chưa chứng minh | Owner tiếp theo |
 | --- | --- | --- | --- |
 | Bevy 0.20 và feature/MSRV | KNOWN | Manifest registry và source tag `v0.20.0` [S1–S4] | D01, người nâng dependency |
-| Pure Rust simulation/economy hiện hữu | KNOWN về boundary | `crates/sim`, `crates/economy`; không phải foundation ECS hoàn chỉnh | D04 / #12 và #3 |
+| Pure Rust simulation/economy hiện hữu | KNOWN về boundary | `crates/sim`, `crates/economy` | #2 và #3 |
+| ECS headless + core adapter | KNOWN headless; client render UNKNOWN | Fixed tick, mirror, authority và replay chạy không GPU; native ECS và lõi WASM cùng hash trên fixture ([D04](../technical/gameplay-foundation.md#9-bằng-chứng)). Client Bevy, prediction và mạng chưa chạy | D04 / #12, #2 |
 | Web canvas API và CSR | KNOWN về API | Bevy `Window.canvas`, `fit_canvas_to_parent`; Leptos CSR [S7–S8] | D03 / #11 |
 | Web shell + Bevy end-to-end | KNOWN trong Chrome desktop; matrix còn thiếu | 30 vòng navigation, focus/touch emulation và lỗi tải đã kiểm tra; browser mobile thật, presentation FPS/GPU và audio còn thiếu trong [báo cáo D03](../reports/web-feasibility.md) | D03 / #11 |
 | Standalone Bevy Android/iOS | KNOWN về sample chính thức | Không suy ra device run hoặc CMP embedding [S3] | D02 / #10 |

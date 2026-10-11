@@ -19,6 +19,26 @@ impl Buttons {
     pub const SKILL1: Self = Self(1 << 5);
     pub const SKILL2: Self = Self(1 << 6);
     pub const SKILL3: Self = Self(1 << 7);
+    pub const INTERACT: Self = Self(1 << 8);
+
+    /// Mọi nút đã định nghĩa; bit khác bị coi là dữ liệu hỏng.
+    pub const ALL: [Self; 9] = [
+        Self::JUMP,
+        Self::DASH,
+        Self::GUARD,
+        Self::LIGHT,
+        Self::HEAVY,
+        Self::SKILL1,
+        Self::SKILL2,
+        Self::SKILL3,
+        Self::INTERACT,
+    ];
+
+    /// Dựng từ bitflag, `None` nếu có bit lạ.
+    pub fn from_bits(bits: u16) -> Option<Self> {
+        let known = Self::ALL.iter().fold(0, |acc, b| acc | b.0);
+        (bits & !known == 0).then_some(Self(bits))
+    }
 
     pub const fn bits(self) -> u16 {
         self.0
@@ -69,9 +89,11 @@ pub enum Intent {
     Light,
     Dash,
     Jump,
+    /// Tương tác NPC trong tầm; ưu tiên thấp nhất nên không chặn đòn đánh.
+    Interact,
 }
 
-const PRIORITY: [(Buttons, Intent); 7] = [
+const PRIORITY: [(Buttons, Intent); 8] = [
     (Buttons::SKILL1, Intent::Skill(0)),
     (Buttons::SKILL2, Intent::Skill(1)),
     (Buttons::SKILL3, Intent::Skill(2)),
@@ -79,6 +101,7 @@ const PRIORITY: [(Buttons, Intent); 7] = [
     (Buttons::LIGHT, Intent::Light),
     (Buttons::DASH, Intent::Dash),
     (Buttons::JUMP, Intent::Jump),
+    (Buttons::INTERACT, Intent::Interact),
 ];
 
 impl InputFrame {
@@ -114,5 +137,16 @@ mod tests {
         };
         assert_eq!(frame.intent(), None);
         assert!(!Buttons::NONE.contains(Buttons::NONE));
+    }
+
+    #[test]
+    fn interact_never_beats_combat_buttons() {
+        let frame = InputFrame {
+            pressed: Buttons::INTERACT | Buttons::JUMP,
+            ..InputFrame::default()
+        };
+        assert_eq!(frame.intent(), Some(Intent::Jump));
+        assert_eq!(Buttons::from_bits(1 << 15), None);
+        assert_eq!(Buttons::from_bits(0x1FF).map(Buttons::bits), Some(0x1FF));
     }
 }

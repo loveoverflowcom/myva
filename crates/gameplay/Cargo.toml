@@ -1,0 +1,17 @@
+[package]
+name = "myva-gameplay"
+description = "Adapter Bevy ECS headless cho lõi mô phỏng MyVa — Thần Mạch: fixed tick, mirror component, authority."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+# Chỉ ECS/app/time; không renderer, window, asset hay audio (ADR 0003). Server dùng được crate này.
+[dependencies]
+bevy_app = { version = "=0.20.0", default-features = false, features = ["std"] }
+bevy_ecs = { version = "=0.20.0", default-features = false, features = ["std"] }
+bevy_time = { version = "=0.20.0", default-features = false, features = ["std"] }
+myva-sim = { path = "../sim" }
+
+[lints]
+workspace = true

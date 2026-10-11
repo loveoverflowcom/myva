@@ -4,8 +4,13 @@
 use crate::fighter::{ARENA_WIDTH, Fighter, FighterId};
 use crate::kit::{ActionKind, Phase, Rect};
 
+/// ID miền của một viên đạn: tăng dần, không tái sử dụng trong một `World`.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct ProjectileId(pub u32);
+
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Projectile {
+    pub id: ProjectileId,
     pub owner: FighterId,
     pub action: ActionKind,
     pub rect: Rect,
@@ -18,13 +23,14 @@ pub struct Projectile {
 
 impl Projectile {
     /// Đạn sinh ra ở tick này nếu `fighter` vừa vào tick active đầu tiên của một đòn bắn đạn.
-    pub(crate) fn launch(fighter: &Fighter) -> Option<Self> {
+    pub(crate) fn launch(fighter: &Fighter, id: ProjectileId) -> Option<Self> {
         let (action, spec, phase) = fighter.action()?;
         let projectile = spec.projectile?;
         let crate::fighter::State::Attack { elapsed, .. } = fighter.state else {
             return None;
         };
         (phase == Phase::Active && elapsed == spec.startup).then(|| Self {
+            id,
             owner: fighter.id,
             action,
             rect: projectile
@@ -52,5 +58,9 @@ impl Projectile {
     /// Điểm đạn bay tới từ đó, để luật đỡ "chỉ chặn phía trước" áp dụng như đòn cận chiến.
     pub(crate) fn origin_for(&self, target_x: i32) -> i32 {
         target_x - i32::from(self.dir)
+    }
+
+    pub fn remaining(&self) -> u32 {
+        self.remaining
     }
 }

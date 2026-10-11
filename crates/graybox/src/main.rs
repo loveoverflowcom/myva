@@ -295,7 +295,11 @@ impl Match {
             ),
             Event::GuardBroken { fighter } => format!("{} vo the do", self.name(fighter)),
             Event::Downed { fighter } => format!("{} bi ha", self.name(fighter)),
-            Event::InputRejected { .. } | Event::ActionStarted { .. } => return None,
+            Event::InputRejected { .. }
+            | Event::ActionStarted { .. }
+            | Event::StatusApplied { .. }
+            | Event::StatusEnded { .. }
+            | Event::Interacted { .. } => return None,
         })
     }
 }
