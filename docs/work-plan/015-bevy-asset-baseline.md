@@ -1,6 +1,6 @@
 # D05 — Assets và baseline Bevy
 
-**Trạng thái:** D05-A đã merge vào develop; D05-B runtime/harness triển khai trên `feat/bevy-asset-runtime`, qualification render/device còn BLOCKED, ngày 2026-10-11. Issue [#13](https://github.com/loveoverflowcom/myva/issues/13). D04 và combat đã tích hợp vào `develop` ở `33c77e1e7e507c8a76723c14fa9731f4b5b45875`; merge không xác nhận gate art/mobile/performance.
+**Trạng thái:** D05-A đã merge vào develop; D05-B runtime/harness triển khai qua [PR #25](https://github.com/loveoverflowcom/myva/pull/25), qualification render/device còn BLOCKED, ngày 2026-10-11. Issue [#13](https://github.com/loveoverflowcom/myva/issues/13). D04 và combat đã tích hợp vào `develop` ở `33c77e1e7e507c8a76723c14fa9731f4b5b45875`; merge không xác nhận gate art/mobile/performance.
 
 ## Kết quả cần review
 
@@ -26,4 +26,4 @@ Logic và report contract có test độc lập; các test ấy không xác nh�
 - D05-A là fixture sinh bằng mã: chứng minh định dạng, validator, loader và fallback, không chứng minh chất lượng hay chi phí art vẽ tay, mipmap hoặc mobile thật.
 - Dot cloud đã có toolchain pin; browser shell Unix socket và CUA-to-localhost bị block, native window thiếu display/GPU device. Giữ qualification BLOCKED thay vì dùng CPU tests làm GPU PASS.
 - CPU AssetServer 30 load/unload/fault/cancel/scene tests có evidence; hardware GPU/presentation, rendered lifecycle/soak 10 phút, visual review và mobile thật còn thiếu.
-- Repo chưa có `AGENTS.md` hoặc `.agents/skills`; review source độc lập theo yêu cầu đã sửa ba regression và chạy lại final checks. Qualification rendered/device vẫn là bước tiếp theo.
+- Repo chưa có `AGENTS.md` hoặc `.agents/skills`; review source độc lập đã sửa ba regression; review lại PR #25 không còn finding actionable được xác nhận và đã chạy lại các final checks có thể thực hiện. Qualification rendered/device vẫn là bước tiếp theo.

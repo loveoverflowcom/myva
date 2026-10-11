@@ -1,6 +1,14 @@
 # D05-B — Asset streaming và performance baseline
 
-**Trạng thái:** runtime và harness đã triển khai trên `feat/bevy-asset-runtime`; qualification render/performance **BLOCKED**, ngày 2026-10-11. Issue [#13](https://github.com/loveoverflowcom/myva/issues/13) vẫn mở. Base được fetch trên dot cloud: `2c305b6` (`develop`), đã có D05-A PR21, combat/Mạch PR23 và xtask PR24. Không chạy trên Mac, không đổi luật combat/protocol v2/replay v3, không merge PR.
+**Trạng thái:** runtime và harness đã triển khai qua [PR #25](https://github.com/loveoverflowcom/myva/pull/25); qualification render/performance **BLOCKED**, ngày 2026-10-11. Issue [#13](https://github.com/loveoverflowcom/myva/issues/13) vẫn mở. Base được fetch trên dot cloud: `2c305b6` (`develop`), đã có D05-A PR21, combat/Mạch PR23 và xtask PR24. Không chạy trên Mac; giữ nguyên luật combat/protocol v2/replay v3. Review và merge code/harness không xác nhận các gate render/device bên dưới.
+
+## Review lại PR #25 trước merge
+
+GitHub được đọc lại ngày 2026-10-11: PR không có conversation comments, review submissions hoặc inline review threads. Hai lượt review source độc lập, ưu tiên defect có thể tái hiện, đã kiểm toàn bộ diff với merge-base `2c305b6`, cùng caller và test liên quan: **không còn finding actionable được xác nhận**. Ba regression đã sửa trong head `f60a989` là late optional VFX reset, Low→High/art-off viewport và resize/DPR acquisition epoch; lần review này không thêm thay đổi gameplay hoặc sửa lỗi suy đoán.
+
+Kiểm chứng mới trên source `f60a989`: repository checks (221 Rust tests, 38 Python contracts, format/docs/native clippy, replay/headless/economy/assets), sáu native/WASM 3600-tick determinism fixtures, WASM clippy và optimized web build. Playwright chỉ được syntax/discovery: 22 test trong 6 file; browser bodies và rendered qualification không chạy lại do blocker đã xác nhận. Không kiểm hoặc poll CI theo yêu cầu lần này.
+
+[Evidence review trước merge](evidence/d05b-pr25-review-2026-10-11.json) ghi exact source SHA, command/log hashes và các gate còn thiếu. Việc merge PR vào `develop` chỉ tích hợp runtime/harness; issue #13 vẫn mở và art production vẫn **NO_GO**.
 
 ## Runtime hiện hành
 
