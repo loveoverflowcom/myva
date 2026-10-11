@@ -35,7 +35,7 @@ NDK 27.0.12077973, Gradle wrapper 9.7.0 và dependency cache hiện có. Gradle 
 
 | Hạng mục / command | Status | Actual evidence |
 | --- | --- | --- |
-| `cargo xtask ci` | PASS | Exit 0; format/docs/native clippy/tests, gameplay/economy/assets/reports, determinism, WASM/bridge/build và browser đều chạy |
+| `cargo xtask ci` local, code `e0204c0` | PASS | Exit 0 trên clean tree; format/docs/native clippy/tests, gameplay/economy/assets/reports, determinism, WASM/bridge/build và browser đều chạy sau test synchronization fix |
 | Root Rust tests | PASS | 201 tests, gồm 21 xtask tests; native clippy `-D warnings` |
 | `cargo xtask verify xtask` | PASS | 21/21 tests qua ba lần liên tiếp; fmt/clippy cùng PASS |
 | Python report tests | PASS | 34 tests; synthetic report contracts, không là benchmark |
@@ -78,12 +78,14 @@ gesture trước đã tạo denial `Some(Mach)` và `presses=1`. Poll của gest
 theo đọc denial cũ sau khoảng 57 ms, nhả R quá sớm và gây normal cast. Test nay
 đòi `presses` tăng so với snapshot trước key-down cùng denial đúng trong cùng
 snapshot; không bỏ assertion action/energy/cooldown, không thêm retry và không
-đổi gameplay/bridge. Kết quả full local CI ở bảng được ghi trước test-only fix này;
-CI của PR kiểm chứng revision sau cùng riêng.
+đổi gameplay/bridge. Sau fix đã chạy lại full local contract trên `e0204c0`:
+201 Rust tests, 34 Python tests và 11/11 Playwright PASS, không skipped/flaky.
+Run này là kết luận verification cuối của report; không lấy trạng thái GitHub CI
+làm bằng chứng thay cho execution local.
 
 ## Determinism và artifacts
 
-Report native/WASM ghi lúc `2026-10-11T10:21:17.876Z`; tất cả `identical=true`,
+Report native/WASM ghi lúc `2026-10-11T10:53:49.054Z`; tất cả `identical=true`,
 `firstMismatch=null`, hashes so sánh từng tick, không chỉ hash cuối.
 
 | Seed | Normal final hash | Mạch final hash |
@@ -95,12 +97,13 @@ Report native/WASM ghi lúc `2026-10-11T10:21:17.876Z`; tất cả `identical=tr
 Evidence được tái tạo tại `target/xtask-evidence`,
 `target/wasm-determinism/report.json`, `target/web-evidence/test-results.json` và
 các capture JSON/PNG của E2E. CI upload ba nhóm artifacts. Full local log ở
-`/tmp/myva-xtask-ci.log`; log Android ở `/tmp/myva-xtask-native-{mode}.log`.
+`/tmp/myva-xtask-ci-final-head.log`; log Android ở `/tmp/myva-xtask-native-{mode}.log`.
 Không commit generated binaries, APK hoặc các log lớn.
 
 Web bundle: 87.392.796 bytes raw, gzip estimate 12.048.369 bytes; đây là estimate
-của script, không là network/device benchmark. Local report ghi revision base
-`9291070` với `dirty=true`, vì run thực hiện trước commit các thay đổi tooling.
+của script, không là network/device benchmark. Final local bundle report ghi
+revision `e0204c05cbe98eb9af3d18346315692a002a9330`, `dirty=false`. Commit tiếp theo
+chỉ ghi kết quả verification vào tài liệu, không đổi implementation đã chạy.
 Browser dùng Chromium SwiftShader/software và desktop touch emulation; không thay
 bằng chứng trên mobile hardware.
 
