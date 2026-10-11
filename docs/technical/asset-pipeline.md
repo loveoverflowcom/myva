@@ -74,7 +74,7 @@ Hash xác nhận toàn vẹn, không xác nhận nguồn: fixture được tải
 
 ## 5. Luật validator
 
-Mã lỗi ổn định (`myva_assets::Code`), mỗi mã có test asset lỗi trong `crates/assets/tests/validator.rs`.
+Mã lỗi ổn định (`myva_assets::Code`). Test asset lỗi trong `crates/assets/tests/validator.rs` phủ phần lớn mã; `bad_id`, `texture_format`, `sheet_texture`, `bundle_unknown_asset` và `bundle_duplicate_asset` chưa có test riêng.
 
 | Nhóm | Mã | Kiểm |
 | --- | --- | --- |
@@ -102,6 +102,6 @@ Client chỉ chạy nhóm luật trên tài liệu (`check_documents`) và kiể
 ## 7. Giới hạn đã biết
 
 - Placeholder sinh bằng mã: đủ kiểm chứng pivot, padding, scale, clip và fallback; không chứng minh chất lượng art hay chi phí sản xuất bằng tay.
-- Chưa có mipmap; ở màn 1280×720 sprite bị thu khoảng 2,6 lần với lọc tuyến tính. Cần thử mipmap/tier texture trước art slice.
+- Chưa có mipmap; ở màn 1280×720 DPR 1 sprite bị thu khoảng 2,6 lần với lọc tuyến tính. Cần thử mipmap/tier texture trước art slice.
 - Một manifest tải trọn: bundle là đơn vị kế toán và ownership, chưa là đơn vị tải riêng. Planner D05-B nối với `AssetServer` sau.
 - PNG thêm decoder vào WASM; số đo trong báo cáo D05-A.

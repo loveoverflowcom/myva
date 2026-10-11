@@ -1,0 +1,159 @@
+{
+  "date": "2026-10-11",
+  "issue": 13,
+  "run_revision": "ac6c6c491adf2cdd4803eef4d82f71fc3c0dbd32",
+  "dirty": false,
+  "base_revision": "c96a7c4f6f4beaad826cd2c0c7907af588cab992",
+  "host": {
+    "os": "Linux 7.0.0-38-generic (Ubuntu)",
+    "cpu_threads": 22,
+    "ram_gib": 22,
+    "gpu": "Intel(R) Graphics (MTL), Mesa 26.0.8, Vulkan backend (native run)"
+  },
+  "versions": {
+    "rustc": "rustc 1.97.1 (8bab26f4f 2026-07-14)",
+    "bevy": "0.20.0",
+    "wasm-bindgen": "0.2.129",
+    "python": "Python 3.14.4",
+    "chrome": "153.0.8010.36",
+    "playwright": "1.64.0"
+  },
+  "commands_log": [
+    "$ python3 scripts/check-docs.py",
+    "exit=0",
+    "$ python3 scripts/generate-asset-fixture.py --check",
+    "exit=0",
+    "$ cargo run -q --locked -p myva-assets -- validate assets/fixture/manifest.json",
+    "exit=0",
+    "$ cargo fmt --all -- --check",
+    "exit=0",
+    "$ cargo clippy -q --locked --workspace --all-targets --exclude myva-graybox -- -D warnings",
+    "exit=0",
+    "$ cargo clippy -q --locked -p myva-graybox --all-targets --no-default-features -- -D warnings",
+    "exit=0",
+    "$ cargo clippy -q --locked -p myva-web-shell -p myva-web-game -p myva-sim -p myva-gameplay -p myva-assets --target wasm32-unknown-unknown -- -D warnings",
+    "exit=0",
+    "$ cargo test -q --locked --workspace --exclude myva-graybox",
+    "exit=0",
+    "$ cargo test -q --locked -p myva-graybox --no-default-features",
+    "exit=0",
+    "$ ./scripts/check-wasm-determinism.sh 3600 1 7 12",
+    "exit=0",
+    "$ cargo run -q --locked -p myva-gameplay --bin myva-headless -- --seed 7 --ticks 3600",
+    "exit=0"
+  ],
+  "validator_budget": [
+    "myva.asset-manifest v1 · d05a-fixture-1 · 11 asset, 4 bundle",
+    "| Bundle | Texture RGBA8 / budget | File / budget |",
+    "| --- | --- | --- |",
+    "| character.long_luu | 7.38 MiB / 8.00 MiB | 161165 B / 1048576 B |",
+    "| boss.ke_giu_dap | 9.02 MiB / 12.00 MiB | 233700 B / 1048576 B |",
+    "| vfx.combat | 0.78 MiB / 2.00 MiB | 48994 B / 524288 B |",
+    "| map.dap_co | 1.77 MiB / 4.00 MiB | 22546 B / 1048576 B |",
+    "| tổng | 18.94 MiB / 32.00 MiB | 466405 B / 4194304 B |",
+    "PASS: 0 lỗi"
+  ],
+  "native": {
+    "command": "cargo run -p myva-graybox --no-default-features -- --screenshot <png> (và --no-art)",
+    "note": "--no-default-features vì máy thiếu libudev-dev (gamepad); không ảnh hưởng art.",
+    "art_replay": "khớp 16 mốc hash qua 950 tick; hash cuối 15ec9964cd48cb1f",
+    "no_art_replay": "khớp 16 mốc hash qua 951 tick; hash cuối bb966fc3f068438c",
+    "comparison": "1.900 dòng input đầu và 15 mốc hash chung trùng nhau; mốc cuối khác vì ảnh chụp ở tick 950 và 951.",
+    "screenshot": "d05a-native-art.png"
+  },
+  "web": {
+    "renderer": "WebGL2 via Chromium SwiftShader (software, not target hardware)",
+    "art_load": {
+      "status": "ready",
+      "visible": true,
+      "sheets": 5,
+      "failure": null
+    },
+    "asset_requests": [
+      {
+        "url": "/game/assets/fixture/manifest.json",
+        "status": 200
+      },
+      {
+        "url": "/game/assets/fixture/long_luu/atlas.png",
+        "status": 200
+      },
+      {
+        "url": "/game/assets/fixture/long_luu/sheet.json",
+        "status": 200
+      },
+      {
+        "url": "/game/assets/fixture/ke_giu_dap/atlas.png",
+        "status": 200
+      },
+      {
+        "url": "/game/assets/fixture/ke_giu_dap/sheet.json",
+        "status": 200
+      },
+      {
+        "url": "/game/assets/fixture/vfx/atlas.png",
+        "status": 200
+      },
+      {
+        "url": "/game/assets/fixture/vfx/sheet.json",
+        "status": 200
+      },
+      {
+        "url": "/game/assets/fixture/dap_co/ground/atlas.png",
+        "status": 200
+      },
+      {
+        "url": "/game/assets/fixture/dap_co/ground/sheet.json",
+        "status": 200
+      },
+      {
+        "url": "/game/assets/fixture/dap_co/backdrop/atlas.png",
+        "status": 200
+      },
+      {
+        "url": "/game/assets/fixture/dap_co/backdrop/sheet.json",
+        "status": 200
+      },
+      {
+        "url": "/game/assets/fixture/dap_co/layout.json",
+        "status": 200
+      }
+    ],
+    "console_errors": [],
+    "corrupt_atlas": {
+      "status": "failed",
+      "visible": false,
+      "sheets": 0,
+      "failure": "hash_mismatch"
+    },
+    "suite": "9/9 Playwright PASS (3 test asset mới + 6 test có sẵn)",
+    "screenshots": [
+      "d05a-web-art.png",
+      "d05a-web-fallback.png",
+      "d05a-touch-landscape.png"
+    ]
+  },
+  "size": {
+    "method": "Cùng máy, PROFILE=web, wasm-bindgen 0.2.129; gzip = gzip.compress(mtime=0), không phải byte truyền đo được.",
+    "base_game_wasm": {
+      "bytes": 84864336,
+      "gzip": 11183569,
+      "sha256": "f2045a563f060d7550ea465790aa9b564f16aac94714d5b5d818fa9f7c8c9266"
+    },
+    "d05a_game_wasm": {
+      "bytes": 86218814,
+      "gzip": 11496394,
+      "sha256": "e6a184788db667b311627f0dff1a507fc94eb1b55782b7e8d9af5f0d36be4a36"
+    },
+    "fixture_files": {
+      "bytes": 477336,
+      "gzip": 431355
+    }
+  },
+  "files": {
+    "d05a-native-art.png": "efdfe86d7a342facd26faebd8218a4707999f72a0e57256ef0b316c652b113cc",
+    "d05a-web-art.png": "e0ef67973d5bd7588885d410b0501f0479f17cb61603e699d04ff8f696b99333",
+    "d05a-web-fallback.png": "11d6d118f460336a50b57db58cf2163c1535f6c0d0f17e42f513757b8a559235",
+    "d05a-touch-landscape.png": "deaa29e39adef9bcf5ed53cd0bb257193dd0b54a6780c219e2610ed7707b216c"
+  }
+}
