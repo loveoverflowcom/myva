@@ -38,6 +38,7 @@ fn fighter_json(fighter: Option<&FighterView>) -> String {
     let Some(fighter) = fighter else {
         return "null".to_owned();
     };
+    let kit_id = serde_json::to_string(fighter.kit.id).expect("string serialization");
     let action =
         fighter
             .action
@@ -50,7 +51,7 @@ fn fighter_json(fighter: Option<&FighterView>) -> String {
                 )
             });
     format!(
-        "{{\"x\":{:.1},\"y\":{:.1},\"facing\":{},\"hp\":{},\"max_hp\":{},\"stamina\":{},\"energy\":{},\"mach\":{},\"cooldowns\":[{},{},{}],\"state\":\"{}\",\"action\":{action},\"contact\":\"{:?}\",\"denial\":\"{:?}\",\"escape_cooldown\":{},\"control_ticks\":{},\"control_damage\":{}}}",
+        "{{\"kit_id\":{kit_id},\"x\":{:.1},\"y\":{:.1},\"facing\":{},\"hp\":{},\"max_hp\":{},\"stamina\":{},\"energy\":{},\"mach\":{},\"cooldowns\":[{},{},{}],\"state\":\"{}\",\"action\":{action},\"contact\":\"{:?}\",\"denial\":\"{:?}\",\"escape_cooldown\":{},\"control_ticks\":{},\"control_damage\":{}}}",
         px(fighter.x),
         px(fighter.y),
         fighter.facing,

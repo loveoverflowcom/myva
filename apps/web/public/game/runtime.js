@@ -1,7 +1,8 @@
 // Game document: tải Bevy WASM, nối vòng đời với shell qua postMessage có version/session.
 // Bevy (winit) tự đọc bàn phím, chạm và gamepad trên canvas; file này không dịch input.
 const V = 2;
-const session = new URLSearchParams(location.search).get('session');
+const params = new URLSearchParams(location.search);
+const session = params.get('session');
 const canvas = document.querySelector('#game-canvas');
 const label = document.querySelector('#game-status');
 const started = performance.now();
@@ -57,9 +58,9 @@ function summary(s) {
         mode: s.mode, round: s.round, tick: s.tick, phase: s.phase, paused: s.paused,
         outcome: s.outcome, verified: s.verified, verifiedTicks: s.verified_ticks, hash: s.hash,
         autopilot: s.autopilot, touch: s.touch, gamepads: s.gamepads,
-        player: { hp: s.player.hp, maxHp: s.player.max_hp, mach: s.player.mach },
-        rival: { hp: s.rival.hp, maxHp: s.rival.max_hp },
-        tally: s.tally.player,
+        player: { kitId: s.player.kit_id, hp: s.player.hp, maxHp: s.player.max_hp, mach: s.player.mach },
+        rival: { kitId: s.rival.kit_id, hp: s.rival.hp, maxHp: s.rival.max_hp },
+        tally: s.tally.player, art: s.art,
     };
 }
 async function exportReplay() {
@@ -121,7 +122,16 @@ try {
     game = loadedGame;
     if (!exited) {
         game.set_paused(true);
-        game.start_game();
+        if (['kit', 'version', 'hash'].some(key => params.has(key))) {
+            const id = params.get('kit');
+            const version = params.get('version');
+            const hash = params.get('hash');
+            if (!id || !version || !/^[1-9][0-9]*$/.test(version) || !hash ||
+                !Number.isSafeInteger(Number(version)) || Number(version) > 0xffffffff) {
+                throw new Error('Incomplete or invalid kit selection; no default kit was chosen');
+            }
+            game.start_game_with_kit(id, Number(version), hash);
+        } else { game.start_game(); }
         if (matchMedia('(pointer: coarse)').matches) game.show_touch_controls(true);
         let ready = false;
         let last = performance.now();

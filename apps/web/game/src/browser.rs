@@ -43,8 +43,41 @@ fn queue(command: HostCommand) {
 /// Start exactly once per iframe. The iframe owns teardown of the WASM runtime.
 #[wasm_bindgen]
 pub fn start_game() -> Result<(), JsValue> {
+    start(None)
+}
+
+#[wasm_bindgen]
+pub fn start_game_with_kit(id: &str, version: u32, config_hash: &str) -> Result<(), JsValue> {
+    if config_hash.len() != 16
+        || !config_hash
+            .bytes()
+            .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+    {
+        return Err(JsValue::from_str(
+            "invalid kit hash; expected 16 lowercase hex digits",
+        ));
+    }
+    let hash =
+        u64::from_str_radix(config_hash, 16).map_err(|e| JsValue::from_str(&e.to_string()))?;
+    let catalog = myva_sim::character::CharacterCatalog::baseline()
+        .map_err(|e| JsValue::from_str(&e.to_string()))?;
+    let loadout = catalog
+        .select(myva_sim::registry::KitRequest {
+            id,
+            revision: myva_sim::registry::KitRevision {
+                version,
+                config_hash: hash,
+            },
+        })
+        .map_err(|e| JsValue::from_str(&e.to_string()))?;
+    start(Some(loadout))
+}
+
+fn start(loadout: Option<myva_sim::registry::LockedLoadout>) -> Result<(), JsValue> {
     if STARTED.with(|started| started.replace(true)) {
-        return Ok(());
+        return Err(JsValue::from_str(
+            "game already started; leave the frame before selecting another kit",
+        ));
     }
 
     let mut app = App::new();
@@ -69,7 +102,10 @@ pub fn start_game() -> Result<(), JsValue> {
                     ..default()
                 }),
         )
-        .add_plugins(GrayboxPlugin::default());
+        .add_plugins(GrayboxPlugin {
+            loadout,
+            ..Default::default()
+        });
     if let Err(error) = myva_graybox::graybox_startup_result(&app) {
         STARTED.with(|started| started.set(false));
         return Err(JsValue::from_str(&error.to_string()));

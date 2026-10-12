@@ -1,13 +1,16 @@
 // v2: event mang tóm tắt trận thay cho điểm của spike; thêm lệnh trận và message replay.
 const VERSION = 2;
-// Bản 3 dùng luật Mạch/CC mới; file v1/v2 phải phát ở revision gốc.
-const REPLAY_HEADER = /^myva-replay 3\n/;
+// v3 legacy and v4 pinned loadouts; historical v1/v2 require their original build.
+const REPLAY_HEADER = /^myva-replay [34]\n/;
 let frame = null;
 let session = null;
 let deadline = null;
 let manuallyPaused = false;
 let listener = null;
 let lastOutcome = null;
+let selectedCharacter = null;
+const KIT_ID = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const validKitId = id => typeof id === 'string' && id.length <= 64 && KIT_ID.test(id);
 
 function status(message) {
     window.dispatchEvent(new CustomEvent('myva-status', { detail: message }));
@@ -27,21 +30,26 @@ function validBattle(b) {
     return b && typeof b === 'object' && b.mode in MODES && count(b.round) && count(b.tick) &&
         count(b.phase) && b.phase <= 3 && typeof b.paused === 'boolean' &&
         (b.outcome === null || b.outcome in OUTCOMES) && (b.verified === null || typeof b.verified === 'boolean') &&
+        (b.art === undefined || (b.art && ['off', 'loading', 'ready', 'failed'].includes(b.art.status) &&
+            typeof b.art.visible === 'boolean' && (b.art.failure === null ||
+                typeof b.art.failure === 'string' && /^[a-z_]{1,64}$/.test(b.art.failure)))) &&
         count(b.verifiedTicks) && typeof b.hash === 'string' && /^[0-9a-f]{16}$/.test(b.hash) &&
-        b.player && count(b.player.hp) && count(b.player.maxHp) && count(b.player.mach) &&
-        b.rival && count(b.rival.hp) && count(b.rival.maxHp);
+        b.player && validKitId(b.player.kitId) && count(b.player.hp) && count(b.player.maxHp) && count(b.player.mach) &&
+        b.rival && validKitId(b.rival.kitId) && count(b.rival.hp) && count(b.rival.maxHp);
 }
 function describe(b) {
     const mode = MODES[b.mode];
+    const artNotice = b.art?.status === 'failed' ? ` Mỹ thuật lỗi [${b.art.failure ?? 'unknown'}]; dùng hình khối placeholder.` : '';
     if (b.outcome) {
         const verdict = b.verified === null ? 'đang kiểm chứng replay…'
             : b.verified ? `replay đã kiểm chứng (${b.verifiedTicks} tick, hash ${b.hash})`
                 : 'replay LỆCH, hãy gửi file replay để kiểm tra';
-        return `${OUTCOMES[b.outcome]} · ${mode} vòng ${b.round} · ${verdict}. Nhấn “Đấu lại” để chơi tiếp.`;
+        return `${OUTCOMES[b.outcome]} · ${mode} vòng ${b.round} · ${verdict}. Nhấn “Đấu lại” để chơi tiếp.${artNotice}`;
     }
-    const rival = b.mode === 'boss' ? `Kẻ Giữ Đập ${b.rival.hp}/${b.rival.maxHp} · pha ${b.phase}` : `Bot ${b.rival.hp}/${b.rival.maxHp}`;
+    const kitName = id => selectedCharacter?.kit === id ? selectedCharacter.name : `${id} [metadata chưa có]`;
+    const rival = `${b.mode === 'boss' ? kitName(b.rival.kitId) : 'Bot'} ${b.rival.hp}/${b.rival.maxHp}${b.mode === 'boss' ? ` · pha ${b.phase}` : ''}`;
     const pilot = b.autopilot === true ? ' · bot B1 đang lái' : '';
-    return `${mode} · Long Lưu ${b.player.hp}/${b.player.maxHp} · Mạch ${b.player.mach} · ${rival}${b.paused ? ' · Đang tạm dừng' : ''}${pilot}`;
+    return `${mode} · ${kitName(b.player.kitId)} ${b.player.hp}/${b.player.maxHp} · Mạch ${b.player.mach} · ${rival}${b.paused ? ' · Đang tạm dừng' : ''}${pilot}${artNotice}`;
 }
 function download(text, name) {
     const url = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' }));
@@ -52,8 +60,15 @@ function download(text, name) {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-export function mountGame() {
+export function mountGame(kit, version, configHash, displayName) {
+    if (!validKitId(kit) || !Number.isSafeInteger(version) || version < 1 || version > 0xffffffff ||
+        typeof configHash !== 'string' || !/^[0-9a-f]{16}$/.test(configHash) ||
+        typeof displayName !== 'string' || !displayName.trim()) {
+        status('Không thể mở trận: lựa chọn kit/pin không hợp lệ.');
+        return;
+    }
     exitGame();
+    selectedCharacter = { kit, name: displayName };
     session = crypto.randomUUID();
     manuallyPaused = false;
     lastOutcome = null;
@@ -61,7 +76,9 @@ export function mountGame() {
     frame.title = 'MyVa — trận graybox';
     frame.id = 'game-frame';
     frame.allow = 'fullscreen; gamepad';
-    frame.src = new URL(`game/?session=${encodeURIComponent(session)}`, document.baseURI).href;
+    const url = new URL('game/', document.baseURI);
+    url.search = new URLSearchParams({ session, kit, version: String(version), hash: configHash });
+    frame.src = url.href;
     listener = (event) => {
         const data = event.data;
         if (event.origin !== location.origin || event.source !== frame?.contentWindow ||
@@ -99,6 +116,7 @@ export function exitGame() {
     frame?.remove();
     frame = null;
     session = null;
+    selectedCharacter = null;
     clearTimeout(deadline);
     deadline = null;
     if (listener) window.removeEventListener('message', listener);

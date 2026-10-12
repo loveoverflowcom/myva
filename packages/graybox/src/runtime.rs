@@ -6,11 +6,13 @@
 
 use std::collections::BTreeMap;
 
+use crate::mapping::{self, KIT_ASSETS, MappingError};
 use bevy::asset::LoadState;
 use bevy::image::TextureAtlasLayout;
 use bevy::prelude::*;
 use myva_assets::Manifest;
 use myva_sim::battle::Mode;
+use myva_sim::registry::KitPin;
 
 use crate::art::{self, Art, ArtCatalog, ArtEntity, ArtFixture, ArtStatus, ArtTables};
 use crate::fight::Match;
@@ -44,6 +46,8 @@ struct Flight {
 pub struct RuntimeSummary {
     pub scene: &'static str,
     pub generation: u64,
+    pub selected_kit: String,
+    pub mapping_error: Option<String>,
     pub bundles: usize,
     pub planner_owners: usize,
     pub flights: usize,
@@ -75,8 +79,9 @@ impl RuntimeSummary {
             .map(u64::to_string)
             .collect::<Vec<_>>()
             .join(",");
+        let selection = serde_json::json!({"kit_id": self.selected_kit, "mapping_error": self.mapping_error, "art_review": "placeholder_fixture"});
         format!(
-            "{{\"scene\":\"{}\",\"generation\":{},\"bundles\":{},\"planner_owners\":{},\"flights\":{},\"cancelled_draining\":{},\"catalog_pending\":{},\"catalog_attempts\":{},\"catalog_timed_out\":{},\"cancellations\":{},\"retries\":{},\"completed_loads\":{},\"failed_loads\":{},\"sprite_image_owners\":{},\"table_image_owners\":{},\"table_layout_owners\":{},\"fixture_assets\":{},\"image_assets\":{},\"atlas_assets\":{},\"estimated_texture_bytes\":{},\"gpu_estimate_method\":\"retained bundle RGBA8 base textures, no mipmaps; excludes buffers and driver memory\",\"load_latency_source\":\"AssetServer request to loaded-with-dependencies, not GPU upload\",\"load_latency_ms\":[{}],\"transport_abort_supported\":false}}",
+            "{{\"selection\":{selection},\"scene\":\"{}\",\"generation\":{},\"bundles\":{},\"planner_owners\":{},\"flights\":{},\"cancelled_draining\":{},\"catalog_pending\":{},\"catalog_attempts\":{},\"catalog_timed_out\":{},\"cancellations\":{},\"retries\":{},\"completed_loads\":{},\"failed_loads\":{},\"sprite_image_owners\":{},\"table_image_owners\":{},\"table_layout_owners\":{},\"fixture_assets\":{},\"image_assets\":{},\"atlas_assets\":{},\"estimated_texture_bytes\":{},\"gpu_estimate_method\":\"retained bundle RGBA8 base textures, no mipmaps; excludes buffers and driver memory\",\"load_latency_source\":\"AssetServer request to loaded-with-dependencies, not GPU upload\",\"load_latency_ms\":[{}],\"transport_abort_supported\":false}}",
             self.scene,
             self.generation,
             self.bundles,
@@ -115,7 +120,8 @@ pub struct StreamRuntime {
     failures: BTreeMap<BundleKey, String>,
     keys: Vec<BundleKey>,
     installed: Vec<BundleKey>,
-    active_mode: Option<Mode>,
+    active_selection: Option<(Mode, KitPin)>,
+    planned_selection: Option<(Mode, KitPin)>,
     was_enabled: bool,
     summary: RuntimeSummary,
 }
@@ -134,7 +140,8 @@ impl Default for StreamRuntime {
             failures: BTreeMap::new(),
             keys: Vec::new(),
             installed: Vec::new(),
-            active_mode: None,
+            active_selection: None,
+            planned_selection: None,
             was_enabled: false,
             summary: RuntimeSummary::default(),
         }
@@ -155,18 +162,40 @@ impl StreamRuntime {
         }
     }
 
-    fn enter(&mut self, mode: Mode, now: u64) {
-        let catalog = self.catalog.as_ref().expect("catalog precedes scene plan");
-        let (required, optional) = scene_keys(catalog, mode);
+    fn enter(&mut self, mode: Mode, pin: KitPin, now: u64) -> Result<(), MappingError> {
+        self.planned_selection = Some((mode, pin));
+        self.summary.selected_kit = pin.id.as_str().to_owned();
+        self.summary.mapping_error = None;
+        let catalog = self
+            .catalog
+            .as_ref()
+            .ok_or_else(|| MappingError::Planner("catalog unavailable".into()))?;
+        let planned = scene_keys(catalog, mode, pin.id.as_str());
+        let (required, optional) = match planned {
+            Ok(plan) => plan,
+            Err(error) => {
+                let cancellations = self
+                    .planner
+                    .exit_scene()
+                    .map_err(|e| MappingError::Planner(format!("{e:?}")))?;
+                self.cancel(cancellations);
+                self.active_selection = None;
+                self.keys.clear();
+                self.installed.clear();
+                self.summary.mapping_error = Some(error.to_string());
+                return Err(error);
+            }
+        };
         let change = self
             .planner
             .enter_scene(&required, &optional, now)
-            .expect("fixture has at most four bundles");
+            .map_err(|e| MappingError::Planner(format!("{e:?}")))?;
         self.cancel(change.cancellations);
         self.summary.generation = change.generation;
         self.keys = required.into_iter().chain(optional).collect();
-        self.active_mode = Some(mode);
+        self.active_selection = Some((mode, pin));
         self.installed.clear();
+        Ok(())
     }
 }
 
@@ -197,19 +226,24 @@ fn path(key: &BundleKey) -> String {
     format!("runtime-{}.myva", bundle_id(key))
 }
 
-fn scene_keys(manifest: &Manifest, mode: Mode) -> (Vec<BundleKey>, Vec<BundleKey>) {
-    let mut required = Vec::new();
-    let mut optional = Vec::new();
-    for bundle in &manifest.bundles {
-        let key = key(manifest, bundle);
-        match bundle.kind {
-            myva_assets::BundleKind::Character | myva_assets::BundleKind::Map => required.push(key),
-            myva_assets::BundleKind::Boss if mode == Mode::Boss => required.push(key),
-            myva_assets::BundleKind::Boss => {}
-            myva_assets::BundleKind::Vfx => optional.push(key),
-        }
+fn scene_keys(
+    manifest: &Manifest,
+    mode: Mode,
+    kit: &str,
+) -> Result<(Vec<BundleKey>, Vec<BundleKey>), MappingError> {
+    let (_, player) = mapping::resolve(manifest, KIT_ASSETS, kit)?;
+    let map = mapping::bundle(manifest, "map.dap_co", myva_assets::BundleKind::Map)?;
+    let optional = match mapping::bundle(manifest, "vfx.combat", myva_assets::BundleKind::Vfx) {
+        Ok(vfx) => vec![key(manifest, vfx)],
+        Err(MappingError::MissingBundle(_)) => Vec::new(),
+        Err(error) => return Err(error),
+    };
+    let mut required = vec![key(manifest, player), key(manifest, map)];
+    if mode == Mode::Boss {
+        let (_, boss) = mapping::resolve(manifest, KIT_ASSETS, "ke-giu-dap")?;
+        required.push(key(manifest, boss));
     }
-    (required, optional)
+    Ok((required, optional))
 }
 
 fn projection(catalog: &Manifest, key: &BundleKey) -> Option<Manifest> {
@@ -269,6 +303,7 @@ pub(crate) fn drive(
         }
     }
     let mode = game.bout.mode();
+    let pin = game.bout.loadout().pin();
     if art_state.enabled
         && !runtime.was_enabled
         && runtime.catalog.is_none()
@@ -278,15 +313,17 @@ pub(crate) fn drive(
         runtime.catalog_retry_ms = now;
     }
     runtime.was_enabled = art_state.enabled;
-    if !art_state.enabled && runtime.active_mode.is_some() {
+    if !art_state.enabled && runtime.active_selection.is_some() {
         let cancellations = runtime.planner.exit_scene().expect("generation capacity");
         runtime.cancel(cancellations);
-        runtime.active_mode = None;
+        runtime.active_selection = None;
+        runtime.planned_selection = None;
         runtime.keys.clear();
         runtime.installed.clear();
         clear(&mut commands, &entities, &mut tables);
     }
     if !art_state.enabled {
+        runtime.planned_selection = None;
         art_state.status = ArtStatus::Off;
     }
 
@@ -342,11 +379,18 @@ pub(crate) fn drive(
     }
     if art_state.enabled
         && runtime.catalog.is_some()
-        && (runtime.active_mode != Some(mode) || retry)
+        && (runtime.planned_selection != Some((mode, pin)) || retry)
     {
         clear(&mut commands, &entities, &mut tables);
-        runtime.enter(mode, now);
-        art_state.status = ArtStatus::Loading;
+        match runtime.enter(mode, pin, now) {
+            Ok(()) => art_state.status = ArtStatus::Loading,
+            Err(error) => {
+                art_state.status = ArtStatus::Failed {
+                    code: "asset_mapping".into(),
+                    message: error.to_string(),
+                }
+            }
+        }
     }
 
     // Both live and cancelled Bevy requests must settle. Never acknowledge an in-progress
@@ -358,12 +402,31 @@ pub(crate) fn drive(
             let result = match server.load_state(&flight.handle) {
                 LoadState::Loaded if server.is_loaded_with_dependencies(&flight.handle) => {
                     let fixture = fixtures.get(&flight.handle)?;
+                    let mapped = KIT_ASSETS
+                        .iter()
+                        .find(|m| m.bundle == bundle_id(&ticket.bundle));
+                    let mapping_valid = match mapped {
+                        Some(mapping) => mapping::verify_fixture(fixture, mapping).is_ok(),
+                        None => {
+                            !matches!(ticket.bundle.kind, BundleKind::Character | BundleKind::Boss)
+                                && fixture.documents.sheets.values().all(|s| {
+                                    !matches!(
+                                        s.role,
+                                        myva_assets::Role::Character | myva_assets::Role::Boss
+                                    )
+                                })
+                        }
+                    };
                     if runtime
                         .catalog
                         .as_ref()
                         .is_some_and(|c| valid_projection(c, fixture, &ticket.bundle))
                     {
-                        Ok(flight.handle.clone())
+                        if mapping_valid {
+                            Ok(flight.handle.clone())
+                        } else {
+                            Err(LoadFailure::Backend("asset_mapping".into()))
+                        }
                     } else {
                         Err(LoadFailure::Backend("projection_mismatch".into()))
                     }
@@ -435,7 +498,7 @@ pub(crate) fn drive(
         );
     }
 
-    if runtime.active_mode.is_some() {
+    if runtime.active_selection.is_some() {
         match runtime.planner.scene_state() {
             SceneState::Ready => {
                 let ready: Vec<_> = runtime
@@ -565,12 +628,65 @@ mod tests {
     #[test]
     fn boss_and_duel_plan_only_needed_bundles() {
         let catalog = catalog();
-        let (required, optional) = scene_keys(&catalog, Mode::Boss);
+        let (required, optional) = scene_keys(&catalog, Mode::Boss, "long-luu").unwrap();
         assert_eq!(required.len(), 3);
         assert_eq!(optional.len(), 1);
-        let (duel, _) = scene_keys(&catalog, Mode::Duel);
+        let (duel, _) = scene_keys(&catalog, Mode::Duel, "long-luu").unwrap();
         assert_eq!(duel.len(), 2);
         assert!(duel.iter().all(|key| key.kind != BundleKind::Boss));
+    }
+
+    #[test]
+    fn present_optional_vfx_still_validates_kind_and_dependencies() {
+        let mut catalog = catalog();
+        let vfx = catalog
+            .bundles
+            .iter_mut()
+            .find(|bundle| bundle.id == "vfx.combat")
+            .unwrap();
+        vfx.kind = myva_assets::BundleKind::Character;
+        assert!(matches!(
+            scene_keys(&catalog, Mode::Boss, "long-luu"),
+            Err(MappingError::InvalidBundle(id)) if id == "vfx.combat"
+        ));
+        let vfx = catalog
+            .bundles
+            .iter_mut()
+            .find(|bundle| bundle.id == "vfx.combat")
+            .unwrap();
+        vfx.kind = myva_assets::BundleKind::Vfx;
+        vfx.dependencies.push("character.long_luu".into());
+        assert!(matches!(
+            scene_keys(&catalog, Mode::Boss, "long-luu"),
+            Err(MappingError::UnsupportedDependencies(id)) if id == "vfx.combat"
+        ));
+    }
+
+    #[test]
+    fn selected_plan_skips_every_unrelated_character_and_reports_missing_mapping() {
+        let mut catalog = catalog();
+        let mut unrelated = catalog.bundles[0].clone();
+        unrelated.id = "character.unused".into();
+        unrelated.assets.clear();
+        catalog.bundles.push(unrelated);
+        let (required, _) = scene_keys(&catalog, Mode::Duel, "long-luu").unwrap();
+        assert_eq!(
+            required
+                .iter()
+                .filter(|k| k.kind == BundleKind::Character)
+                .count(),
+            1
+        );
+        assert!(required.iter().all(|k| bundle_id(k) != "character.unused"));
+        assert!(matches!(
+            scene_keys(&catalog, Mode::Duel, "unmapped"),
+            Err(MappingError::UnknownKit(_))
+        ));
+        catalog.bundles.retain(|b| b.id != "character.long_luu");
+        assert!(matches!(
+            scene_keys(&catalog, Mode::Duel, "long-luu"),
+            Err(MappingError::MissingBundle(_))
+        ));
     }
 
     #[test]
@@ -844,6 +960,201 @@ mod tests {
             &path,
         );
         TempAssets(path)
+    }
+
+    #[test]
+    fn real_asset_server_never_requests_unselected_character_payloads() {
+        let assets = fault_assets();
+        let mut manifest = catalog();
+        let mut unused = manifest.assets[0].clone();
+        unused.id = "unused.atlas".into();
+        unused.path = "unused/atlas.png".into();
+        let mut bundle = manifest.bundles[0].clone();
+        bundle.id = "character.unused".into();
+        bundle.assets = vec![unused.id.clone()];
+        manifest.assets.push(unused);
+        manifest.bundles.push(bundle);
+        let mut issues = Vec::new();
+        myva_assets::validate::check_manifest(&manifest, &mut issues);
+        assert!(issues.is_empty(), "{issues:?}");
+        std::fs::write(
+            assets.0.join("fixture/manifest.json"),
+            serde_json::to_vec(&manifest).unwrap(),
+        )
+        .unwrap();
+        // No unused texture or runtime-character.unused.myva exists. A whole-Character scan
+        // would try loading it and block required art. Selected load units settle normally.
+        let mut app = headless(assets.0.to_str().unwrap());
+        until(&mut app, ready);
+        let runtime = app.world().resource::<StreamRuntime>();
+        assert_eq!(runtime.summary().completed_loads, 4);
+        assert_eq!(runtime.summary().failed_loads, 0);
+        assert_eq!(runtime.summary().selected_kit, "long-luu");
+        assert!(
+            runtime
+                .keys
+                .iter()
+                .all(|k| bundle_id(k) != "character.unused")
+        );
+        assert!(
+            !app.world()
+                .resource::<ArtTables>()
+                .sheets
+                .contains_key("unused.sheet")
+        );
+    }
+
+    #[test]
+    fn real_asset_server_absent_optional_vfx_keeps_required_art_ready() {
+        let assets = fault_assets();
+        let mut manifest = catalog();
+        let vfx_assets = manifest
+            .bundles
+            .iter()
+            .find(|bundle| bundle.id == "vfx.combat")
+            .unwrap()
+            .assets
+            .clone();
+        manifest.bundles.retain(|bundle| bundle.id != "vfx.combat");
+        manifest
+            .assets
+            .retain(|asset| !vfx_assets.contains(&asset.id));
+        let mut issues = Vec::new();
+        myva_assets::validate::check_manifest(&manifest, &mut issues);
+        assert!(issues.is_empty(), "{issues:?}");
+        std::fs::write(
+            assets.0.join("fixture/manifest.json"),
+            serde_json::to_vec(&manifest).unwrap(),
+        )
+        .unwrap();
+        std::fs::remove_file(assets.0.join("runtime-vfx.combat.myva")).unwrap();
+        std::fs::remove_dir_all(assets.0.join("fixture/vfx")).unwrap();
+
+        for (mode, expected_loads) in [(Mode::Boss, 3), (Mode::Duel, 2)] {
+            let mut app = headless(assets.0.to_str().unwrap());
+            let (bout, _) = myva_sim::battle::Bout::start(mode, 1).unwrap();
+            app.insert_resource(Match::new(bout));
+            app.insert_resource(crate::ArenaView::of(
+                &myva_sim::battle::Battle::new(mode, 1).unwrap(),
+            ));
+            until(&mut app, |app| {
+                ready(app)
+                    || matches!(
+                        app.world().resource::<Art>().status,
+                        ArtStatus::Failed { .. }
+                    )
+            });
+            assert_eq!(app.world().resource::<Art>().status, ArtStatus::Ready);
+            // Body entities spawn when tables become Ready, then receive images next frame.
+            app.update();
+            let runtime = app.world().resource::<StreamRuntime>();
+            assert_eq!(runtime.summary().completed_loads, expected_loads);
+            assert_eq!(runtime.summary().failed_loads, 0);
+            assert!(runtime.summary().mapping_error.is_none());
+            assert!(runtime.keys.iter().all(|key| key.kind != BundleKind::Vfx));
+            let tables = app.world().resource::<ArtTables>();
+            assert!(tables.sheets.contains_key("long_luu.sheet"));
+            assert!(tables.layout.is_some());
+            assert_eq!(
+                tables.sheets.contains_key("ke_giu_dap.sheet"),
+                mode == Mode::Boss
+            );
+            assert!(!tables.sheets.contains_key("vfx.combat"));
+            let mut bodies = app
+                .world_mut()
+                .query_filtered::<&Sprite, With<art::ArtBody>>();
+            assert_eq!(bodies.iter(app.world()).count(), 2);
+            assert!(
+                bodies
+                    .iter(app.world())
+                    .all(|sprite| sprite.image != Handle::default())
+            );
+        }
+    }
+
+    #[test]
+    fn mapping_rejection_cancels_pending_selected_bundle_and_never_installs_stale_handles() {
+        let mut app = headless(concat!(env!("CARGO_MANIFEST_DIR"), "/../../assets"));
+        until(&mut app, |app| {
+            app.world()
+                .resource::<StreamRuntime>()
+                .planner
+                .in_flight_count()
+                > 0
+        });
+        {
+            let mut runtime = app.world_mut().resource_mut::<StreamRuntime>();
+            let pin = myva_sim::registry::KitPin {
+                id: myva_sim::catalog::KitId::new("test-no-mapping").unwrap(),
+                revision: myva_sim::registry::IMPLEMENTED_KITS[0].revision,
+            };
+            assert!(matches!(
+                runtime.enter(Mode::Boss, pin, 0),
+                Err(MappingError::UnknownKit(_))
+            ));
+        }
+        app.world_mut().resource_mut::<Art>().enabled = false;
+        app.update();
+        until(&mut app, |app| {
+            app.world()
+                .resource::<StreamRuntime>()
+                .planner
+                .in_flight_count()
+                == 0
+                && app.world().resource::<Assets<ArtFixture>>().is_empty()
+        });
+        assert!(app.world().resource::<ArtTables>().sheets.is_empty());
+        assert_eq!(
+            app.world()
+                .resource::<StreamRuntime>()
+                .summary()
+                .planner_owners,
+            0
+        );
+        assert!(
+            app.world()
+                .resource::<StreamRuntime>()
+                .summary()
+                .mapping_error
+                .is_some()
+        );
+    }
+
+    #[test]
+    fn missing_selected_mapping_is_failed_once_without_silent_identity_fallback() {
+        let assets = fault_assets();
+        let mut manifest = catalog();
+        manifest.bundles.retain(|b| b.id != "character.long_luu");
+        manifest.assets.retain(|a| !a.id.starts_with("long_luu."));
+        std::fs::write(
+            assets.0.join("fixture/manifest.json"),
+            serde_json::to_vec(&manifest).unwrap(),
+        )
+        .unwrap();
+        let mut app = headless(assets.0.to_str().unwrap());
+        until(&mut app, |app| {
+            matches!(
+                app.world().resource::<Art>().status,
+                ArtStatus::Failed { .. }
+            )
+        });
+        let before = app.world().resource::<StreamRuntime>().summary().generation;
+        for _ in 0..10 {
+            app.update();
+        }
+        let runtime = app.world().resource::<StreamRuntime>();
+        assert_eq!(runtime.summary().generation, before);
+        assert_eq!(runtime.summary().completed_loads, 0);
+        assert_eq!(runtime.summary().flights, 0);
+        assert!(
+            runtime
+                .summary()
+                .mapping_error
+                .as_ref()
+                .unwrap()
+                .contains("MissingBundle")
+        );
+        assert!(app.world().resource::<ArtTables>().sheets.is_empty());
     }
 
     #[test]

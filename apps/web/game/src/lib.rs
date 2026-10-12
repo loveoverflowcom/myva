@@ -12,6 +12,6 @@ mod browser;
 pub use browser::{
     benchmark_telemetry, rematch, request_benchmark_capture, request_replay, retry_art,
     set_art_enabled, set_autopilot, set_benchmark, set_paused, show_touch_controls, start_game,
-    stream_runtime, switch_mode, take_benchmark_capture, take_replay, telemetry, toggle_hitboxes,
-    touch_layout,
+    start_game_with_kit, stream_runtime, switch_mode, take_benchmark_capture, take_replay,
+    telemetry, toggle_hitboxes, touch_layout,
 };

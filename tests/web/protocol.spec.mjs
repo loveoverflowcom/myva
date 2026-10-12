@@ -52,7 +52,7 @@ test('bridge rejects stale messages; Tab, fullscreen and synthetic visibility pr
         const battle = {
             mode: 'boss', round: 1, tick: 10, phase: 1, paused: false, outcome: null, verified: null,
             verifiedTicks: 0, hash: '0123456789abcdef', autopilot: false,
-            player: { hp: 424242, maxHp: 424242, mach: 0 }, rival: { hp: 2400, maxHp: 2400 },
+            player: { kitId: 'long-luu', hp: 424242, maxHp: 424242, mach: 0 }, rival: { kitId: 'ke-giu-dap', hp: 2400, maxHp: 2400 },
         };
         const valid = { v: 2, session, type: 'event', battle };
         const cases = [

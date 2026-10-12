@@ -118,25 +118,6 @@ impl AssetLoader for CatalogLoader {
         if let Some(issue) = issues.into_iter().next() {
             return Err(issue.into());
         }
-        let expected = [
-            ("character.long_luu", myva_assets::BundleKind::Character),
-            ("boss.ke_giu_dap", myva_assets::BundleKind::Boss),
-            ("map.dap_co", myva_assets::BundleKind::Map),
-            ("vfx.combat", myva_assets::BundleKind::Vfx),
-        ];
-        if manifest.bundles.len() != expected.len()
-            || expected.iter().any(|(id, kind)| {
-                !manifest
-                    .bundles
-                    .iter()
-                    .any(|b| b.id == *id && b.kind == *kind && b.dependencies.is_empty())
-            })
-        {
-            return Err(fail(
-                "invalid",
-                "runtime requires the bounded four self-contained fixture bundles",
-            ));
-        }
         Ok(ArtCatalog(manifest))
     }
 
