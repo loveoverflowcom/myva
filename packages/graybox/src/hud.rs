@@ -538,7 +538,7 @@ fn update_texts(
 
 /// HUD gọn khi màn hình thấp hoặc đang dùng cảm ứng: ẩn log/phím, nhãn phụ và dòng hồi chiêu
 /// (nút thuật cảm ứng tự hiện hồi chiêu) và metadata. Pha boss và lỗi art luôn hiện.
-#[allow(clippy::type_complexity)]
+#[allow(clippy::type_complexity, clippy::too_many_arguments)]
 fn update_layout(
     window: Single<&Window, With<PrimaryWindow>>,
     touch: Res<TouchUi>,
