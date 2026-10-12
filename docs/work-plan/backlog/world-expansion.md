@@ -6,7 +6,7 @@
 
 ## Scope
 
-Mỗi linh vực có bản sắc, nhánh truyền thừa, tutorial origin và boss riêng. Sau hai vùng ổn định mới thử tuyến vận chuyển, mặt trận và mùa chiến dịch.
+Mỗi linh vực có bản sắc cảnh quan, nhiệm vụ, tutorial origin và boss riêng. Theo [#18](https://github.com/loveoverflowcom/myva/issues/18) / [ADR 0004](../../decisions/0004-five-factions-lineage-hierarchy.md), địa lý độc lập **Thế lực → Nguồn bảo trợ → Trực hệ → Nhánh chiến đấu → Kit**. Nhiều thế lực có thể cùng hiện diện; mentor của cùng trực hệ có thể ở nhiều vùng. Mở vùng không bắt buộc thêm trực hệ/kit, không khóa học theo nơi sinh. Sau hai vùng ổn định mới thử tuyến vận chuyển, mặt trận và mùa chiến dịch.
 
 ## Non-goals
 
@@ -18,7 +18,7 @@ Pilot đạt load/integrity/solo gates; [World Bible](../../design/world-bible.m
 
 ## Review boundary
 
-Origin mới có đường tiến triển tương đương; giao thoa build có chi phí cơ hội; số vùng/kênh không nhân trần tài nguyên.
+Origin mới có đường tiến triển tương đương; trực hệ/nhánh mới chỉ theo quyết định riêng, không tự sinh từ số vùng; giao thoa build có chi phí cơ hội; số vùng/kênh không nhân trần tài nguyên.
 
 ## Risks / unknowns
 

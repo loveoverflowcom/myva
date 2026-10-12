@@ -2,13 +2,13 @@
 
 **MMORPG hành động 2D HD về những người kế thừa sức mạnh thần thoại.**
 
-Người chơi trưởng thành từ một linh vực, học cách chiến đấu, khám phá các truyền thừa khác và tham gia những chiến dịch nối nhiều lục địa. Thế giới có chỗ cho người chơi solo, người cày chay và bang hội; sức mạnh nhân vật phải đi cùng kỹ năng điều khiển.
+Người chơi kế thừa sức mạnh theo trực hệ, học cách chiến đấu, khám phá các linh vực và tham gia những chiến dịch nối nhiều vùng. Năm thế lực đã chốt lấy nền tảng từ **Kitô giáo, Hồi giáo, Ấn Độ giáo, Phật giáo và Đạo giáo**; nơi sinh không khóa thế lực, trực hệ hoặc kit. Thế giới có chỗ cho người chơi solo, người cày chay và bang hội; sức mạnh nhân vật phải đi cùng kỹ năng điều khiển.
 
 > Dễ bắt đầu, khó thành thạo; cày chay vẫn mạnh, kỹ năng tạo khác biệt, thế giới mở rộng trong một nền kinh tế có giới hạn và được kiểm chứng.
 
 ## Trạng thái dự án
 
-- **Giai đoạn:** thiết kế tiền sản xuất; tài liệu draft v0.1, ngày 2026-10-09.
+- **Giai đoạn:** thiết kế tiền sản xuất; nền v0.1, đồng bộ worldbuilding #18 ngày 2026-10-12. [ADR 0004](docs/decisions/0004-five-factions-lineage-hierarchy.md) ghi phần đã chốt; tên phe, trực hệ, skill và cân bằng vẫn là đề xuất.
 - **Hiện có:** review ý tưởng, GDD, World Bible, luật chiến đấu, kinh tế, kiến trúc đề xuất và kế hoạch kiểm chứng; lõi mô phỏng combat và kinh tế headless, nền ECS Bevy headless dùng chung luật lõi ([D04](docs/technical/gameplay-foundation.md)), graybox chiến đấu Bevy chơi được trên trình duyệt và native desktop (chưa qua playtest người thật), shell Leptos web và prototype native standalone. Phạm vi bằng chứng nằm trong báo cáo từng platform.
 - **Pipeline asset (D05-A):** fixture placeholder có provenance cho Long Lưu, Kẻ Giữ Đập, bản đồ Đập Cổ và VFX; manifest có hash/budget, validator và loader `AssetServer` trên native/web ([đặc tả](docs/technical/asset-pipeline.md), [báo cáo](docs/reports/asset-pipeline.md)).
 - **Chưa có:** gameplay hoàn chỉnh, server, asset thành phẩm hoặc tích hợp Bevy native vào CMP đã được xác nhận trên Android/iOS thật.
@@ -115,7 +115,7 @@ Long Lưu có đại thuật ở ô 3: chạm rồi thả R / RB+B / nút Triề
 4. [Kiến trúc](docs/technical/architecture.md), [assets và hiệu năng](docs/technical/assets-performance.md), [D05-B runtime và gate còn thiếu](docs/reports/asset-streaming-performance.md).
 5. [Vertical slice](docs/production/vertical-slice.md), [roadmap](docs/production/roadmap.md), [QA](docs/production/qa.md).
 6. [Hàng đợi công việc](docs/work-plan/README.md), [quyết định Bevy hiện hành](docs/decisions/0003-bevy-engine-adoption.md) và [quyết định nền tảng](docs/decisions/0001-project-foundation.md).
-7. Đề xuất v0.2 về thế giới, thần thoại và hệ nhân vật: [báo cáo thiết kế](docs/design/worldbuilding-report.md), [khảo sát thần thoại](docs/research/mythology-survey.md) và [quyết định 0002 (chờ duyệt)](docs/decisions/0002-lineages-world-structure.md).
+7. [Năm thế lực — ADR 0004](docs/decisions/0004-five-factions-lineage-hierarchy.md), [danh mục trực hệ ứng viên và bàn giao #20](docs/design/lineages.md), [nguồn đối chiếu](docs/research/five-factions-sources.md), [báo cáo đồng bộ](docs/design/worldbuilding-report.md) và [lịch sử ADR 0002](docs/decisions/0002-lineages-world-structure.md).
 
 [Mục lục đầy đủ](docs/README.md) phân biệt yêu cầu đã chốt, phương án đề xuất và câu hỏi còn mở.
 
@@ -123,6 +123,6 @@ Theo dõi công việc tại [Thần Mạch — Planning](https://github.com/use
 
 ## Điểm bắt đầu
 
-Tầm nhìn dài hạn gồm nhiều linh vực và lựa chọn xuất thân. Bản thử đầu tiên chỉ có **Vân Thủy**, một linh vực hư cấu lấy cảm hứng từ cảnh quan Đông Nam Á: ba bản đồ, ba truyền thừa, một boss và một vòng chơi 20–30 phút. Kiểm chứng cảm giác chiến đấu, khả năng tích hợp native và luật tài nguyên trước khi mở rộng nội dung online.
+**Thế lực → Nguồn bảo trợ → Trực hệ → Nhánh chiến đấu → Kit** là trục nhân vật; linh vực/bản đồ là chiều địa lý độc lập. Tầm nhìn dài hạn gồm nhiều linh vực và lựa chọn xuất thân. Bản thử đầu tiên chỉ có **Vân Thủy**, một linh vực hư cấu lấy cảm hứng từ cảnh quan Đông Nam Á: ba bản đồ, ba kit (Long Lưu, Sơn Cốt, Phong Vũ), một boss và một vòng chơi 20–30 phút. Long Lưu là baseline graybox hiện có; hai kit còn lại theo gate slice. Năm tên kit/mẫu cơ chế cũ không ánh xạ một–một sang năm tôn giáo. Kiểm chứng cảm giác chiến đấu, khả năng tích hợp native và luật tài nguyên trước khi mở rộng nội dung online.
 
 Không khởi tạo một workspace với hàng chục crate hoặc service khi chưa có prototype chứng minh ranh giới cần thiết. Các sơ đồ kỹ thuật là thiết kế dự kiến, không mô tả mã nguồn đang tồn tại.

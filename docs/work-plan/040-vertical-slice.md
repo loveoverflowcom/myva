@@ -8,6 +8,8 @@ Các spike riêng lẻ chưa chứng minh quest, combat, tài nguyên và tải 
 
 Slice một linh vực Vân Thủy, 3 bản đồ, 3 kit, boss Kẻ Giữ Đập, recipe và checkpoint. Tích hợp pipeline asset đã đo, onboarding điều khiển và lưu tiến trình prototype; chơi 20–30 phút.
 
+Theo [ADR 0004](../decisions/0004-five-factions-lineage-hierarchy.md), ba kit là Long Lưu, Sơn Cốt, Phong Vũ; Long Lưu baseline đã chạy, hai kit còn lại theo gate. Chưa gán lore nguồn mới, không triển khai đồng thời năm thế lực. Giữ replay/asset ID và combat core; #18 chỉ đồng bộ docs, #20 không mở PvP vào slice.
+
 ## Non-goals
 
 Không mở world trade, guild war, nhiều origin, PvP hoặc monetization. Local state không trở thành vật phẩm online thật.

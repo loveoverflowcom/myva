@@ -1,7 +1,7 @@
 # MyVa — Thần Mạch: kinh tế bản ra mắt và định hướng thương mại hóa
 
 > Đề xuất v0.2, 2026-10-09. Mục **H** của [báo cáo thiết kế](worldbuilding-report.md).
-> [economy.md](economy.md) vẫn là nguồn sự thật cho sổ cái, bể tài nguyên, công thức ngân sách và bảo toàn. Tài liệu này mở rộng cho quy mô bản ra mắt (hai linh vực, năm truyền thừa) và đặt khung thương mại hóa.
+> [economy.md](economy.md) vẫn là nguồn sự thật cho sổ cái, bể tài nguyên, công thức ngân sách và bảo toàn. Tài liệu này đề xuất quy mô bản ra mắt (hai linh vực, năm kit theo phương án cũ chưa duyệt) và khung thương mại hóa. #18 không duyệt D3/D9 hoặc thay ngân sách theo số thế lực; lore theo [ADR 0004](../decisions/0004-five-factions-lineage-hierarchy.md).
 > Mọi con số là giả thuyết cho simulator ([work-plan 030](../work-plan/030-economy-simulator.md)), không phải cấu hình vận hành.
 
 ## 1. Phạm vi và quan hệ với economy.md
@@ -14,7 +14,7 @@
 | Người mới, solo, độ khan hiếm | Trang bị hiếm, token chống xui, phần thưởng chiến dịch |
 | — | Danh mục thương mại hóa, bảo vệ người chơi, tuân thủ pháp luật Việt Nam |
 
-**Diễn giải trong truyện:** trần tài nguyên hữu hạn chính là **Mạch Bạ** — sổ cổ ghi trữ lượng mạch của thế giới ([narrative.md](narrative.md#3-thế-lực-và-phản-diện)). Người chơi hiểu vì sao tài nguyên có hạn; phản diện muốn độc quyền cuốn sổ đó.
+**Diễn giải trong truyện:** trần tài nguyên hữu hạn chính là **Mạch Bạ** — sổ cổ ghi trữ lượng mạch của thế giới ([narrative.md](narrative.md#3-tổ-chức-và-phản-diện)). Người chơi hiểu vì sao tài nguyên có hạn; phản diện muốn độc quyền cuốn sổ đó.
 
 ## 2. Hòa giải "nạp tiền" với quyết định 0001
 
@@ -36,7 +36,7 @@ Yêu cầu nghiên cứu cho phép "phát triển hệ thống nạp tiền". [Q
 | `salt` | Muối Mạch | Cao Nguyên Tháp Gió | Vật phẩm tiêu hao, hàng vận chuyển của đoàn xe | Có | Mới |
 | — | Đồng | Kho hệ thống (`M_coin`) | Giao dịch, phí, sửa chữa | Có | Đã có |
 
-Tài nguyên ràng buộc (không giao dịch): **Danh vọng** theo thế lực, **Dấu Boss** (§5), **Hồi Ức**, **Điểm mặt trận** (xóa cuối mùa).
+Tài nguyên ràng buộc (không giao dịch): **Danh vọng** theo tổ chức, **Dấu Boss** (§5), **Hồi Ức**, **Điểm mặt trận** (xóa cuối mùa).
 
 - `M_reed`, `M_salt`: chốt bằng simulator. Điểm khởi đầu đề xuất: `M_reed ≈ 0,8 × M_fiber`, `M_salt ≈ 0,7 × M_ore` (GT).
 - Bản ra mắt chỉ thêm **hai** tài nguyên giao dịch được và **không** thêm tiền tệ vùng.
@@ -150,7 +150,7 @@ Khi dân số giảm, nguồn cung giữ mức cơ sở bảo thủ; khi tăng, 
 
 Doanh thu chỉ từ mỹ phẩm là **giả thuyết rủi ro cao** chưa có nghiên cứu thị trường ([roadmap](../production/roadmap.md#cổng-quyết-định-thương-mại)).
 
-- **Phụ thuộc sản xuất:** mỹ phẩm phải phủ 5 truyền thừa × 2 dáng cơ thể. Nếu mỗi bộ trang phục phải vẽ lại từng khung hình, chi phí không bền vững → cần rig module với attachment thay được (quyết định pipeline ở [risk-register K-01](../research/risk-register.md#k--kỹ-thuật)).
+- **Phụ thuộc sản xuất:** mỹ phẩm phải phủ số kit/dáng cơ thể được duyệt (phương án cũ là 5 × 2, chưa chốt). Nếu mỗi bộ trang phục phải vẽ lại từng khung hình, chi phí không bền vững → cần rig module với attachment thay được (quyết định pipeline ở [risk-register K-01](../research/risk-register.md#k--kỹ-thuật)).
 - **Chỉ số pilot cần đo:** tỷ lệ người trả phí, doanh thu trên người trả phí, chi phí sản xuất mỗi bộ mỹ phẩm, nhịp nội dung cần để giữ chân, tỷ lệ người chơi chỉ chơi miễn phí vẫn tiến triển tới trần.
 - **Nếu không đủ:** ưu tiên bản mở rộng trả tiền hoặc thuê bao mỹ phẩm — vẫn trong khuôn 0001. Bán sức mạnh không phải phương án dự phòng; nếu chủ dự án muốn cân nhắc, cần ADR mới.
 

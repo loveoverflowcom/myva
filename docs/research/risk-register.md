@@ -5,6 +5,8 @@
 
 ## 1. Cách đọc
 
+**Đồng bộ #18, 2026-10-12:** [ADR 0004](../decisions/0004-five-factions-lineage-hierarchy.md) thay trục D1/D2 và phần cấm bao trùm/chỉ dùng Cổ Linh của D6. Năm thế lực đã chốt; review từng tên/hình tượng và các gate sản xuất ở đây vẫn là đề xuất. Không dùng sổ rủi ro để thay yêu cầu trực hệ thành nguồn vô danh.
+
 - **Khả năng / Tác động:** T (thấp), TB (trung bình), C (cao) — đánh giá định tính của nhóm thiết kế ở thời điểm viết.
 - **Gate:** cột mốc phải có bằng chứng giảm rủi ro trước khi đi tiếp ([roadmap](../production/roadmap.md), [content-roadmap](../production/content-roadmap.md)).
 - Khi một rủi ro xảy ra hoặc được loại bỏ, cập nhật dòng tương ứng kèm bằng chứng; không xóa lịch sử.
@@ -15,10 +17,10 @@
 
 | ID | Rủi ro | KN | TĐ | Biện pháp | Gate |
 | --- | --- | --- | --- | --- | --- |
-| D-01 | Năm truyền thừa và hai linh vực vượt năng lực sản xuất | C | C | Thêm dần: slice 3 → MVP 3–4 → ra mắt 5; nhánh địa phương thay cho lớp mới; ngân sách asset từng bản đồ | Mỗi giai đoạn |
+| D-01 | Roster năm thế lực và nhiều linh vực vượt năng lực sản xuất | C | C | Giữ graybox một kit, slice ba kit; số roster/vùng ra mắt chưa chốt; thêm theo gate riêng; ngân sách asset từng bản đồ | Mỗi giai đoạn |
 | D-02 | Truyền thừa chỉ khác nhau về ngoại hình | TB | C | Cơ chế đặc trưng, bộ pháp, ma trận khắc chế; gate G2 của slice; bộ T1, T4 | Slice, MVP |
 | D-03 | Tơ Vọng (tiếng vọng, neo) quá phức tạp, khó đọc, khó điều khiển cảm ứng | C | TB | Spike sớm (R-05); phương án rút gọn: 1 neo, tiếng vọng chỉ cho 1 thuật | Trước MVP |
-| D-04 | Hoang Sinh của Lâm Trảo áp đảo PvP | TB | TB | Tỷ lệ thấp hơn ở PvP, giảm dần; T5 tìm vòng lặp hồi máu | Graybox truyền thừa |
+| D-04 | Hoang Sinh của Lâm Trảo áp đảo PvP | TB | TB | Hồi máu là GT cũ; #20 đề xuất Dấu Săn. T5/T8 kiểm tra cơ chế thực sự được chọn, không triển khai mặc định | Graybox truyền thừa |
 | D-05 | Thuật khách làm các build giống nhau | TB | TB | 1 ô, không nhận nội tại, danh sách cặp cấm; theo dõi tỷ lệ chọn > 40% | Ra mắt |
 | D-06 | Khắc chế mềm trở thành khắc chế cứng | TB | C | Ngưỡng 45–55%; công cụ cho bên bất lợi; T1, T6 | MVP, ra mắt |
 | D-07 | Thoát Mạch làm combo vô nghĩa hoặc vô dụng | TB | TB | Chi phí 50 Mạch + hồi chiêu; graybox và T5 | Graybox |
@@ -32,9 +34,9 @@
 
 | ID | Rủi ro | KN | TĐ | Biện pháp | Gate |
 | --- | --- | --- | --- | --- | --- |
-| V-01 | Thần linh đang được thờ thành nhân vật, boss, loot | TB | C | Chính sách mức 0; thực thể trong truyện là Cổ Linh hư cấu; tiền lệ phản đối SMITE (2012) | Mọi nội dung |
+| V-01 | Thần linh đang được thờ thành nhân vật, boss, loot | TB | C | Nghiên cứu nguồn thật theo #18; tách DK/ST, quan hệ kế thừa và mức hiện diện; review từng hồ sơ, không mặc định cấm hoặc đã duyệt hình tượng | Mọi nội dung |
 | V-02 | Dùng tri thức thiêng, hạn chế của người bản địa (Dreaming, skinwalker, katsina, haka, tā moko) | TB | C | Danh sách không dùng (§3); linh vực liên quan chỉ khi có đối tác dài hạn | Trước mọi linh vực liên quan |
-| V-03 | Một châu lục bị trình bày như một nền văn hóa | C | C | Linh vực dựa trên cộng đồng cụ thể; truyền thừa xuyên văn hóa; review tên | Mỗi linh vực |
+| V-03 | Một châu lục bị trình bày như một nền văn hóa | C | C | Linh vực dựa trên cộng đồng cụ thể; nguồn/trực hệ độc lập địa lý theo #18; review tên | Mỗi linh vực |
 | V-04 | Song Nguyên rơi vào khuôn mẫu Đông phương học (sa mạc, đèn thần, phản diện theo dân tộc) | TB | C | Đổi tên Sa Đăng; cảnh quan sông–đầm–vườn; cố vấn khu vực; checklist khuôn mẫu | Trước sản xuất Song Nguyên |
 | V-05 | Biểu tượng bị nhóm cực đoan chiếm dụng (rune Othala, valknot, sonnenrad, chữ vạn) | TB | C | Danh sách biểu tượng cấm trong UI, mỹ phẩm, emblem bang hội; kiểm duyệt emblem do người chơi tạo | Trước Sương Hải; ngay khi có emblem bang hội |
 | V-06 | Biểu tượng quốc gia làm kẻ thù hoặc vật phẩm (Garuda, lamassu, chim Lạc, trống đồng) | TB | C | Chỉ làm đồng minh, cơ quan, trang trí có duyệt | Mỗi linh vực |
@@ -62,7 +64,7 @@ Nguồn: [Spine Runtimes License](https://esotericsoftware.com/spine-runtimes-li
 
 | ID | Rủi ro | KN | TĐ | Biện pháp | Gate |
 | --- | --- | --- | --- | --- | --- |
-| K-01 | Khối lượng animation: 5 truyền thừa × 2 dáng cơ thể × mỹ phẩm | C | C | Spike pipeline (R-04): rig module với attachment, bộ thi triển chung cho thuật khách, VFX phủ thay cho biến hình | Trước MVP |
+| K-01 | Khối lượng animation: số kit được duyệt × dáng cơ thể × mỹ phẩm | C | C | Spike pipeline (R-04): rig module với attachment, bộ thi triển chung cho thuật khách, VFX phủ thay cho biến hình | Trước MVP |
 | K-02 | Tiếng vọng (đòn trễ) và sợi neo khó làm authoritative, dễ nhân hit khi reconnect | TB | C | Entity có ID do server mô phỏng; T8; replay | Graybox Tơ Vọng |
 | K-03 | Móc neo, leo vách, nhảy kép gây lệch prediction và xuyên địa hình | TB | TB | Điểm neo hợp lệ do server kiểm; collision bảo thủ; reconciliation mượt | Graybox |
 | K-04 | Kết quả mô phỏng cân bằng không tái lập được | TB | TB | Chạy trên một target; ghi seed, hash cấu hình, commit | Harness |
@@ -84,9 +86,9 @@ Nguồn: [Spine Runtimes License](https://esotericsoftware.com/spine-runtimes-li
 
 ## 3. Danh sách không dùng (mức 0)
 
-Không dùng dưới bất kỳ hình thức nào (tên, hình, cốt truyện, cơ chế, mỹ phẩm) trừ khi có quyết định mới kèm đồng thuận của cộng đồng liên quan:
+Danh sách hạn chế **đề xuất** từ ADR 0002; đọc cùng phần thay thế D6 của ADR 0004. Không dùng nó như lệnh cấm bao trùm nguồn tôn giáo đã được #18 cho phép nghiên cứu:
 
-- Thần linh đang được thờ phụng làm nhân vật chơi được, boss, quái hoặc vật phẩm (Hindu, Phật giáo, Thần đạo, Orisha, Đạo Mẫu, thờ Hùng Vương...).
+- **D6 lịch sử đã bị thay phần xung đột:** không áp cấm toàn bộ thần linh đang được thờ hoặc bắt mọi nguồn thành Cổ Linh. Tên/thực thể thật được nghiên cứu làm nguồn #18; mức xuất hiện như nhân vật/boss/vật phẩm và hình tượng chưa được quyết định bởi #18, cần hồ sơ riêng. Các đề xuất hạn chế khác dưới đây vẫn cần duyệt, không được #18 chấp nhận ngầm.
 - Câu chuyện Dreaming và Rắn Cầu Vồng của người Aboriginal; skinwalker (Navajo); katsina; tri thức nghi lễ hạn chế.
 - Haka *Ka Mate* và các haka khác; hình xăm tā moko.
 - Bảo vật hoàng gia và vật thiêng đang được giữ (ví dụ bộ ba thần khí Nhật Bản); cổng torii làm đạo cụ tùy tiện.
@@ -129,8 +131,8 @@ Hồ sơ này cũng là tư liệu cho hồ sơ phê duyệt nội dung trò ch�
 
 | Gate | Phải có bằng chứng về |
 | --- | --- |
-| Duyệt ADR 0002 | Chủ dự án chấp nhận phân tầng khái niệm, năm truyền thừa, linh vực thứ hai; tra cứu nhãn hiệu sơ bộ |
-| Graybox | Thoát Mạch, Hoang Sinh, Vọng/Neo không phá luật combat (T5, T8); điều khiển cảm ứng Tơ Vọng |
-| Vertical slice | Ba truyền thừa khác biệt (G2); cố vấn văn hóa Đông Nam Á cho Vân Thủy |
+| Thiết kế nguồn/roster | #18 đã chốt năm nền tảng/trục; chọn ứng viên, tên/hình tượng và mapping kit riêng. D3–D9 chưa duyệt không tự thành gate đã đạt |
+| Graybox | Luật hiện hành #19 và cơ chế kit được chọn không phá combat (T5, T8); Hoang Sinh là GT cũ, Dấu Săn thuộc #20; Tơ Vọng/Neo chỉ kiểm khi vào gate riêng |
+| Vertical slice | Ba kit slice khác biệt (G2); cố vấn văn hóa Đông Nam Á cho Vân Thủy |
 | MVP Online | Pipeline animation chốt; tuân thủ Nghị định 147 trong thiết kế tài khoản; chống tài khoản phụ trong simulator |
 | Bản ra mắt | T1–T6 đạt hoặc có giải trình; hồ sơ văn hóa Song Nguyên đã ký duyệt; tên đã tra nhãn hiệu |

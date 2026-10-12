@@ -1,6 +1,7 @@
 # MyVa — Thần Mạch: cốt truyện, phản diện và chiến dịch
 
 > Đề xuất v0.2, 2026-10-09. Mục **G** của [báo cáo thiết kế](worldbuilding-report.md). Kế thừa [World Bible](world-bible.md) (tiền đề, Bến Lau, nhân vật, cung truyện dài hạn) và thêm câu trả lời cho các câu hỏi nền.
+> Đồng bộ #18 ngày 2026-10-12: năm thế lực và phân tầng theo [ADR 0004](../decisions/0004-five-factions-lineage-hierarchy.md); D5/vũ trụ quan vẫn chưa duyệt. Tên kit cũ chỉ là mẫu cơ chế chưa ánh xạ nguồn.
 > Toàn bộ cốt truyện là **sáng tác (ST)** của MyVa. Mô-típ có nguồn được dẫn sang [khảo sát](../research/mythology-survey.md#10-mô-típ-xuyên-văn-hóa); không giới thiệu chi tiết nào ở đây như "truyền thuyết cổ".
 
 ## 1. Nguyên tắc kể chuyện
@@ -10,29 +11,29 @@
 3. **Phản diện có lý do.** Mọi kẻ thù chính tin rằng mình đang cứu thế giới; trò chơi phê phán phương pháp (cưỡng ép, độc quyền, xóa ký ức), không phê phán một nền văn hóa.
 4. **Lựa chọn có hệ quả thật nhưng có giới hạn sản xuất** (mục 5).
 5. **Tuyến chính hoàn thành được một mình.** Bang hội và chiến dịch thêm góc nhìn, không khóa kết thúc.
-6. **Không trả lời thay tôn giáo có thật.** Trong MyVa, các thực thể được tôn kính là **Cổ Linh** của thế giới hư cấu; game không tuyên bố bản chất của thần linh ngoài đời.
+6. **Không trả lời thay tôn giáo có thật.** Năm thế lực dùng nguồn Kitô giáo, Hồi giáo, Ấn Độ giáo, Phật giáo, Đạo giáo theo #18; tên/thực thể thật được nghiên cứu ở [hồ sơ nguồn](../research/five-factions-sources.md). Quan hệ trao sức mạnh và lore game là ST; Cổ Linh không thay mọi nguồn thật. Không giải thích năm tôn giáo là các mảnh sai/đúng của một chân lý trong game.
 
 ## 2. Trả lời các câu hỏi nền
 
 | Câu hỏi | Câu trả lời đề xuất (ST) | Phục vụ gameplay thế nào |
 | --- | --- | --- |
 | **Thần Mạch thực chất là gì?** | Dòng ký ức sống của thế giới. Nước, đá, gió, sự sống và lời kể đều "nhớ" những gì đã xảy ra; mạch mạnh khi cộng đồng còn nhớ và chăm sóc nơi chốn của mình. Tục ngữ "uống nước nhớ nguồn" là câu tóm tắt trong game | Giải thích vì sao khám phá và thu Hồi Ức làm vùng hồi phục; vì sao Hắc Triều xóa ký ức là xóa sức sống |
-| **Vì sao các nền thần thoại cùng tồn tại?** | Thời xa xưa chỉ có một Đại Mạch. Cuộc Phân Dòng chia nó thành nhiều linh vực; mỗi cộng đồng giữ một mảnh và kể lại theo cách của mình. Vì vậy các câu chuyện khác nhau nhưng lặp lại mô-típ: núi chống nước, rắn giữ nước, giếng của trí nhớ. Không phiên bản nào sai hoàn toàn; không phiên bản nào đủ | **Sổ đối chiếu**: Hồi Ức ở các linh vực kể cùng một sự kiện theo nhiều cách; ghép đủ thì mở bí mật và mỹ phẩm |
-| **Vì sao sức mạnh được truyền lại?** | Mạch "nhớ" những người chăm sóc nó. Sức mạnh truyền qua **thầy–trò và thực hành** nhiều hơn qua máu. "Hậu duệ" nghĩa là con cháu của mọi cộng đồng đã ký Giao Ước Phân Dòng — tức gần như ai cũng là hậu duệ, và ai cũng có thể thức tỉnh | Giữ đúng quyết định "người bình thường thức tỉnh" của World Bible; không có dòng máu cao quý; mentor và trial là cổng học kỹ năng |
+| **Vì sao nhiều truyền thừa cùng hiện diện?** | Các nguồn/pháp hệ của năm thế lực có lịch sử riêng theo hồ sơ #18. Đại Mạch/Phân Dòng là giả thuyết ST về địa lý và ký ức của thế giới game, không là nguồn gốc hay cách giải thích tôn giáo có thật. Hồi Ức mâu thuẫn chỉ kể sự kiện hư cấu của MyVa | **Sổ đối chiếu**: Hồi Ức ở các linh vực kể cùng một sự kiện theo nhiều cách; ghép đủ thì mở bí mật và mỹ phẩm |
+| **Vì sao sức mạnh được truyền lại?** | Mỗi trực hệ ghi nguồn, người dẫn và cách nhận riêng: ban phước, được chọn, truyền pháp hoặc thầy–trò; huyết thống chỉ khi hồ sơ cụ thể phù hợp. Giao Ước Phân Dòng có thể là lịch sử cộng đồng ST, không định nghĩa quan hệ của mọi nguồn tôn giáo | Giữ đúng quyết định "người bình thường thức tỉnh" của World Bible; không có dòng máu cao quý; mentor và trial là cổng học kỹ năng |
 | **Vai trò của người chơi?** | Một trong **Thế hệ Thức Mạch** — rất nhiều người thức tỉnh cùng lúc. Điểm khác thường: người chơi cộng hưởng được với hơn một dòng (**Người Nối Mạch**), nên có thể mang nước, tin tức và kỹ năng qua biên giới | Lý giải trong truyện cho MMO đông người và cho thuật khách; người chơi là người nối, không phải "người được chọn" duy nhất |
 | **Điều gì buộc các linh vực liên minh?** | Các dòng mạch đang chậm rãi **Hợp Dòng** trở lại. Ở nơi hai dòng gặp nhau sẽ có những đợt dâng lớn vượt biên giới; không linh vực nào tự xử lý được. Thế hệ Thức Mạch xuất hiện chính vì Hợp Dòng | Lý do cho Mạch Đạo, chiến dịch liên vùng và việc học kỹ năng của vùng khác ngay lúc này |
-| **Điều gì gây xung đột giữa các thế lực?** | Cùng một nỗi sợ Hợp Dòng, ba câu trả lời: **kiểm soát** (Hắc Triều: đắp chặn mọi dòng và ghi một sổ duy nhất — lối của Cổn), **đóng cửa** (một số hội đồng linh vực tự cô lập), **chia sẻ có luật** (Hội Giữ Nhịp: khơi dòng và cùng quyết — lối của Vũ, của đền chia nước). Hội Giữ Nhịp cũng chậm chạp và có tranh chấp nội bộ | Thế lực có danh vọng và lựa chọn; không chia thiện–ác tuyệt đối |
+| **Điều gì gây xung đột giữa các tổ chức?** | Cùng một nỗi sợ Hợp Dòng, ba câu trả lời: **kiểm soát** (Hắc Triều: đắp chặn mọi dòng và ghi một sổ duy nhất — lối của Cổn), **đóng cửa** (một số hội đồng linh vực tự cô lập), **chia sẻ có luật** (Hội Giữ Nhịp: khơi dòng và cùng quyết — lối của Vũ, của đền chia nước). Hội Giữ Nhịp cũng chậm chạp và có tranh chấp nội bộ | Tổ chức có danh vọng và lựa chọn; không chia thiện–ác tuyệt đối |
 | **Ai là phản diện chính?** | **Người Đo Mạch**, người sáng lập Hắc Triều (mục 3) | Mục tiêu dài hạn, lộ dần qua từng chương |
 | **Vì sao người chơi cần mạnh lên?** | Thú lệch nhịp ngày càng mạnh gần các trạm; Hắc Triều canh giữ nút mạch; mentor chỉ dạy nhánh và truyền thừa phụ khi người chơi vượt thử thách; mặt trận chiến dịch đòi phối hợp | Cổng tiến triển là **thử thách kỹ năng**, không chỉ là cấp |
 | **Vượt giới hạn sức mạnh thì sao?** | Mỗi người có **Ngưỡng Mạch**. Dẫn quá ngưỡng sẽ **Hóa Tướng**: mất dần ký ức, biến thành hiện thân của dòng — nhiều boss là người đã đi quá xa. Con đường sau ngưỡng là **Thông Mạch**: hiểu rộng thêm, không mạnh thêm | Lý do trong truyện cho trần cấp và tiến triển ngang; boss bi kịch có thể được cứu chuộc |
 
-## 3. Thế lực và phản diện
+## 3. Tổ chức và phản diện
 
-### Thế lực
+### Tổ chức xuyên thế lực
 
-Mọi thế lực có thành viên từ nhiều linh vực. Không thế lực nào đại diện một dân tộc hay tín ngưỡng.
+Năm thế lực tôn giáo là tầng nguồn/trực hệ theo #18; các tổ chức dưới đây là chiều chính trị/danh vọng riêng. Có thể gồm người từ nhiều thế lực và linh vực. Xung đột do hành động, không mặc định một tôn giáo là phe ác.
 
-| Thế lực | Mục tiêu | Phương pháp | Với người chơi | Chức năng chơi |
+| Tổ chức | Mục tiêu | Phương pháp | Với người chơi | Chức năng chơi |
 | --- | --- | --- | --- | --- |
 | Hội Giữ Nhịp | Cùng quản lý mạch khi Hợp Dòng tới | Hội đồng liên vùng, khơi dòng, chia lượt | Mời gia nhập cuối chương 1 | Tổ chức chiến dịch, danh vọng, mặt trận |
 | Hắc Triều | Kiểm soát mọi nút mạch để "cứu" thế giới | Đập, máy rút, sổ ghi độc quyền, xóa ký ức | Kẻ thù tổ chức | Trạm, instance, địch thường người/máy |
@@ -56,7 +57,7 @@ Hắc Triều mặc đồng phục mực đen và mang dụng cụ đo — ngôn
 | Kết cục | **Chưa chốt.** Có thể được cứu chuộc; không viết thành kẻ ác thuần túy. Không bị đánh bại ở bản ra mắt |
 | Giới tính, ngoại hình | Không gắn với dân tộc cụ thể; đại từ trung tính trong tài liệu |
 
-Nhân vật cấp dưới cho thấy mỗi truyền thừa đều có thể bị dùng sai: Kẻ Giữ Đập (Long Lưu), Đốc Kè (Sơn Cốt), Én Đen (Phong Vũ), Thợ Bẫy (Lâm Trảo), Người Đo Mạch (Tơ Vọng).
+Nhân vật cấp dưới là ví dụ ST dùng các mẫu kit cũ, chưa được gán nguồn/trực hệ mới: Kẻ Giữ Đập (Long Lưu), Đốc Kè (Sơn Cốt), Én Đen (Phong Vũ), Thợ Bẫy (Lâm Trảo), Người Đo Mạch (Tơ Vọng).
 
 ## 4. Cấu trúc cốt truyện
 
@@ -118,7 +119,7 @@ Mỗi mùa theo bốn phần ở [progression-social.md §8](progression-social.
 - **Phần thưởng:** danh hiệu, mỹ phẩm, mục Biên Niên; không chỉ số vĩnh viễn.
 - **Hệ quả:** kết quả mùa quyết định mặt trận mở đầu và câu thoại NPC của mùa sau, không xóa thành quả mùa trước.
 
-### 4.6 Đại chiến bang hội và thế lực
+### 4.6 Đại chiến bang hội và tổ chức
 
 - Bang hội **cam kết** với một mặt trận của Hội Giữ Nhịp mỗi mùa; không có phe "thiện–ác" giữa người chơi.
 - **Tranh Trạm:** cửa sổ theo lịch ≤ 45 phút (vừa với giới hạn thời gian chơi của người dưới 18 tuổi theo Nghị định 147/2024 — [monetization.md §7](monetization.md#7-bảo-vệ-người-chơi-và-tuân-thủ)), số người mỗi phía có trần, chênh lệch trang bị được nén.
@@ -135,7 +136,7 @@ Mỗi mùa theo bốn phần ở [progression-social.md §8](progression-social.
 
 ### 4.8 Chương mở rộng
 
-Mỗi linh vực mới mang một câu hỏi từ [World Bible §3](world-bible.md#3-linh-vực-và-cách-mở-rộng) và một mặt của Hợp Dòng. Đích dài hạn là cung **"Người giữ nhịp"** của World Bible: xây cơ chế cùng gìn giữ trước đợt Hợp Dòng lớn — không phải tiêu diệt một Chúa tể bóng tối.
+Linh vực mới không tự sinh một trực hệ mới; các thế lực có thể cùng hiện diện trong mỗi vùng. Mỗi linh vực mới mang một câu hỏi từ [World Bible §3](world-bible.md#3-linh-vực-và-cách-mở-rộng) và một mặt của Hợp Dòng. Đích dài hạn là cung **"Người giữ nhịp"** của World Bible: xây cơ chế cùng gìn giữ trước đợt Hợp Dòng lớn — không phải tiêu diệt một Chúa tể bóng tối.
 
 ## 5. Lựa chọn và hệ quả
 
@@ -164,7 +165,7 @@ Không lựa chọn nào đổi sức mạnh chiến đấu hoặc khóa quyền
 | --- | --- | --- |
 | Tuyến chính | ~30% | Mỗi bước dạy hoặc kiểm tra một điều; có checkpoint |
 | Thử thách truyền thừa | ~15% | Kiểm tra kỹ năng (né một loại nguy hiểm, phản đòn đúng lúc); mở nhánh, truyền thừa phụ |
-| Chuyện vùng | ~25% | Có lựa chọn hoặc phát hiện; gắn thế lực địa phương |
+| Chuyện vùng | ~25% | Có lựa chọn hoặc phát hiện; gắn tổ chức địa phương |
 | Khám phá, Hồi Ức | ~15% | Dùng Mạch tính và bộ pháp; không bắt buộc cho tuyến chính |
 | Cộng đồng, sự kiện | ~15% | Có điểm kết thúc rõ, đóng góp solo được |
 
@@ -182,10 +183,12 @@ Mục tiêu "hạ N quái giống nhau" chiếm ≤ 20% tổng mục tiêu và p
 - Hắc Triều tuyển người từ mọi linh vực; không phản diện nào mang trang phục hay giọng nói của một dân tộc cụ thể.
 - Không đặt tên đập, sông, nước hay công trình có thật trong câu chuyện về đập ([risk-register D-10](../research/risk-register.md#d--thiết-kế)).
 - Sinh vật thần thoại có nguồn gốc tôn kính (rồng, giao long, hổ, chim thần) là nạn nhân được trả nhịp, không phải quái để farm.
-- Nhân vật lịch sử và thần linh đang được thờ (Hùng Vương, Thánh Gióng, Sơn Tinh, Hai Bà Trưng...) không xuất hiện như nhân vật.
+- Chính sách cấm bao trùm của D6 đã bị thay phần xung đột bởi #18. Mỗi tên nguồn, hình tượng hoặc vai trò xuất hiện cần hồ sơ riêng; người chơi vẫn là người kế thừa. Chưa chọn các nhân vật lịch sử/nguồn ngoài danh mục #18 làm nội dung mới.
 
 ## 9. Câu hỏi mở
 
+- Tên riêng/nguồn/quan hệ trực hệ và ánh xạ lore kit theo #18; quy tắc đổi thế lực hoặc học chéo chưa chốt.
+
 - Kết cục của Người Đo Mạch: cứu chuộc, thất bại, hay để cộng đồng quyết định theo mùa?
 - Hợp Dòng có làm thay đổi bản đồ vĩnh viễn ở mùa nào đó không? Nếu có, cần ADR vì ảnh hưởng tài nguyên và nội dung.
-- Có nên cho người chơi đổi thế lực (rời Hội Giữ Nhịp) không, và hệ quả gì?
+- Có nên cho người chơi đổi tổ chức (rời Hội Giữ Nhịp) không, và hệ quả gì?

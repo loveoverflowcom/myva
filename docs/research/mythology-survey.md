@@ -5,6 +5,8 @@
 
 ## 1. Phương pháp và cách đọc
 
+**Đối chiếu #18, 2026-10-12:** đây là khảo sát địa lý/cảnh quan/mô-típ lịch sử, không là trục chia nhân vật hiện hành. Năm thế lực và phân tầng nguồn/trực hệ theo [ADR 0004](../decisions/0004-five-factions-lineage-hierarchy.md); [hồ sơ năm nguồn](five-factions-sources.md) bổ sung nghiên cứu đúng hướng mới. Các mức dùng cũ không là lệnh cấm bao trùm việc nghiên cứu tên/thực thể đang được thờ. Mức chuyển thể cụ thể vẫn cần hồ sơ riêng.
+
 ### Nhãn
 
 - **DK** — dữ kiện có nguồn trong mục [13](#13-nguồn-tham-khảo), ghi dạng `[S#]`.
@@ -30,7 +32,7 @@ Phần lớn nguồn ở bản này là hạng B. Trước khi một linh vực 
 | **2 — Chuyển hóa có duyệt** | Dùng mô-típ, kiến trúc, cảnh quan với tên hư cấu, sau khi có cố vấn | Kênh ngầm kiểu qanat; chim chữa lành kiểu Simurgh |
 | **3 — Dùng có nguồn** | Tên hoặc hình tượng từ văn bản cổ/văn học dân gian phổ biến, không gắn thờ phụng đang diễn ra; vẫn ghi nguồn | Enkidu; Sampo; Chú Cuội |
 
-**Nguyên tắc chung (đề xuất):** không biến thần linh đang được thờ thành nhân vật chơi được, boss, quái farm hay vật phẩm; không gom một khu vực thành một nền văn hóa; không gán một nền văn hóa có thật vào phe ác.
+**Nguyên tắc hiện hành #18:** tên/thực thể có thật được nghiên cứu làm nguồn trực hệ; không chỉ dùng Cổ Linh vô danh. Người chơi là người kế thừa; mức xuất hiện/hình tượng cần quyết định từng nội dung. Không gom một khu vực thành một nền văn hóa hoặc một hệ nhân vật; không mặc định tôn giáo/văn hóa khác là phe ác. Chính sách D6 cũ đã được thay phần xung đột.
 
 ---
 
@@ -191,7 +193,7 @@ Không phải một nền văn hóa: hàng nghìn ngôn ngữ và dân tộc.
 
 ## 10. Mô-típ xuyên văn hóa
 
-Đây là nền cho [năm truyền thừa](../design/lineages.md) và [vũ trụ quan](../design/narrative.md#2-trả-lời-các-câu-hỏi-nền). Mỗi mô-típ xuất hiện ở các nền văn hóa **không phụ thuộc nhau**, nên MyVa có thể dùng mô-típ mà không gom các nền văn hóa thành một.
+Đây từng là nền đề xuất năm dòng mạch của D2/D5 (ADR 0002), nay chỉ giữ như kho cảm hứng ST/cảnh quan/mẫu cơ chế. Không dùng sự lặp mô-típ để suy các tôn giáo có chung nguồn gốc thần học. [Trực hệ hiện hành](../design/lineages.md) phải gắn nguồn cụ thể theo #18.
 
 | # | Mô-típ | Ví dụ có nguồn | Dùng trong MyVa |
 | --- | --- | --- | --- |

@@ -6,7 +6,7 @@
 
 1. Hậu duệ/người kế thừa giúp người chơi có hành trình trưởng thành và cho phép viết nhân vật mới, thay vì phải cân bằng trực tiếp quyền năng của các vị thần.
 2. Khám phá và tiến triển MMO tạo động lực quay lại; boss và địa hình dựa trên kỹ năng tạo chất lượng cho từng phút chơi.
-3. Linh vực tạo nguồn nội dung dài hạn; học truyền thừa khác vùng mở hướng build theo chiều ngang.
+3. Linh vực tạo nguồn nội dung dài hạn; học chéo trực hệ theo nguồn/mentor mở hướng build theo chiều ngang.
 4. Solo và cày chay được đặt thành nguyên tắc từ đầu, giúp thiết kế reward tránh ép người chơi vào guild hoặc nạp tiền.
 5. Draft đã quan tâm tài nguyên, tải asset và server authoritative trước khi làm thế giới lớn.
 
@@ -19,7 +19,7 @@
 | “Tuyệt đối không lạm phát” chưa có định nghĩa | Có trần tài nguyên vẫn có thể tăng giá vì thiếu hàng hoặc tiền mới | Ghi riêng tồn lượng, lượt phát hành, tiền tệ, chỉ số giá và khả năng tiếp cận; dùng mục tiêu đo được |
 | Tổng cấp độ có thể tăng mãi hoặc bị alt/bot thao túng | Tạo động lực nuôi tài khoản phụ để tăng nguồn cung | Cấp độ đóng góp bị cap, giảm dần; active cohort có trọng số; ngân sách toàn thế giới độc lập shard |
 | Nguồn cung phản ứng giá trực tiếp | Đầu cơ có thể đẩy controller và gây dao động | Dữ liệu trễ, nhu cầu tiêu dùng đã hoàn tất, rate limit, deadband và chế độ ngân sách an toàn |
-| Một châu lục được xem như một “hệ” | Giản lược các cộng đồng khác nhau thành một kiểu nhân vật | Linh vực là địa lý hư cấu; truyền thừa là các nhánh riêng, có cổng review văn hóa |
+| Một châu lục được xem như một “hệ” | Giản lược các cộng đồng khác nhau thành một kiểu nhân vật | Linh vực là địa lý hư cấu; thế lực/nguồn/trực hệ/nhánh/kit theo #18 độc lập địa lý, có hồ sơ nguồn riêng |
 | Xuất thân theo nơi sống | Có thể khóa người chơi vào vị trí thực hoặc chủng tộc | Người chơi tự chọn linh vực; không dùng IP/GPS/quốc tịch để khóa sức mạnh |
 | Học kỹ năng mọi vùng không có giới hạn build | Build tối ưu lấy tất cả, roster bị vô hiệu | 5 slot chiến đấu; 2 căn bản + 3 thuật; cơ chế giao thoa có chi phí cơ hội |
 | Native Bevy trong CMP bị hiểu nhầm là tính năng sẵn có | Chọn nội dung rồi mới phát hiện lifecycle/render không ổn | Spike Android và iOS là gate; chưa thông qua thì chưa cam kết mở rộng mobile |
@@ -43,7 +43,7 @@ Trần nguồn cung cũng không bảo đảm chỉ số giá bất biến. Thay
 | Tham số | Đề xuất dùng chung |
 | --- | --- |
 | Linh vực đầu | Vân Thủy, tên hư cấu; làng Bến Lau |
-| Nội dung slice | 3 bản đồ nhỏ, 3 truyền thừa, 1 boss Kẻ Giữ Đập |
+| Nội dung slice | 3 bản đồ nhỏ, 3 kit, 1 boss Kẻ Giữ Đập |
 | Thời lượng vòng chính | 20–30 phút, không phải tổng thời gian farm |
 | Loadout | 2 đòn nhẹ/nặng + 3 thuật, tổng 5 slot; thanh Mạch mở đại thuật biến thể một thuật |
 | Level cap prototype | 1–10 ở slice; 1–20 ở MVP, đều cần cân bằng |

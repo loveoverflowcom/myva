@@ -1,11 +1,11 @@
 # MyVa — Thần Mạch: Game Design Document
 
-> Bản nháp thiết kế v0.1. Các con số là giả thuyết để làm prototype và đo kiểm, chưa phải thông số đã cân bằng.
+> Nền thiết kế v0.1, đồng bộ #18 ngày 2026-10-12 theo [ADR 0004](../decisions/0004-five-factions-lineage-hierarchy.md). Các con số là giả thuyết để làm prototype và đo kiểm, chưa phải thông số đã cân bằng.
 > Tên tiếng Việt chính thức: **Thần Mạch**. Tên dự án và repository: **MyVa / myva**.
 
 ## 1. Đề xuất sản phẩm
 
-MyVa là MMORPG hành động 2D nhìn ngang, nơi người chơi kế thừa một mạch sức mạnh thần thoại, học cách điều khiển nó và đi qua những vùng văn hóa khác nhau. Người chơi là con người có lựa chọn và giới hạn; không trực tiếp trở thành một vị thần có toàn quyền.
+MyVa là MMORPG hành động 2D nhìn ngang, nơi người chơi kế thừa một mạch sức mạnh thần thoại, học cách điều khiển nó và khám phá nhiều linh vực. Năm thế lực đã chốt lấy nền tảng từ **Kitô giáo, Hồi giáo, Ấn Độ giáo, Phật giáo và Đạo giáo**. Trục nhân vật là **Thế lực → Nguồn bảo trợ → Trực hệ → Nhánh chiến đấu → Kit**; địa lý không khóa trực hệ. Tên riêng, nguồn cụ thể, roster và kỹ năng mới vẫn là đề xuất ở [lineages](lineages.md). Người chơi là con người có lựa chọn và giới hạn; không trực tiếp trở thành một vị thần có toàn quyền.
 
 Trải nghiệm cốt lõi: một thế giới có người khác cùng khám phá, một trận đánh thắng bằng đọc tình huống, và một hành trình đủ ý nghĩa khi chơi một mình. Hạ boss giúp mở đường và hiểu thế giới; cấp độ, trang bị và tài nguyên hỗ trợ hành trình này.
 
@@ -15,7 +15,7 @@ Ngọc Rồng Online gợi ý nhịp khám phá và gắn bó cộng đồng; Mo
 
 | Điểm trong draft | Đánh giá | Quyết định đề xuất |
 | --- | --- | --- |
-| Thần thoại đa văn hóa | Có bản sắc, nhưng quá rộng để khởi đầu | Một linh vực hư cấu lấy cảm hứng Đông Nam Á; các vùng khác có hồ sơ nghiên cứu trước khi sản xuất |
+| Năm thế lực theo nguồn tôn giáo | Trục thiết kế đã chốt ở #18; chưa triển khai roster | Giữ prototype Vân Thủy; nghiên cứu từng nguồn/trực hệ, không làm đồng thời năm thế lực |
 | MMO + đối kháng + platformer | Hấp dẫn nhưng dễ xung đột về độ trễ, camera và số nút | Combat ngắn, tín hiệu rõ; thử thách chính xác đặt trong instance; không yêu cầu phản xạ từng frame |
 | Solo, cày chay, bang hội | Phù hợp nhiều nhóm người chơi | Cốt truyện và tiến triển cơ bản hoàn thành solo; bang hội có nội dung hợp tác và ảnh hưởng xã hội riêng |
 | Tài nguyên theo tổng cấp độ | Dễ bị tài khoản phụ và tích trữ thao túng | Cấp độ hiệu dụng chỉ là một tín hiệu; còn có hoạt động hợp lệ, trữ lượng, tiêu hao và ngân sách phát hành |
@@ -28,7 +28,7 @@ Ngọc Rồng Online gợi ý nhịp khám phá và gắn bó cộng đồng; Mo
 
 1. **Dễ nhập cuộc:** đi lại, đánh thường, né và nhận nhiệm vụ đầu trong 10 phút; người chơi hiểu vì sao bị trúng đòn.
 2. **Khó thành thạo:** hướng đánh, vị trí, tài nguyên chiến đấu và lựa chọn phản công tạo khác biệt; lực chiến không giải quyết mọi tình huống.
-3. **Truyền thừa có bản sắc:** bộ kỹ năng của một vùng có hình thái, vai trò và giới hạn riêng; học vùng khác tạo lựa chọn, không cộng vô hạn sức mạnh.
+3. **Truyền thừa có bản sắc:** trực hệ/nhánh có bộ kỹ năng, vai trò và giới hạn riêng; học chéo theo nguồn truyền thừa tạo lựa chọn, không cộng vô hạn sức mạnh.
 4. **Solo có đường đi:** có thể hoàn thành tuyến chính, mở khóa vùng và sở hữu trang bị đủ dùng mà không cần bang hội hay thanh toán.
 5. **Thế giới có sức chứa:** tài nguyên tái sinh trong giới hạn, tài sản được tiêu hao có lý do, và quy mô người chơi không tự động cấp quyền phát hành vô hạn.
 
@@ -63,7 +63,9 @@ Linh vực đầu: **Vân Thủy**. Điểm xuất phát: **Bến Lau**. Đây l
 | Rừng Bậc Nước | Khám phá ngoài trời | Quái thường, tuyến thu thập, nhánh platform ngắn và đường dễ thay thế |
 | Đập Cổ | Instance thử thách | 2 nhóm địch, checkpoint, boss **Kẻ Giữ Đập** |
 
-Ba truyền thừa đề xuất: **Long Lưu** (dòng chảy/điều tiết), **Sơn Cốt** (kiên định/áp lực cận chiến), **Phong Vũ** (chuyển động/tầm đánh). Người chơi thử cả ba trước khi chọn; đổi truyền thừa tại hub trong slice để hỗ trợ kiểm thử.
+Ba kit đề xuất cho slice: **Long Lưu** (dòng chảy/điều tiết), **Sơn Cốt** (kiên định/áp lực cận chiến), **Phong Vũ** (chuyển động/tầm đánh). Người chơi thử cả ba trước khi chọn; đổi kit tại hub trong slice để hỗ trợ kiểm thử.
+
+Đây là các kit/mẫu cơ chế giữ lại, chưa gán sang năm thế lực; Long Lưu là baseline đã chạy, Sơn Cốt/Phong Vũ mở theo gate #4.
 
 Slice có một tuyến truyện ngắn, 6–8 nhiệm vụ gồm các bước hướng dẫn, 3 archetype địch thường, một boss và một chuỗi chế tạo mẫu. Không suy rộng số lượng nội dung này thành cam kết MMO hoàn chỉnh.
 
@@ -79,7 +81,7 @@ Cấp độ mở quyền dùng và giúp đọc tiến độ; không liên tục
 
 Người chơi trang bị **5 hành động chiến đấu: 2 đòn cơ bản + 3 thuật**. Đại thuật là phiên bản tăng cường của một thuật đã chọn, tiêu hao thanh Mạch; không thêm nút kỹ năng thứ sáu. Chi tiết tài nguyên, giới hạn combo và đối đầu trong [combat.md](combat.md).
 
-Kỹ năng từ vùng khác chỉ được dùng trong số ô hiện có. Một nhân vật có thể học nhiều thuật nhưng không mang toàn bộ vào trận. Không buộc đổi linh vực gốc để học hoặc chơi với bạn bè.
+Kỹ năng học từ trực hệ khác chỉ được dùng trong số ô hiện có; quan hệ nguồn và tính tương thích còn cần duyệt. Mentor có thể ở nhiều vùng, việc học không phụ thuộc quê hương. Một nhân vật có thể học nhiều thuật nhưng không mang toàn bộ vào trận. Không buộc đổi linh vực gốc để học hoặc chơi với bạn bè.
 
 Tiến độ cốt truyện của mỗi người được lưu riêng. Co-op cho phép người đã hoàn thành chơi lại; chỉ thưởng tiến triển một lần, phần thưởng lặp có ngân sách riêng. MVP chưa có trao đổi vật phẩm ràng buộc nhiệm vụ.
 
@@ -158,10 +160,10 @@ Các ngưỡng trên là cổng review, không thay thế phỏng vấn người
 ## 15. Quyết định còn mở
 
 - Hình thức tạo nhân vật, lựa chọn giới tính/ngoại hình và giọng nói; không gắn quyền chọn linh vực với địa chỉ thực hay dân tộc người chơi.
-- Cách giữ bản sắc vùng khi học kỹ năng giao thoa; kiểm thử tổ hợp trước khi mở nhiều truyền thừa.
+- Tên phe, danh mục nguồn/trực hệ, quan hệ truyền thừa và cách giữ bản sắc trực hệ khi học chéo; kiểm thử tổ hợp trước khi mở nhiều truyền thừa.
 - Chi phí tích hợp render native CMP và lựa chọn sprite/skeletal; chỉ chốt sau spike.
 - Bố cục touch tap/hold hay hai nút đòn cơ bản; quyết định từ prototype, không từ hình mockup riêng lẻ.
 - Nhịp tiến triển MVP, độ bền, danh mục item có thể trade và giới hạn thương mại.
 - Danh sách thiết bị mục tiêu, mức tải channel và quy mô vận hành; chưa cam kết thiết bị hoặc CCU cụ thể.
 
-Đề xuất trả lời một phần các câu hỏi trên (giữ bản sắc khi học kỹ năng giao thoa, phạm vi bản ra mắt, tạo nhân vật) nằm ở [báo cáo thiết kế thế giới v0.2](worldbuilding-report.md), chờ [quyết định 0002](../decisions/0002-lineages-world-structure.md).
+Phần đã chốt ở [ADR 0004](../decisions/0004-five-factions-lineage-hierarchy.md) ưu tiên hơn đề xuất cũ; D3–D5, D7–D9 và phần còn lại D6 của [ADR 0002](../decisions/0002-lineages-world-structure.md) chưa được duyệt ngầm. [Báo cáo đồng bộ](worldbuilding-report.md) và [hợp đồng #20](lineages.md#7-hợp-đồng-bàn-giao-cho-issue-20) ghi các việc thiết kế tiếp theo; không đổi combat core, engine, scope slice hay ngân sách tài nguyên.

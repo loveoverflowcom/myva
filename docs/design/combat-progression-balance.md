@@ -2,6 +2,7 @@
 
 > Đề xuất v0.2, cập nhật 2026-10-11 cho [#19](https://github.com/loveoverflowcom/myva/issues/19). Mục **E** của [báo cáo thiết kế](worldbuilding-report.md).
 > [combat.md](combat.md) vẫn là nguồn sự thật cho luật lõi (tick, timing, guard, cancel, DR khống chế, điều khiển). Tài liệu này bổ sung lớp truyền thừa, thuật khách, tiến triển và **phương pháp kiểm chứng cân bằng**.
+> Đồng bộ #18 ngày 2026-10-12: **Thế lực → Nguồn bảo trợ → Trực hệ → Nhánh chiến đấu → Kit**, năm nền tảng theo [ADR 0004](../decisions/0004-five-factions-lineage-hierarchy.md). Các cột Long Lưu/Sơn Cốt/Phong Vũ/Lâm Trảo/Tơ Vọng là **kit/mẫu cơ chế cũ chưa ánh xạ lore**, không phải năm thế lực. #18 không duyệt các GT dưới đây.
 > **Không truyền thừa nào được tuyên bố là đã cân bằng.** Mọi chỉ số dưới đây là giả thuyết (GT) để graybox và mô phỏng.
 
 ## 1. Nguyên tắc
@@ -13,6 +14,8 @@
 5. **Mỗi đòn mạnh có điểm yếu đọc được:** startup, hướng, khoảng cách, tài nguyên hoặc hồi chiêu.
 
 ## 2. Hành động chung và biến thể theo truyền thừa
+
+Bảng là GT cũ của D2, **không phải hành vi core hiện có**. Dùng để so sánh cơ chế kit, không khóa cả một thế lực vào bộ pháp/vai trò. Chưa chọn các nội tại/biến thể này cho nguồn #18 hoặc #20. Riêng Lâm Trảo: hồi máu Hoang Sinh bên dưới là phương án lịch sử; #20 đề xuất Dấu Săn thay thế, cần thiết kế và thử riêng trước khi sửa kit.
 
 | Hành động chung | Long Lưu | Sơn Cốt | Phong Vũ | Lâm Trảo | Tơ Vọng |
 | --- | --- | --- | --- | --- | --- |
@@ -59,7 +62,7 @@ Hai cơ chế đổi bên (Nanh Kép của Lâm Trảo, Hồi Vọng của Tơ V
 
 ## 4. Khắc chế giữa các phong cách
 
-Ma trận khắc chế mềm ở [lineages.md §5](lineages.md#5-ma-trận-quan-hệ). Cơ sở thiết kế:
+Các câu hỏi matchup theo cơ chế ở [lineages.md §5](lineages.md#5-khắc-chế-theo-cơ-chế). Không có vòng khắc chế giữa tôn giáo, không dùng ma trận 5 kit cũ làm ma trận thế lực. Cơ sở thiết kế:
 
 | Phong cách | Thắng khi | Thua khi | Công cụ của bên bất lợi |
 | --- | --- | --- | --- |
@@ -69,7 +72,7 @@ Ma trận khắc chế mềm ở [lineages.md §5](lineages.md#5-ma-trận-quan-
 | Phản đòn (Long Lưu) | Đối thủ tấn công đoán trước được | Bị phá thủ, bị đe dọa trễ | Dòng Xiết chủ động, Xoáy Nước |
 | Bày thế (Tơ Vọng) | Có thời gian đặt neo | Bị áp sát nhanh, neo bị bắn hạ | Hồi Vọng thoát, Kéo Sợi ngắt áp sát |
 
-## 5. Thuật khách — học kỹ năng từ linh vực khác
+## 5. Thuật khách — học chéo trực hệ
 
 ### Các phương án
 
@@ -85,7 +88,7 @@ Phương án đề xuất khớp với "truyền thừa phụ" đã có ở [pro
 
 ### Luật thuật khách (GT)
 
-1. Học truyền thừa phụ qua nhiệm vụ của mentor ở linh vực khác (cấp ~22). Đổi truyền thừa phụ tại hub.
+1. Đề xuất học chéo qua mentor/thử thách của nguồn/trực hệ tương thích. Mentor có thể ở cùng hoặc khác linh vực; không khóa theo nơi sinh/vùng. Mốc ~22, đổi tại hub, số ô và tính tương thích liên thế lực vẫn là D7 chưa duyệt.
 2. Tối đa **1** thuật khách trong 3 ô thuật. Không làm đại thuật.
 3. Thuật khách **không nhận** nội tại truyền thừa và nội tại nhánh của người dùng, cũng không nhận nội tại của truyền thừa gốc của nó.
 4. Đường cancel: chỉ đường chung "đòn nhẹ trúng → thuật" ([combat.md §6](combat.md#6-combo-và-cancel)); không nối vào chuỗi riêng của truyền thừa.
@@ -103,6 +106,8 @@ Mega Man (1987) cho người chơi nhận vũ khí của boss sau khi thắng. M
 - Nếu một truyền thừa gần như luôn lấy thuật khách để vá cùng một điểm yếu: xem lại điểm yếu thay vì tăng sức mạnh thuật khách.
 
 ## 6. Cơ chế theo loại nội dung
+
+Bảng GT từ ADR 0002 để nghiên cứu, chưa là ruleset #20 đã duyệt. #20 cần tách MMORPG/PvE, Đấu trường chọn đồ trước round và Chiến tuyến có tài nguyên trận; không triển khai các mode bởi #18. Các ô liên quan luật chung phải theo [combat.md](combat.md), không ghi đè core.
 
 | Cơ chế | PvE | PvP (đấu trường, xếp hạng) | Chiến dịch bang hội |
 | --- | --- | --- | --- |
@@ -145,7 +150,7 @@ Trần 30 khớp `L_cap = 30` của [economy.md §5](economy.md#5-tổng-cấp-�
 | Trục | Phần thưởng | Không cho |
 | --- | --- | --- |
 | Khám phá (Hồi Ức, Mạch cơ) | Lore, sổ đối chiếu, mỹ phẩm, đường tắt | Chỉ số |
-| Danh vọng thế lực | Nhiệm vụ, cửa hàng mỹ phẩm, lựa chọn truyện | Vật phẩm sức mạnh độc quyền |
+| Danh vọng tổ chức | Nhiệm vụ, cửa hàng mỹ phẩm, lựa chọn truyện | Vật phẩm sức mạnh độc quyền |
 | Truyền thụ (dẫn người mới) | Danh hiệu, mỹ phẩm | Vật liệu giao dịch được |
 | Chiến dịch | Danh hiệu, Biên Niên, mỹ phẩm | Bonus vĩnh viễn |
 
@@ -229,7 +234,7 @@ Cách tiếp cận có tiền lệ học thuật: playtest tự động bằng "
 
 | Bộ | Nội dung | Ngưỡng đề xuất (GT) |
 | --- | --- | --- |
-| T1 — Ma trận đối đầu | 5×5 truyền thừa × 2×2 nhánh; B2 vs B2 cùng trình độ; ≥ 2.000 trận mỗi cặp | Mỗi cặp 45–55% (khoảng tin cậy 95%); tỷ lệ thắng tổng mỗi truyền thừa 48–52% |
+| T1 — Ma trận đối đầu | N×N kit được chọn × nhánh/build; B2 vs B2 cùng trình độ; ≥ 2.000 trận mỗi cặp | Mỗi cặp 45–55% (khoảng tin cậy 95%); tỷ lệ thắng tổng mỗi kit 48–52% |
 | T2 — Tách biệt kỹ năng | B2 vs B1 cùng trang bị; B2 vs B1 có trang bị +1 tier | ≥ 75% cùng trang bị; ≥ 55% khi đối thủ hơn một tier |
 | T3 — Tác động trang bị | Cùng bot, chênh một tier | Bên mạnh hơn thắng 60–70%: trang bị quan trọng nhưng không tuyệt đối |
 | T4 — Dãy boss PvE | Mọi truyền thừa + nhánh, solo và các tổ hợp co-op | Tỷ lệ qua boss của B1 trong ±10 điểm % trung vị; thời gian trong ±15% trung vị |
@@ -254,4 +259,5 @@ Mỗi báo cáo cân bằng gồm: câu hỏi kiểm chứng, cấu hình, số 
 - Thoát Mạch có cần trong PvE với boss không, hay chỉ PvP?
 - Nén chênh lệch trang bị 50% trong chiến dịch có đủ chống snowball mà vẫn giữ động lực nâng đồ?
 - B3 (học tăng cường) có đáng chi phí hạ tầng so với B2?
+- #20 chọn kit, catalog item và ruleset nào sau baseline #19? Xem [hợp đồng bàn giao](lineages.md#7-hợp-đồng-bàn-giao-cho-issue-20); chưa triển khai roster năm thế lực.
 - Có công khai số liệu cân bằng cho cộng đồng không, và ở mức nào?

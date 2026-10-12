@@ -1,6 +1,7 @@
 # MyVa — Thần Mạch: tiến triển, hoạt động xã hội và chiến dịch
 
 > Đề xuất v0.1. Các con số là giả thuyết để prototype và playtest, chưa phải cam kết cân bằng.
+> Đồng bộ #18 ngày 2026-10-12 theo [ADR 0004](../decisions/0004-five-factions-lineage-hierarchy.md): năm nền tảng/trục trực hệ đã chốt; nhánh, kit, học chéo và pacing mới vẫn là đề xuất.
 > Tài liệu đi cùng [World Bible](world-bible.md); ưu tiên solo khả thi, kỹ năng có giá trị và tiến triển ngang.
 
 ## 1. Các lớp tiến triển
@@ -9,7 +10,7 @@
 | --- | --- | --- |
 | Cấp nhân vật | Mốc hướng dẫn, điểm phát triển và quyền vào nội dung phù hợp | Slice 1–10; MVP 1–20, đều tạm thời. Không tăng trần cấp mỗi mùa theo thói quen. |
 | Thành thạo điều khiển | Né, đỡ, phản công, combo, xử lý địa hình và đọc boss | Học qua sân tập và thử thách; không bán khả năng bỏ qua luật chiến đấu. |
-| Truyền thừa | Bộ kỹ nghệ với lựa chọn chiến thuật | Nhiều lựa chọn không đồng nghĩa được trang bị tất cả cùng lúc. |
+| Trực hệ / nhánh / kit | Nguồn kế thừa dẫn tới bộ kỹ nghệ với lựa chọn chiến thuật | Nhiều lựa chọn không đồng nghĩa được trang bị tất cả cùng lúc. |
 | Trang bị | Đổi lối chơi, thế mạnh, hạn chế và diện mạo | Giới hạn tier, kiểm soát biên độ stat và tránh nhân nhiều hệ số khuếch đại. |
 | Khám phá | Đường đi, nhật ký, vật liệu và quan hệ địa phương | Không yêu cầu đăng nhập mỗi ngày để giữ bản đồ đã mở. |
 | Quan hệ/bang hội | Nhiệm vụ hợp tác, vận chuyển, raid và mục tiêu chung | Không cấp bonus chiến đấu vĩnh viễn vượt xa người solo. |
@@ -24,7 +25,7 @@ PvE vẫn cần điều kiện trang bị phù hợp; không hứa rằng một 
 | --- | --- | --- | --- |
 | Nhập môn | Cấp 1–3 | Di chuyển, đòn cơ bản, né/đỡ và mục tiêu nhiệm vụ | Hoàn thành sân tập bằng cả bàn phím và cảm ứng. |
 | Học đọc tình huống | Cấp 4–6 | Combo ngắn, địa hình, nhóm địch và dấu hiệu | Vượt Rừng Bậc Nước không cần tăng cấp lặp lại bắt buộc. |
-| Thử thách slice | Cấp 7–10 | Quản lý kỹ năng và quy luật boss | Đánh Kẻ Giữ Đập với ba truyền thừa bằng build nhập môn. |
+| Thử thách slice | Cấp 7–10 | Quản lý kỹ năng và quy luật boss | Đánh Kẻ Giữ Đập với ba kit slice bằng build nhập môn. |
 | MVP online | Cấp 11–20 | Co-op, trang bị ngang, nhiệm vụ lặp và xã hội cơ bản | Chơi solo hoặc nhóm nhỏ tại cùng một linh vực. |
 | Mở rộng thế giới | Sau khi MVP đạt tiêu chí | Truyền thừa phụ, hành trình liên vùng, lựa chọn xuất phát mới | Không làm phế trang bị/hành trình của người chơi cũ. |
 
@@ -34,7 +35,7 @@ Người bỏ lỡ một mùa có đường bắt kịp bằng nội dung đang 
 
 ## 3. Truyền thừa và bộ kỹ nghệ
 
-Slice và MVP có một truyền thừa chính: **Long Lưu**, **Sơn Cốt** hoặc **Phong Vũ**.
+Trục nhân vật là **Thế lực → Nguồn bảo trợ → Trực hệ → Nhánh chiến đấu → Kit**; năm nền tảng là Kitô giáo, Hồi giáo, Ấn Độ giáo, Phật giáo, Đạo giáo. Slice giữ ba kit **Long Lưu**, **Sơn Cốt**, **Phong Vũ** theo gate; Long Lưu hiện là baseline đã chạy. Chúng chưa ánh xạ sang nguồn/trực hệ và không là tên thế lực. Xem [danh mục ứng viên](lineages.md).
 Mục tiêu ban đầu là tối đa **5 kỹ năng trang bị: 2 kỹ năng cơ bản + 3 kỹ nghệ**.
 Hai kỹ năng cơ bản là đòn nhẹ và đòn nặng; chúng nằm trong tổng năm ô. Nhảy, né/lướt và đỡ là thao tác chung ngoài năm ô này.
 Mapping nút cảm ứng, số thao tác đồng thời và hiệu quả thực tế phải được thử trước khi chốt.
@@ -43,7 +44,7 @@ Mỗi kỹ nghệ cần chức năng, chi phí, khoảng hồi phục, dấu hi�
 Một kỹ nghệ mạnh về một mặt phải có hạn chế: khoảng cách, hướng, thời gian cam kết hoặc tài nguyên sử dụng.
 Không tạo phép ghép cho phép vừa bất tử, vừa khóa đối thủ, vừa gây sát thương tối đa.
 
-Trong mở rộng, người chơi có thể học **một truyền thừa phụ** theo tuyến nhiệm vụ.
+Trong mở rộng, **một truyền thừa phụ** là đề xuất học chéo từ trực hệ/nguồn tương thích qua mentor và thử thách; số thuật, thời điểm mở và quan hệ giữa các thế lực chưa duyệt (D7). Mentor có thể ở nhiều bản đồ; không khóa trực hệ theo vùng.
 Truyền thừa phụ mở lựa chọn cho cùng số ô trang bị; không tự thêm thanh kỹ năng hay cộng toàn bộ passive.
 Những ghép bộ có tác dụng nhân chỉ số cần hạn chế riêng và kiểm tra mô phỏng trước khi phát hành.
 Không khóa học truyền thừa theo nơi sinh, màu da, giới tính hoặc quốc tịch của nhân vật.
@@ -92,7 +93,7 @@ Không mất tiến triển vì nghỉ chơi; không yêu cầu chuỗi ngày li
 
 Một tuyến mới mở khi có lý do trong truyện, công cụ đi lại và nội dung đáng học.
 Mỗi tuyến chứa ít nhất hai loại nhiệm vụ: kết nối cộng đồng và vượt thử thách thực hành.
-Kỹ nghệ từ vùng khác thêm lựa chọn giải bài toán, không là phiên bản cấp cao hơn bắt buộc của kỹ nghệ cũ.
+Kỹ nghệ học chéo trực hệ thêm lựa chọn giải bài toán, không là phiên bản cấp cao hơn bắt buộc của kỹ nghệ cũ.
 
 Giao thương dựa trên khác biệt nhu cầu và chi phí vận chuyển, không cần độc quyền nguyên liệu tiến triển chỉ có ở vùng chiến tranh.
 Tài nguyên sinh ra ở địa phương vẫn thuộc trần phát hành toàn nền kinh tế; chuyển vùng không tạo thêm vật phẩm.
@@ -120,6 +121,8 @@ Lịch sử nhân vật và kết quả cốt truyện được giữ; ngân sá
 
 ## 9. PvP: triển khai sau nền tảng PvE
 
+[#20](https://github.com/loveoverflowcom/myva/issues/20) sở hữu kit/item và phân biệt Đấu trường → Chiến tuyến 1v1. #18 chỉ bàn giao nguồn/ứng viên; không thêm PvP vào #4. PvP thật chờ #5 hai client authoritative/reconnect; luật combat chung vẫn ở [combat.md](combat.md).
+
 Không dùng ranked PvP để quyết định MVP có hoạt động hay không.
 PvP xếp hạng về sau dùng cấp/tier chuẩn hóa và build được xác thực, ưu tiên kỹ năng và lựa chọn bộ kỹ nghệ.
 Sân tập/đấu giao hữu có thể xuất hiện trước nếu chiến đấu và mạng đủ ổn định.
@@ -130,7 +133,7 @@ Không rơi trang bị thiết yếu khi bị người khác hạ gục; không 
 ## 10. Tiêu chí kiểm chứng tiến triển
 
 - Người chơi mới hoàn thành tuyến slice mà không cần mua gì hoặc farm lặp bắt buộc.
-- Cả ba truyền thừa vượt được boss với trang bị nhập môn và có ít nhất một cách xử lý riêng.
+- Cả ba kit slice vượt được boss với trang bị nhập môn và có ít nhất một cách xử lý riêng.
 - Cùng tier, tăng thành thạo thao tác có tác động đo được tới thành công, thời gian và số lần trúng đòn.
 - Đổi build có giá dễ hiểu; sai lựa chọn đầu game không khiến nhân vật bị kẹt.
 - MVP pilot có người chơi solo tới trần 20 giả thuyết và nhóm co-op hoàn thành cùng bậc nội dung.
