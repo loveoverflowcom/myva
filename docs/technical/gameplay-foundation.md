@@ -72,7 +72,7 @@ Sự kiện lõi: `InputRejected`, `ActionStarted`, `Hit`, `Blocked`, `Countered
 ## 5. Định danh, lưu/khôi phục và hòa giải
 
 - `EntityRef::{Fighter(FighterId), Projectile(ProjectileId), Npc(NpcId)}` là ID miền: ổn định suốt `World`, không tái sử dụng (`ProjectileId` tăng dần). Handle `Entity` của Bevy chỉ sống trong một process và có thể được tái cấp sau khi xóa; nó không xuất hiện trong lệnh, sự kiện, replay hay snapshot. `EntityIndex` là bảng `EntityRef → Entity` do mirror quản lý.
-- **Lưu/khôi phục trong process:** `World: Clone`; test chứng minh khôi phục bản lưu rồi phát lại lệnh đã ghi cho cùng hash. Replay v2 thêm `seed`, phe và NPC, vẫn đọc được bản 1. Spawn hiện chỉ ở tick 0; spawn giữa trận cần dòng replay riêng. Định dạng lưu bền vững chưa làm.
+- **Lưu/khôi phục trong process:** `World: Clone`; test chứng minh khôi phục bản lưu rồi phát lại lệnh đã ghi cho cùng hash. Replay v3 hiện giữ `seed`, đội PvP và NPC; v1/v2 bị từ chối vì luật Mạch/CC. [Loadout PR2](kit-registry-loadout.md) ghi v4 có revision/hash pins, đường legacy giữ v3 frozen. Spawn hiện chỉ ở tick 0; spawn giữa trận cần dòng replay riêng. Định dạng lưu bền vững chưa làm.
 - **Hòa giải mạng (thiết kế, chưa triển khai):** server gửi snapshot kèm `last_seq` từng nhân vật; client bỏ input đã xác nhận, giữ input có `seq > last_seq`, rồi dự đoán lại từ trạng thái server. `Snapshot` hiện chỉ là khung nhìn cho presentation, không đủ để dựng lại `World` (thiếu buffer, tập mục tiêu đã trúng, bộ đếm hồi tài nguyên); prediction cần snapshot đầy đủ có version ở prototype online.
 
 ## 6. Authority và phần thưởng

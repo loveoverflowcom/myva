@@ -144,7 +144,7 @@ mod tests {
 
     #[test]
     fn telemetry_is_plain_ascii_json() {
-        let battle = Battle::new(Mode::Boss, 1);
+        let battle = Battle::new(Mode::Boss, 1).unwrap();
         let game = Match::new(battle.bout().clone());
         let art = ArtSummary {
             status: "failed",

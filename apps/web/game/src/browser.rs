@@ -42,13 +42,13 @@ fn queue(command: HostCommand) {
 
 /// Start exactly once per iframe. The iframe owns teardown of the WASM runtime.
 #[wasm_bindgen]
-pub fn start_game() {
+pub fn start_game() -> Result<(), JsValue> {
     if STARTED.with(|started| started.replace(true)) {
-        return;
+        return Ok(());
     }
 
-    App::new()
-        .insert_resource(WinitSettings::continuous())
+    let mut app = App::new();
+    app.insert_resource(WinitSettings::continuous())
         .add_plugins(
             DefaultPlugins
                 .set(WindowPlugin {
@@ -69,8 +69,12 @@ pub fn start_game() {
                     ..default()
                 }),
         )
-        .add_plugins(GrayboxPlugin::default())
-        .add_systems(RunFixedMainLoop, pull_bridge.in_set(GraySet::Shortcuts))
+        .add_plugins(GrayboxPlugin::default());
+    if let Err(error) = myva_graybox::graybox_startup_result(&app) {
+        STARTED.with(|started| started.set(false));
+        return Err(JsValue::from_str(&error.to_string()));
+    }
+    app.add_systems(RunFixedMainLoop, pull_bridge.in_set(GraySet::Shortcuts))
         .add_systems(
             Last,
             push_bridge
@@ -78,6 +82,7 @@ pub fn start_game() {
                 .after(myva_graybox::runtime::AuditSet),
         )
         .run();
+    Ok(())
 }
 
 #[wasm_bindgen]

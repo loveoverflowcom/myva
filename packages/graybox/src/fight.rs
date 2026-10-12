@@ -310,7 +310,13 @@ fn apply_host_commands(
                     HostCommand::SwitchMode => game.bout.mode().other(),
                     _ => game.bout.mode(),
                 };
-                let (bout, session) = game.bout.rematch(mode);
+                let (bout, session) = match game.bout.rematch(mode) {
+                    Ok(started) => started,
+                    Err(error) => {
+                        log.note(format!("Loadout bi tu choi: {error}"));
+                        continue;
+                    }
+                };
                 commands.queue(LoadSession(session));
                 *input = LocalInput::new(bout.player(), PLAYER_EPOCH, None);
                 log.note(match *message {

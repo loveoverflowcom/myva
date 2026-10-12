@@ -1045,7 +1045,7 @@ mod tests {
     fn attack_frames_follow_core_phases_not_fps() {
         let sheet = long_luu();
         let hit = sheet.clips["attack"].hit.unwrap();
-        let mut battle = Battle::new(Mode::Duel, 1);
+        let mut battle = Battle::new(Mode::Duel, 1).unwrap();
         battle.toggle_sparring_bot();
         battle.step(CommandFrame {
             action: Some(Action::Attack(Attack::Light)),
@@ -1078,7 +1078,7 @@ mod tests {
     #[test]
     fn airborne_and_moving_pick_jump_and_run() {
         let sheet = long_luu();
-        let battle = Battle::new(Mode::Duel, 1);
+        let battle = Battle::new(Mode::Duel, 1).unwrap();
         let arena = ArenaView::of(&battle);
         let mut fighter = arena.fighter(battle.bout().player()).unwrap().clone();
         assert_eq!(

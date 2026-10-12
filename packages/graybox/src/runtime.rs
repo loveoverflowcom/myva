@@ -601,7 +601,7 @@ mod tests {
     fn headless(path: &str) -> App {
         use bevy::asset::AssetMetaCheck;
         let mut app = App::new();
-        let (bout, _) = myva_sim::battle::Bout::start(Mode::Boss, 1);
+        let (bout, _) = myva_sim::battle::Bout::start(Mode::Boss, 1).unwrap();
         app.add_plugins(MinimalPlugins)
             .add_plugins(AssetPlugin {
                 file_path: path.to_owned(),
@@ -612,10 +612,9 @@ mod tests {
             .init_asset::<TextureAtlasLayout>()
             .init_resource::<ButtonInput<KeyCode>>()
             .add_message::<myva_gameplay::SimEvent>()
-            .insert_resource(crate::ArenaView::of(&myva_sim::battle::Battle::new(
-                Mode::Boss,
-                1,
-            )))
+            .insert_resource(crate::ArenaView::of(
+                &myva_sim::battle::Battle::new(Mode::Boss, 1).unwrap(),
+            ))
             .insert_resource(Match::new(bout))
             .add_plugins(art::ArtPlugin { enabled: true });
         app
@@ -755,7 +754,7 @@ mod tests {
         let character = app.world().resource::<ArtTables>().sheets["long_luu.sheet"]
             .image
             .id();
-        let (bout, _) = myva_sim::battle::Bout::start(Mode::Duel, 2);
+        let (bout, _) = myva_sim::battle::Bout::start(Mode::Duel, 2).unwrap();
         *app.world_mut().resource_mut::<Match>() = Match::new(bout);
         app.update();
         until(&mut app, |app| {

@@ -145,8 +145,12 @@ fn main() -> AppExit {
         mode,
         autopilot: demo,
         art,
-    })
-    .add_systems(Update, native_keys);
+    });
+    if let Err(error) = myva_graybox::graybox_startup_result(&app) {
+        eprintln!("Graybox loadout rejected: {error}");
+        return AppExit::error();
+    }
+    app.add_systems(Update, native_keys);
     if let Some(population) = population {
         let config = BenchmarkConfig::new(population, tier, seed).expect("checked preset");
         app.world_mut()

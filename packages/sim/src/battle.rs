@@ -10,12 +10,15 @@
 //! người chơi ([`Pilot`]) chạy phía client và gửi lệnh như một người chơi; kết quả được kiểm
 //! chứng bằng cách chạy lại replay của chính trận đó ([`Bout::verify`]).
 
-use crate::boss::{BossBrain, BossPhase, KE_GIU_DAP};
+use crate::boss::{BossBrain, BossPhase};
 use crate::bot::{PatternReader, RandomBot};
 use crate::fighter::{FighterId, State};
 use crate::input::InputFrame;
-use crate::kit::{ActionKind, LONG_LUU, PX};
+use crate::kit::{ActionKind, PX};
 use crate::protocol::{CommandEnvelope, CommandFrame, SessionEpoch, TickReport};
+use crate::registry::{
+    KitRegistry, LoadoutRequest, LockedLoadout, RegistryError, legacy_fixture_loadout,
+};
 use crate::replay::{Replay, ReplayError};
 use crate::session::{Controller, Role, Session, SessionConfig};
 use crate::tick::{TICK_HZ, Tick};
@@ -239,6 +242,8 @@ impl std::error::Error for VerifyError {}
 /// Trạng thái trận ngoài `Session`: đội hình, bot lái hộ, kết quả và số liệu từng bên.
 #[derive(Clone, Debug)]
 pub struct Bout {
+    loadout: LockedLoadout,
+    pinned_replay: bool,
     roster: Roster,
     pilot: Option<Pilot>,
     outcome: Option<(Outcome, Tick)>,
@@ -248,7 +253,34 @@ pub struct Bout {
 impl Bout {
     /// Dựng phiên cho trận `mode` ở vòng `round`: người chơi do [`PLAYER_EPOCH`] điều khiển, đối
     /// thủ là bộ não AI của phiên.
-    pub fn start(mode: Mode, round: u64) -> (Self, Session) {
+    pub fn start(mode: Mode, round: u64) -> Result<(Self, Session), RegistryError> {
+        let registry = KitRegistry::baseline()?;
+        let loadout = registry.resolve_loadout(legacy_fixture_loadout())?;
+        Self::start_locked(mode, round, &registry, loadout, false)
+    }
+
+    /// Select by stable ID and exact revision before spawning. v4 records the pins.
+    pub fn start_with_loadout(
+        mode: Mode,
+        round: u64,
+        request: LoadoutRequest<'_>,
+    ) -> Result<(Self, Session), RegistryError> {
+        let registry = KitRegistry::baseline()?;
+        let loadout = registry.resolve_loadout(request)?;
+        Self::start_locked(mode, round, &registry, loadout, true)
+    }
+
+    fn start_locked(
+        mode: Mode,
+        round: u64,
+        registry: &KitRegistry<'_>,
+        loadout: LockedLoadout,
+        pinned_replay: bool,
+    ) -> Result<(Self, Session), RegistryError> {
+        let rival_kit = match mode {
+            Mode::Boss => registry.entry("ke-giu-dap")?.kit,
+            Mode::Duel => loadout.kit(),
+        };
         let mut session = Session::new(SessionConfig {
             checkpoint_every: CHECKPOINT_EVERY,
             ..SessionConfig::new(round, round)
@@ -257,10 +289,10 @@ impl Bout {
             Mode::Boss => (400 * PX, 1_100 * PX),
             Mode::Duel => (640 * PX, 960 * PX),
         };
-        let player = session.spawn_player(&LONG_LUU, player_x, 1, None, PLAYER_EPOCH);
+        let player = session.spawn_player(loadout.kit(), player_x, 1, None, PLAYER_EPOCH);
         let rival = match mode {
             Mode::Boss => session.spawn_controlled(
-                &KE_GIU_DAP,
+                rival_kit,
                 rival_x,
                 -1,
                 None,
@@ -270,7 +302,7 @@ impl Bout {
             Mode::Duel => {
                 let seed = session.derive_seed(FighterId(player.0 + 1));
                 session.spawn_controlled(
-                    &LONG_LUU,
+                    rival_kit,
                     rival_x,
                     -1,
                     None,
@@ -280,6 +312,8 @@ impl Bout {
             }
         };
         let bout = Self {
+            loadout,
+            pinned_replay,
             roster: Roster {
                 mode,
                 round,
@@ -290,14 +324,29 @@ impl Bout {
             outcome: None,
             tallies: [Tally::default(); 2],
         };
-        (bout, session)
+        if pinned_replay {
+            session.pin_replay(registry)?;
+        }
+        Ok((bout, session))
     }
 
     /// Trận mới ở vòng kế tiếp, giữ chế độ lái của người chơi.
-    pub fn rematch(&self, mode: Mode) -> (Self, Session) {
-        let (mut next, session) = Self::start(mode, self.roster.round + 1);
+    pub fn rematch(&self, mode: Mode) -> Result<(Self, Session), RegistryError> {
+        let registry = KitRegistry::baseline()?;
+        let loadout = registry.resolve_loadout(self.loadout.request())?;
+        let (mut next, session) = Self::start_locked(
+            mode,
+            self.roster.round + 1,
+            &registry,
+            loadout,
+            self.pinned_replay,
+        )?;
         next.set_autopilot(self.autopilot());
-        (next, session)
+        Ok((next, session))
+    }
+
+    pub fn loadout(&self) -> LockedLoadout {
+        self.loadout
     }
 
     pub fn roster(&self) -> Roster {
@@ -453,23 +502,36 @@ pub struct Battle {
 }
 
 impl Battle {
-    pub fn new(mode: Mode, round: u64) -> Self {
-        let (bout, session) = Bout::start(mode, round);
-        Self {
+    pub fn new(mode: Mode, round: u64) -> Result<Self, RegistryError> {
+        let (bout, session) = Bout::start(mode, round)?;
+        Ok(Self {
             session,
             bout,
             seq: 0,
-        }
+        })
+    }
+
+    pub fn with_loadout(
+        mode: Mode,
+        round: u64,
+        request: LoadoutRequest<'_>,
+    ) -> Result<Self, RegistryError> {
+        let (bout, session) = Bout::start_with_loadout(mode, round, request)?;
+        Ok(Self {
+            session,
+            bout,
+            seq: 0,
+        })
     }
 
     /// Trận mới ở vòng kế tiếp, giữ chế độ lái của người chơi.
-    pub fn rematch(&self, mode: Mode) -> Self {
-        let (bout, session) = self.bout.rematch(mode);
-        Self {
+    pub fn rematch(&self, mode: Mode) -> Result<Self, RegistryError> {
+        let (bout, session) = self.bout.rematch(mode)?;
+        Ok(Self {
             session,
             bout,
             seq: 0,
-        }
+        })
     }
 
     pub fn session(&self) -> &Session {
@@ -552,7 +614,7 @@ mod tests {
 
     #[test]
     fn autopilot_beats_the_boss_and_the_replay_verifies() {
-        let mut battle = Battle::new(Mode::Boss, 1);
+        let mut battle = Battle::new(Mode::Boss, 1).unwrap();
         battle.bout_mut().set_autopilot(true);
         while !battle.is_settled() && battle.world().tick() < 5 * 60 * TICK_HZ {
             battle.step(CommandFrame::IDLE);
@@ -574,7 +636,7 @@ mod tests {
 
     #[test]
     fn boss_phases_advance_as_it_loses_hp() {
-        let mut battle = Battle::new(Mode::Boss, 1);
+        let mut battle = Battle::new(Mode::Boss, 1).unwrap();
         battle.bout_mut().set_autopilot(true);
         let mut seen = vec![battle.bout().boss_phase(battle.session()).unwrap()];
         while !battle.is_settled() {
@@ -592,7 +654,7 @@ mod tests {
 
     #[test]
     fn settled_battle_stops_and_keeps_a_finite_replay() {
-        let mut battle = Battle::new(Mode::Boss, 1);
+        let mut battle = Battle::new(Mode::Boss, 1).unwrap();
         while battle.bout().outcome().is_none() {
             battle.step(CommandFrame::IDLE);
         }
@@ -610,7 +672,7 @@ mod tests {
 
     #[test]
     fn switching_pilots_and_sparring_bot_keeps_every_command_valid() {
-        let mut battle = Battle::new(Mode::Duel, 3);
+        let mut battle = Battle::new(Mode::Duel, 3).unwrap();
         battle.toggle_sparring_bot();
         assert_eq!(battle.bout().sparring_bot(battle.session()), Some(false));
         let mut rejected = 0;
@@ -645,10 +707,10 @@ mod tests {
 
     #[test]
     fn rematch_advances_round_and_keeps_the_pilot() {
-        let mut battle = Battle::new(Mode::Boss, 1);
+        let mut battle = Battle::new(Mode::Boss, 1).unwrap();
         battle.bout_mut().set_autopilot(true);
         battle.step(CommandFrame::IDLE);
-        let next = battle.rematch(Mode::Duel);
+        let next = battle.rematch(Mode::Duel).unwrap();
         assert_eq!((next.bout().mode(), next.bout().round()), (Mode::Duel, 2));
         assert!(next.bout().autopilot());
         assert_eq!(next.world().tick(), 0);
@@ -658,7 +720,7 @@ mod tests {
 
     #[test]
     fn tampered_replay_is_reported() {
-        let mut battle = Battle::new(Mode::Boss, 1);
+        let mut battle = Battle::new(Mode::Boss, 1).unwrap();
         for _ in 0..90 {
             battle.step(press(LIGHT));
         }

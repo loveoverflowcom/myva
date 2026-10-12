@@ -8,7 +8,7 @@ use myva_sim::catalog::{
 
 fn replay_with_metadata(catalog: Catalog<'_>) -> (String, u64) {
     catalog.validate().unwrap();
-    let mut battle = Battle::new(Mode::Boss, 1);
+    let mut battle = Battle::new(Mode::Boss, 1).unwrap();
     battle.bout_mut().set_autopilot(true);
     while !battle.is_settled() && battle.world().tick() < 18_000 {
         // A presentation consumer reads metadata alongside combat, without mutating Kit.

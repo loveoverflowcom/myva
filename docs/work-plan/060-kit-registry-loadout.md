@@ -1,6 +1,6 @@
 # PR2 — Kit registry và loadout
 
-**Trạng thái:** TODO, phiên2; chưa triển khai trong PR1. Phụ thuộc head hoàn thành của [PR1](050-faction-lineage-domain.md); các PR lấy develop làm base theo yêu cầu, giữ dependency trong mô tả/diff review nếu chưa merge.
+**Trạng thái:** đã triển khai trong phiên2; [contract](../technical/kit-registry-loadout.md), [evidence](../reports/kit-registry-loadout.md). Phụ thuộc PR27 head `2f0a71269e9b428ba488b39c1fe4c67532adbe3e`; stacked draft base `feat/faction-lineage-domain` khi PR27 chưa merge, đích tích hợp cuối `develop`. Không tự merge PR1.
 
 ## Kết quả và lý do
 
@@ -16,6 +16,6 @@ Registry/loadout/version nhỏ có consumer thật, sử dụng `KitId` ổn đ�
 
 ## Rủi ro còn mở
 
-Version/hash contract phải được chứng minh từ code thực tế. Roster/mapping lore chưa được duyệt. Runtime chưa hỗ trợ phải fail tại boundary bằng lỗi có kiểu, không panic hoặc chọn fixture khác. Browser/WASM hiện thiếu prerequisites trên Mac; xem [evidence PR1](../reports/faction-lineage-domain.md).
+Registry validated và loadout consumer Battle/CLI đã có; revision/hash/rules pins dùng replay v4 mới, v3 giữ byte legacy và chỉ nhận frozen baseline. Long Lưu vẫn unresolved legacy fixture; source fingerprint bảo thủ có thể từ chối replay khi đổi comment/refactor file luật. Equipment/procs/budgets, alternate ultimate slots, roster lore, historical loader và online competitive entitlement chưa hỗ trợ. Lỗi explicit tại boundary; browser/WASM thiếu prerequisites, xem evidence PR2.
 
 Tiếp theo là [PR3](070-lineage-presentation.md), không mở phiên mới từ PR1.
