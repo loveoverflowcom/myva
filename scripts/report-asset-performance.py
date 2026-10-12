@@ -128,7 +128,10 @@ def validate_metadata(meta, config):
     require(preset in config["presets"] and tier in config["tiers"], "Unknown scene preset/tier.")
     expected = {**config["presets"][preset], **config["tiers"][tier]}
     for key, value in expected.items():
-        require(key in scene and type(scene[key]) is type(value) and scene[key] == value,
+        actual = scene.get(key)
+        # JavaScript JSON serialization emits integral floats such as 1.0 as 1.
+        matching_type = numeric(actual) if isinstance(value, float) else type(actual) is type(value)
+        require(key in scene and matching_type and actual == value,
                 f"Resolved config.{key} must match the selected preset/tier.")
     require(isinstance(scene.get("seed"), int) and not isinstance(scene["seed"], bool)
             and scene["seed"] == meta["seed"], "Resolved scene seed must match metadata.seed.")
