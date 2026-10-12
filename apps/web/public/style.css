@@ -11,3 +11,10 @@ button{cursor:pointer;border:1px solid #3c595a;background:#192c33;color:#e9f4ee;
 #game-host{width:100%;height:clamp(300px,62vh,640px);border:1px solid #395456;background:#112830;border-radius:12px;overflow:hidden}iframe{display:block;width:100%;height:100%;border:0}iframe:fullscreen{background:#112830;width:100vw;height:100vh}
 .controls{font-size:.85rem;margin-top:12px}.controls p{margin:4px 0}.controls code{color:#e8cf94}#shell-status{border-left:2px solid #bca26f;padding-left:14px;min-height:26px}.hidden{display:none!important}
 @media(max-width:600px){header{padding:20px 0}.brand span{display:block}.badge{font-size:.6rem}main{padding-top:24px}.actions button{font-size:.78rem;padding:8px}.intro{padding:12px 0}#game-host{height:48vh}}
+
+/* Catalog reuses the existing palette and density; no canon portrait assets. */
+.character-catalog{margin:24px 0}.character-catalog label{margin-top:0}
+select{font:inherit;color:inherit;background:#14252b;border:1px solid #395555;border-radius:8px;padding:10px 14px;width:min(100%,400px);min-height:44px}
+select:focus-visible,summary:focus-visible{outline:3px solid #ecd285;outline-offset:4px}
+.character-card{border-top:1px solid #294044;margin-top:16px;padding-top:16px}.character-heading{display:flex;align-items:center;gap:12px}.character-heading h2{font-size:1.2rem;margin:0}.character-id{font-size:.8rem;margin:0;color:#b4c8c8;overflow-wrap:anywhere}
+.character-icon{display:grid;place-items:center;width:44px;height:44px;flex-shrink:0;border:1px dashed #96b2b7;border-radius:8px;color:#f0dca4;font-weight:700}.catalog-status{color:#f0dca4}.character-card p,#kit-selection-note{font-size:.85rem;margin:8px 0}.catalog-source{overflow-wrap:anywhere}summary{cursor:pointer;min-height:32px;color:#b4c8c8}button:disabled{cursor:not-allowed;opacity:.6}

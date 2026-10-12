@@ -6,6 +6,7 @@ use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use myva_sim::FighterId;
 use myva_sim::battle::{Cause, Mode, Outcome};
+use myva_sim::character::{CharacterCatalog, CharacterError};
 use myva_sim::snapshot::{FighterView, Gauge};
 
 use crate::fight::{ArenaView, CombatLog, Match};
@@ -64,6 +65,8 @@ enum Slot {
     Detail(Side),
     State(Side),
     Training,
+    Catalog,
+    Art,
     Banner,
     BannerDetail,
     Log,
@@ -94,8 +97,17 @@ struct BannerBox;
 #[derive(Component)]
 struct DesktopOnly;
 
+#[derive(Resource)]
+struct HudCatalog(Result<CharacterCatalog<'static>, CharacterError>);
+impl Default for HudCatalog {
+    fn default() -> Self {
+        Self(CharacterCatalog::baseline())
+    }
+}
+
 pub fn plugin(app: &mut App) {
-    app.add_systems(Startup, spawn_hud)
+    app.init_resource::<HudCatalog>()
+        .add_systems(Startup, spawn_hud)
         .add_systems(Update, (update_bars, update_texts, update_layout));
 }
 
@@ -180,6 +192,8 @@ fn spawn_panel(parent: &mut ChildSpawnerCommands, side: Side) {
             panel.spawn(text(Slot::Detail(side), 13.0, DIM));
             panel.spawn(text(Slot::State(side), 13.0, DIM));
             if side == Side::Player {
+                panel.spawn(text(Slot::Catalog, 12.0, DIM));
+                panel.spawn(text(Slot::Art, 12.0, DIM));
                 panel.spawn(text(Slot::Training, 12.0, TEXT));
             }
         });
@@ -309,11 +323,18 @@ fn update_bars(
     }
 }
 
-fn cooldowns(fighter: &FighterView) -> String {
+fn cooldowns(fighter: &FighterView, catalog: &HudCatalog) -> String {
+    let details = catalog
+        .0
+        .as_ref()
+        .ok()
+        .and_then(|c| c.lookup(fighter.kit.id).ok())
+        .map(|v| v.details);
     ["Q", "E", "R"]
         .iter()
         .zip(fighter.kit.skills.iter().zip(fighter.cooldowns))
-        .map(|(key, (spec, ticks))| {
+        .enumerate()
+        .map(|(slot, (key, (spec, ticks)))| {
             let state = if ticks > 0 {
                 seconds(ticks)
             } else if !fighter.energy.can_spend(spec.energy_cost) {
@@ -321,7 +342,8 @@ fn cooldowns(fighter: &FighterView) -> String {
             } else {
                 "ok".to_owned()
             };
-            format!("{key} {} {state}", ascii(spec.name))
+            let label = details.map_or("[metadata unresolved]", |d| d.skills[slot]);
+            format!("{key} {} {state}", ascii(label))
         })
         .collect::<Vec<_>>()
         .join("  ")
@@ -370,10 +392,13 @@ fn set(text: &mut Text, value: String) {
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn update_texts(
     arena: Res<ArenaView>,
     game: Res<Match>,
     log: Res<CombatLog>,
+    catalog: Res<HudCatalog>,
+    art: Res<crate::art::Art>,
     mut texts: Query<(&HudText, &mut Text)>,
     mut banner_box: Single<&mut Visibility, With<BannerBox>>,
     mut thresholds: Query<&mut Visibility, (With<Threshold>, Without<BannerBox>)>,
@@ -398,8 +423,27 @@ fn update_texts(
                 let Some(fighter) = fighter_for(&arena, &game, side) else {
                     continue;
                 };
-                let mut header =
-                    format!("{}  {}", game.name(fighter.id), ascii(fighter.kit.lineage));
+                let label = match &catalog.0 {
+                    Ok(catalog) => match catalog.lookup(fighter.kit.id) {
+                        Ok(view) => {
+                            let myva_sim::character::CharacterIcon::Placeholder(icon) =
+                                view.details.icon;
+                            format!(
+                                "{} {} [{}]",
+                                ascii(icon),
+                                ascii(view.record.metadata.display_name),
+                                fighter.kit.id
+                            )
+                        }
+                        Err(_) => format!("{} [metadata unresolved]", fighter.kit.id),
+                    },
+                    Err(error) => format!(
+                        "{} [metadata error: {}]",
+                        fighter.kit.id,
+                        ascii(&error.to_string())
+                    ),
+                };
+                let mut header = format!("{}  {}", game.name(fighter.id), label);
                 if side == Side::Player && game.bout.autopilot() {
                     header.push_str("  [bot B1 lai]");
                 }
@@ -411,12 +455,38 @@ fn update_texts(
             Slot::Detail(side) => match (side, arena.boss_phase) {
                 (Side::Rival, Some(phase)) => phase_label(phase).to_owned(),
                 _ => fighter_for(&arena, &game, side)
-                    .map(cooldowns)
+                    .map(|f| cooldowns(f, &catalog))
                     .unwrap_or_default(),
             },
             Slot::State(side) => fighter_for(&arena, &game, side)
                 .map(state_label)
                 .unwrap_or_default(),
+            Slot::Art => match &art.status {
+                crate::art::ArtStatus::Off => "Art tat | hinh khoi placeholder".into(),
+                crate::art::ArtStatus::Loading => "Dang tai art placeholder...".into(),
+                crate::art::ArtStatus::Ready => "Art fixture placeholder".into(),
+                crate::art::ArtStatus::Failed { code, .. } => {
+                    format!("Art loi [{}] | hinh khoi placeholder", ascii(code))
+                }
+            },
+            Slot::Catalog => match &catalog.0 {
+                Ok(catalog) => match catalog.lookup(game.bout.loadout().pin().id.as_str()) {
+                    Ok(view) => match view.inheritance {
+                        myva_sim::character::Inheritance::UnmappedFixture => {
+                            "Fixture chua gan the luc | art placeholder".into()
+                        }
+                        myva_sim::character::Inheritance::Mapped(h) => format!(
+                            "{} / {} / {} / {}",
+                            h.faction.as_str(),
+                            h.source.as_str(),
+                            h.lineage.as_str(),
+                            h.branch.as_str()
+                        ),
+                    },
+                    Err(error) => ascii(&error.to_string()),
+                },
+                Err(error) => ascii(&error.to_string()),
+            },
             Slot::Training => fighter_for(&arena, &game, Side::Player)
                 .map(crate::text::training)
                 .unwrap_or_default(),
@@ -438,10 +508,21 @@ fn update_texts(
                 )
             }
             Slot::Meta => format!(
-                "Vong {}  tick {}  hash {:016x}",
+                "Vong {}  tick {}  hash {:016x}\n{} | icon/art placeholder",
                 game.bout.round(),
                 arena.tick,
-                arena.hash
+                arena.hash,
+                ascii(
+                    &catalog
+                        .0
+                        .as_ref()
+                        .map_err(ToString::to_string)
+                        .and_then(|c| c
+                            .lookup(game.bout.loadout().pin().id.as_str())
+                            .map(|v| v.inheritance.label().to_owned())
+                            .map_err(|e| e.to_string()))
+                        .unwrap_or_else(|e| e)
+                )
             ),
         };
         set(&mut text, value);

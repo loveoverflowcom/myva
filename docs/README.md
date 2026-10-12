@@ -79,6 +79,8 @@ Yêu cầu đã chốt: MyVa / Thần Mạch; hậu duệ hoặc người kế t
 | [Five factions — ADR 0004](decisions/0004-five-factions-lineage-hierarchy.md) | Quyết định #18 có hiệu lực ở đâu, thay D1/D2/D6 thế nào, phần nào chưa duyệt? |
 | [Decision 0002 (lịch sử, duyệt từng phần)](decisions/0002-lineages-world-structure.md) | Truyền thừa, linh vực thứ hai, vũ trụ quan và chính sách văn hóa được đề xuất chốt thế nào? |
 
+[CharacterCatalog và selected-kit asset mapping](technical/character-catalog-assets.md) · [Kiểm chứng PR3](reports/character-catalog-assets.md): metadata chung Leptos/Bevy, placeholder/unresolved status và lifecycle theo KitId.
+
 ## Quy tắc cập nhật
 
 - Luật gameplay được mô tả trong GDD và tài liệu chuyên môn; work-plan chỉ giữ mục tiêu, phụ thuộc và ranh giới review.

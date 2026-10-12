@@ -4118,6 +4118,7 @@ dependencies = [
  "bevy",
  "myva-gameplay",
  "myva-graybox",
+ "myva-sim",
  "wasm-bindgen",
 ]
 
@@ -4126,6 +4127,7 @@ name = "myva-web-shell"
 version = "0.1.0"
 dependencies = [
  "leptos",
+ "myva-sim",
  "wasm-bindgen",
  "web-sys",
 ]

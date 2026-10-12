@@ -1,6 +1,6 @@
 # PR3 — Presentation metadata và asset mapping
 
-**Trạng thái:** TODO, phiên3; phụ thuộc [PR2](060-kit-registry-loadout.md). Chưa triển khai UI catalog hoặc asset selection trong PR1/PR2.
+**Trạng thái:** đã triển khai offline ở phiên3, chờ draft PR/review và gate platform; phụ thuộc [PR2](060-kit-registry-loadout.md). [Contract](../technical/character-catalog-assets.md) · [Evidence](../reports/character-catalog-assets.md).
 
 ## Kết quả và lý do
 
@@ -27,4 +27,4 @@ Tên/hình tượng/roster còn chờ quyết định. UI layout và asset contr
 - Replay explicit loadout là v4 có rules/kit pins; default legacy giữ v3. Không sửa source file luật/hash để đổi presentation. WASM/browser và rendered/device/online evidence chưa chạy; phiên3 phải kiểm prerequisites/gates thực tế.
 - Equipment/item/proc/budget/weapon/alternate ultimate slots, canon roster/approved binding và historical replay migration vẫn TODO; PR3 không nhận chúng thành scope UI/asset mapping.
 
-Không tự mở phiên3 từ phiên2.
+Phiên3 đã thực hiện trên branch `feat/character-catalog-assets`, stack từ head PR28 chưa merge; đích cuối develop. Không tự merge. Follow-up được giữ ở [backlog nội dung và rendered qualification](backlog/character-content-approval.md).

@@ -18,6 +18,7 @@ pub mod benchmark;
 mod controls;
 mod fight;
 mod hud;
+pub mod mapping;
 pub mod runtime;
 pub mod scene;
 // Bounded planner and Bevy backend keep presentation ownership separate from gameplay.
@@ -41,6 +42,8 @@ pub struct GrayboxPlugin {
     pub autopilot: bool,
     /// Tải fixture art D05-A qua `AssetServer`; lỗi tải giữ cảnh hình khối.
     pub art: bool,
+    /// Validated choice made before the round; None preserves legacy default replay v3.
+    pub loadout: Option<myva_sim::registry::LockedLoadout>,
 }
 
 impl Default for GrayboxPlugin {
@@ -49,13 +52,18 @@ impl Default for GrayboxPlugin {
             mode: Mode::Boss,
             autopilot: false,
             art: true,
+            loadout: None,
         }
     }
 }
 
 impl Plugin for GrayboxPlugin {
     fn build(&self, app: &mut App) {
-        self.install(app, Bout::start(self.mode, 1));
+        let started = match &self.loadout {
+            Some(loadout) => Bout::start_with_loadout(self.mode, 1, loadout.request()),
+            None => Bout::start(self.mode, 1),
+        };
+        self.install(app, started);
     }
 }
 

@@ -40,6 +40,7 @@ fn main() -> AppExit {
     let mut mode = Mode::Boss;
     let mut demo = false;
     let mut art = true;
+    let mut selected_kit = None;
     let mut capture = None;
     let mut population = None;
     let mut tier = QualityTier::High;
@@ -48,6 +49,13 @@ fn main() -> AppExit {
     let mut benchmark_seconds = 60.0;
     while let Some(arg) = args.next() {
         match arg.as_str() {
+            "--kit" => {
+                selected_kit = args.next();
+                if selected_kit.is_none() {
+                    eprintln!("--kit requires a stable kit ID");
+                    return AppExit::error();
+                }
+            }
             "--duel" => mode = Mode::Duel,
             "--demo" => demo = true,
             "--no-art" => art = false,
@@ -121,6 +129,25 @@ fn main() -> AppExit {
         eprintln!("--benchmark-output also requires --benchmark");
         return AppExit::error();
     }
+    let loadout = if let Some(id) = selected_kit {
+        let selected = myva_sim::character::CharacterCatalog::baseline().and_then(|catalog| {
+            let revision = catalog
+                .registry()
+                .entry(&id)
+                .map_err(myva_sim::character::CharacterError::Registry)?
+                .revision;
+            catalog.select(myva_sim::registry::KitRequest { id: &id, revision })
+        });
+        match selected {
+            Ok(loadout) => Some(loadout),
+            Err(error) => {
+                eprintln!("{error}");
+                return AppExit::error();
+            }
+        }
+    } else {
+        None
+    };
     let mut app = App::new();
     let asset_dir = std::env::var("MYVA_ASSET_DIR")
         .unwrap_or_else(|_| concat!(env!("CARGO_MANIFEST_DIR"), "/../../assets").to_owned());
@@ -145,6 +172,7 @@ fn main() -> AppExit {
         mode,
         autopilot: demo,
         art,
+        loadout,
     });
     if let Err(error) = myva_graybox::graybox_startup_result(&app) {
         eprintln!("Graybox loadout rejected: {error}");
