@@ -156,7 +156,7 @@ fn spawn_fighter(commands: &mut Commands, view: &FighterView) -> Entity {
     let mut entity = commands.spawn((
         SimId(EntityRef::Fighter(view.id)),
         KitRef(view.kit),
-        Faction(view.team),
+        CombatTeam(view.team),
         (
             Position {
                 x: view.x,

@@ -16,7 +16,7 @@ use crate::components::*;
 pub struct FighterMirror {
     id: &'static SimId,
     kit: &'static KitRef,
-    faction: &'static Faction,
+    team: &'static CombatTeam,
     position: &'static Position,
     facing: &'static Facing,
     health: &'static Health,
@@ -51,7 +51,7 @@ impl FighterMirrorItem<'_, '_> {
                 Role::Monster
             },
             kit: self.kit.0,
-            team: self.faction.0,
+            team: self.team.0,
             x: self.position.x,
             y: self.position.y,
             facing: self.facing.0,

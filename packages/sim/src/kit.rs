@@ -196,6 +196,8 @@ pub const HUMAN: Body = Body {
 pub struct Kit {
     /// Mã ASCII ổn định dùng trong replay và cấu hình.
     pub id: &'static str,
+    /// Nhãn legacy, hiện nằm trong combat hash. Không dùng làm `catalog::LineageId`;
+    /// presentation mới đọc metadata catalog mà không sửa chuỗi này.
     pub lineage: &'static str,
     pub body: Body,
     pub light: [ActionSpec; 3],
@@ -212,6 +214,11 @@ pub struct UltimateSpec {
 }
 
 impl Kit {
+    /// Metadata identity only: giữ nguyên chuỗi replay và layout/hash của kit legacy.
+    pub fn catalog_id(&self) -> Result<crate::catalog::KitId, crate::catalog::IdError> {
+        crate::catalog::KitId::new(self.id)
+    }
+
     pub fn spec(&self, action: ActionKind) -> &ActionSpec {
         match action {
             ActionKind::Light(step) => &self.light[usize::from(step)],

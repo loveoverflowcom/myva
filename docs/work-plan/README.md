@@ -25,6 +25,8 @@ Số `010`, `020`, ... biểu thị **thứ tự khuyến nghị hiện tại**,
 
 ## Sau slice
 
+Chuỗi PR domain/data/presentation đã được giao tuần tự: [050 — domain catalog](050-faction-lineage-domain.md) → [060 — kit registry/loadout](060-kit-registry-loadout.md) → [070 — presentation metadata](070-lineage-presentation.md). PR1 giữ Long Lưu chưa ánh xạ lore và không thay gate slice/PvP; PR2 là bước tiếp theo của chuỗi này. Các nhánh phụ thuộc head PR trước khi chưa merge, không merge tự động để mở phiên sau.
+
 - [Online pilot](backlog/online-pilot.md) chỉ được đưa vào active queue khi slice và integrity prerequisites đạt.
 - [World expansion và chiến dịch](backlog/world-expansion.md) chờ pilot có bằng chứng tải, kinh tế và solo progression.
 

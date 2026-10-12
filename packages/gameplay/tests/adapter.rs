@@ -99,6 +99,67 @@ fn count<T: Component>(app: &mut App) -> usize {
 }
 
 #[test]
+fn combat_team_mirror_is_independent_of_mythological_metadata() {
+    use myva_sim::Team;
+    use myva_sim::catalog::FactionId;
+
+    #[derive(Component)]
+    struct Lore(FactionId);
+
+    let mut session = Session::new(SessionConfig::new(1, 7));
+    let a = session.spawn_player(&LONG_LUU, 400 * PX, 1, Some(Team(7)), SessionEpoch(1));
+    let ally = session.spawn_player(&LONG_LUU, 500 * PX, -1, Some(Team(7)), SessionEpoch(2));
+    let rival = session.spawn_player(&LONG_LUU, 600 * PX, -1, Some(Team(8)), SessionEpoch(3));
+    let neutral = session.spawn_player(&LONG_LUU, 700 * PX, -1, None, SessionEpoch(4));
+    let mut app = headless_app(session, Authority::Client);
+    run_until(&mut app, 1);
+    let before = app
+        .world()
+        .resource::<SimSession>()
+        .get()
+        .world()
+        .state_hash();
+    for (id, faction, team) in [
+        (a, FactionId::Christianity, Some(Team(7))),
+        (ally, FactionId::Buddhism, Some(Team(7))),
+        (rival, FactionId::Christianity, Some(Team(8))),
+        (neutral, FactionId::Taoism, None),
+    ] {
+        let entity = app
+            .world()
+            .resource::<EntityIndex>()
+            .get(EntityRef::Fighter(id))
+            .unwrap();
+        app.world_mut().entity_mut(entity).insert(Lore(faction));
+        assert_eq!(
+            app.world().entity(entity).get::<CombatTeam>().unwrap().0,
+            team
+        );
+        assert_eq!(app.world().entity(entity).get::<Lore>().unwrap().0, faction);
+    }
+    assert_eq!(
+        before,
+        app.world()
+            .resource::<SimSession>()
+            .get()
+            .world()
+            .state_hash()
+    );
+    run_until(&mut app, 60);
+    let sim = app.world().resource::<SimSession>().get().world();
+    assert!(sim.fighter(a).is_ally(sim.fighter(ally)));
+    assert!(!sim.fighter(a).is_ally(sim.fighter(rival)));
+    assert!(!sim.fighter(a).is_ally(sim.fighter(neutral)));
+    let expected = app
+        .world()
+        .resource::<SimSession>()
+        .get()
+        .snapshot()
+        .fighters;
+    assert_eq!(mirrored_views(app.world_mut()).0, expected);
+}
+
+#[test]
 fn runs_n_ticks_headless_with_one_tick_per_update() {
     let mut app = fixture_app(1, Authority::Server);
     let frames = run_until(&mut app, 600);
