@@ -48,7 +48,7 @@ fn collect(mut reader: MessageReader<SimEvent>, mut collected: ResMut<Collected>
 }
 
 fn client(mode: Mode, autopilot: bool, script: Vec<CommandFrame>) -> App {
-    let (mut bout, session) = Bout::start(mode, 1);
+    let (mut bout, session) = Bout::start(mode, 1).unwrap();
     bout.set_autopilot(autopilot);
     let mut app = App::new();
     app.add_plugins((
@@ -85,7 +85,7 @@ fn run(app: &mut App, ticks: Tick) {
 
 /// Cùng kịch bản chạy thẳng trên lõi; trả hash sau từng tick.
 fn core(mode: Mode, autopilot: bool, script: &[CommandFrame], ticks: Tick) -> (Battle, Vec<u64>) {
-    let mut battle = Battle::new(mode, 1);
+    let mut battle = Battle::new(mode, 1).unwrap();
     battle.bout_mut().set_autopilot(autopilot);
     let mut hashes = Vec::new();
     while battle.world().tick() < ticks {
@@ -206,7 +206,7 @@ fn rematch_and_mode_switch_load_a_clean_instance() {
         .write_message(HostCommand::ToggleSparringBot);
     run(&mut app, 600);
     assert_eq!(app.world().resource::<ArenaView>().sparring, Some(false));
-    let mut battle = Battle::new(Mode::Duel, 2);
+    let mut battle = Battle::new(Mode::Duel, 2).unwrap();
     battle.bout_mut().set_autopilot(true);
     let mut hashes = Vec::new();
     while battle.world().tick() < 600 {

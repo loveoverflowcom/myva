@@ -18,24 +18,28 @@
 
 use std::fmt::{self, Write as _};
 
-use crate::boss::KE_GIU_DAP;
 use crate::fighter::{FighterId, Team};
 use crate::input::{Buttons, InputFrame};
-use crate::kit::{Kit, LONG_LUU};
-use crate::monster::QUAI_BUN;
+use crate::kit::Kit;
 use crate::npc::{NpcSpec, npc_by_id};
+use crate::registry::{
+    KitPin, KitRegistry, KitRequest, KitRevision, LEGACY_RULES_HASH, RULES_VERSION, RegistryError,
+    rules_config_hash,
+};
 use crate::tick::Tick;
 use crate::world::{Event, World};
 
 pub const HEADER: &str = "myva-replay 3";
+pub const PINNED_HEADER: &str = "myva-replay 4";
 /// Chỉ để nhận diện và báo lỗi rõ ràng.
 pub const HEADER_V1: &str = "myva-replay 1";
 
-/// Các kit có thể xuất hiện trong replay.
-pub const KITS: [&Kit; 3] = [&LONG_LUU, &KE_GIU_DAP, &QUAI_BUN];
-
-pub fn kit_by_id(id: &str) -> Option<&'static Kit> {
-    KITS.into_iter().find(|kit| kit.id == id)
+/// v4 pins gameplay configuration without changing World or legacy v3 bytes.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ReplayContract {
+    pub rules_version: u32,
+    pub rules_hash: u64,
+    pub kits: Vec<KitPin>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -54,6 +58,8 @@ pub struct NpcSpawn {
 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct Replay {
+    /// None is the frozen v3 compatibility path. Explicit loadouts record v4.
+    pub contract: Option<ReplayContract>,
     /// Seed phiên đã sinh lệnh AI; chạy lại không cần nó vì mọi lệnh đã được ghi.
     pub seed: Option<u64>,
     pub spawns: Vec<Spawn>,
@@ -67,6 +73,7 @@ pub struct Replay {
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum ReplayError {
+    Contract(RegistryError),
     Parse {
         line: usize,
         message: String,
@@ -81,6 +88,7 @@ pub enum ReplayError {
 impl fmt::Display for ReplayError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            ReplayError::Contract(error) => error.fmt(f),
             ReplayError::Parse { line, message } => write!(f, "dòng {line}: {message}"),
             ReplayError::Desync {
                 tick,
@@ -104,7 +112,8 @@ pub struct Playback {
 }
 
 impl Replay {
-    pub fn world(&self) -> World {
+    pub fn world(&self) -> Result<World, ReplayError> {
+        self.validate_contract()?;
         let mut world = World::new();
         for spawn in &self.spawns {
             world.spawn_in_team(spawn.kit, spawn.x, spawn.facing, spawn.team);
@@ -112,12 +121,12 @@ impl Replay {
         for npc in &self.npcs {
             world.spawn_npc(npc.spec, npc.x);
         }
-        world
+        Ok(world)
     }
 
     /// Chạy lại từ đầu; dừng ở mốc hash đầu tiên bị lệch.
     pub fn play(&self) -> Result<Playback, ReplayError> {
-        let mut world = self.world();
+        let mut world = self.world()?;
         let mut events = Vec::new();
         let mut inputs = self.inputs.iter().peekable();
         let mut checkpoints = self.checkpoints.iter().peekable();
@@ -145,7 +154,31 @@ impl Replay {
 
     pub fn to_text(&self) -> String {
         let mut out = String::new();
-        let _ = writeln!(out, "{HEADER}");
+        let _ = writeln!(
+            out,
+            "{}",
+            if self.contract.is_some() {
+                PINNED_HEADER
+            } else {
+                HEADER
+            }
+        );
+        if let Some(contract) = &self.contract {
+            let _ = writeln!(
+                out,
+                "rules {} {:016x}",
+                contract.rules_version, contract.rules_hash
+            );
+            for pin in &contract.kits {
+                let _ = writeln!(
+                    out,
+                    "kit {} {} {:016x}",
+                    pin.id.as_str(),
+                    pin.revision.version,
+                    pin.revision.config_hash
+                );
+            }
+        }
         if let Some(seed) = self.seed {
             let _ = writeln!(out, "seed {seed}");
         }
@@ -183,13 +216,15 @@ impl Replay {
 
     pub fn parse(text: &str) -> Result<Self, ReplayError> {
         let mut replay = Replay::default();
+        let registry = KitRegistry::baseline().map_err(ReplayError::Contract)?;
         let mut lines = text
             .lines()
             .enumerate()
             .map(|(i, line)| (i + 1, line.split('#').next().unwrap_or("").trim()))
             .filter(|(_, line)| !line.is_empty());
-        match lines.next() {
-            Some((_, HEADER)) => {}
+        let pinned = match lines.next() {
+            Some((_, HEADER)) => false,
+            Some((_, PINNED_HEADER)) => true,
             Some((line, HEADER_V1 | "myva-replay 2")) => {
                 return Err(ReplayError::Parse {
                     line,
@@ -204,6 +239,14 @@ impl Replay {
                     message: format!("thiếu header \"{HEADER}\""),
                 });
             }
+        };
+        let mut rules_seen = false;
+        if pinned {
+            replay.contract = Some(ReplayContract {
+                rules_version: 0,
+                rules_hash: 0,
+                kits: Vec::new(),
+            });
         }
         let mut ended = false;
         for (line, content) in lines {
@@ -221,6 +264,55 @@ impl Replay {
             };
             let narrow = |value: i64, what: &str| error(format!("{what} ngoài phạm vi: {value}"));
             match fields[0] {
+                "rules" if pinned => {
+                    if rules_seen || fields.len() != 3 {
+                        return Err(error(
+                            "rules phải xuất hiện đúng một lần với version/hash".to_owned(),
+                        ));
+                    }
+                    let version = fields[1]
+                        .parse::<u32>()
+                        .map_err(|e| error(format!("rules version: {e}")))?;
+                    let hash = u64::from_str_radix(fields[2], 16)
+                        .map_err(|e| error(format!("rules hash: {e}")))?;
+                    if let Some(contract) = replay.contract.as_mut() {
+                        contract.rules_version = version;
+                        contract.rules_hash = hash;
+                    }
+                    rules_seen = true;
+                }
+                "kit" if pinned => {
+                    if fields.len() != 4 {
+                        return Err(error("kit cần ID/version/hash".to_owned()));
+                    }
+                    let version = fields[2]
+                        .parse::<u32>()
+                        .map_err(|e| error(format!("kit version: {e}")))?;
+                    let hash = u64::from_str_radix(fields[3], 16)
+                        .map_err(|e| error(format!("kit hash: {e}")))?;
+                    let entry = registry
+                        .resolve(KitRequest {
+                            id: fields[1],
+                            revision: KitRevision {
+                                version,
+                                config_hash: hash,
+                            },
+                        })
+                        .map_err(|e| error(e.to_string()))?;
+                    let id = entry
+                        .kit
+                        .catalog_id()
+                        .map_err(|_| error("kit ID không hợp lệ".to_owned()))?;
+                    if let Some(contract) = replay.contract.as_mut() {
+                        if contract.kits.iter().any(|pin| pin.id == id) {
+                            return Err(error(format!("kit pin trùng: {}", fields[1])));
+                        }
+                        contract.kits.push(KitPin {
+                            id,
+                            revision: entry.revision,
+                        });
+                    }
+                }
                 "seed" => {
                     let seed = fields
                         .get(1)
@@ -229,7 +321,7 @@ impl Replay {
                 }
                 "fighter" => {
                     let id = fields.get(1).copied().unwrap_or("");
-                    let kit = kit_by_id(id).ok_or_else(|| error(format!("kit lạ: {id}")))?;
+                    let kit = registry.entry(id).map_err(|e| error(e.to_string()))?.kit;
                     let x = number(2)?;
                     let facing = number(3)?;
                     let team = match fields.get(4) {
@@ -301,7 +393,69 @@ impl Replay {
                 message: "thiếu dòng end".to_owned(),
             });
         }
+        if pinned && !rules_seen {
+            return Err(ReplayError::Parse {
+                line: 1,
+                message: "replay v4 thiếu rules version/hash".to_owned(),
+            });
+        }
+        replay.validate_contract()?;
         Ok(replay)
+    }
+
+    /// Also checked at playback: manually constructed/tampered Replay cannot bypass pins.
+    fn validate_contract(&self) -> Result<(), ReplayError> {
+        let registry = KitRegistry::baseline().map_err(ReplayError::Contract)?;
+        let fail = ReplayError::Contract;
+        let (version, hash) = self
+            .contract
+            .as_ref()
+            .map_or((RULES_VERSION, LEGACY_RULES_HASH), |c| {
+                (c.rules_version, c.rules_hash)
+            });
+        if version != RULES_VERSION {
+            return Err(fail(RegistryError::RulesVersionMismatch {
+                expected: RULES_VERSION,
+                actual: version,
+            }));
+        }
+        let actual = rules_config_hash();
+        if hash != actual {
+            return Err(fail(RegistryError::RulesHashMismatch {
+                expected: actual,
+                actual: hash,
+            }));
+        }
+        if let Some(contract) = &self.contract {
+            let mut seen = std::collections::BTreeSet::new();
+            for pin in &contract.kits {
+                if !seen.insert(pin.id) {
+                    return Err(fail(RegistryError::DuplicateReplayPin(pin.id)));
+                }
+                registry.resolve(pin.request()).map_err(fail)?;
+                if !self.spawns.iter().any(|s| s.kit.id == pin.id.as_str()) {
+                    return Err(fail(RegistryError::UnexpectedReplayPin(pin.id)));
+                }
+            }
+        }
+        for spawn in &self.spawns {
+            let request = match &self.contract {
+                Some(c) => c
+                    .kits
+                    .iter()
+                    .find(|p| p.id.as_str() == spawn.kit.id)
+                    .ok_or_else(|| fail(RegistryError::MissingReplayPin(spawn.kit.id.to_owned())))?
+                    .request(),
+                None => crate::registry::legacy_replay_request(spawn.kit.id).map_err(fail)?,
+            };
+            let entry = registry.resolve(request).map_err(fail)?;
+            if entry.kit != spawn.kit {
+                return Err(fail(RegistryError::UnregisteredSpec(
+                    spawn.kit.id.to_owned(),
+                )));
+            }
+        }
+        Ok(())
     }
 }
 
@@ -375,8 +529,11 @@ impl Recorder {
 mod tests {
     use super::*;
     use crate::boss::BossBrain;
+    use crate::boss::KE_GIU_DAP;
     use crate::bot::{PatternReader, RandomBot};
+    use crate::kit::LONG_LUU;
     use crate::kit::PX;
+    use crate::monster::QUAI_BUN;
 
     fn recorded_duel(ticks: u32) -> (Replay, World) {
         let mut world = World::new();

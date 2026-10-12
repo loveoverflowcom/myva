@@ -11,10 +11,11 @@
 use std::process::ExitCode;
 
 use myva_sim::battle::{Battle, Mode};
+use myva_sim::registry::{KitRequest, KitRevision, LoadoutBinding, LoadoutRequest};
 use myva_sim::replay::Replay;
 use myva_sim::{CommandFrame, Event, FighterId, World};
 
-const USAGE: &str = "dùng: myva-replay <verify|events|demo> <file>";
+const USAGE: &str = "dùng: myva-replay <verify|events|demo> <file>\nmyva-replay demo-loadout <file> <kit-id> <version> <hash-hex> --legacy-fixture";
 
 fn main() -> ExitCode {
     let args: Vec<String> = std::env::args().skip(1).collect();
@@ -22,6 +23,11 @@ fn main() -> ExitCode {
         [command, path] if command == "verify" => verify(path),
         [command, path] if command == "events" => events(path),
         [command, path] if command == "demo" => demo(path),
+        [command, path, id, version, hash, binding]
+            if command == "demo-loadout" && binding == "--legacy-fixture" =>
+        {
+            demo_loadout(path, id, version, hash)
+        }
         _ => Err(USAGE.to_owned()),
     };
     match result {
@@ -133,7 +139,28 @@ fn describe(world: &World, event: &Event) -> String {
 }
 
 fn demo(path: &str) -> Result<(), String> {
-    let mut battle = Battle::new(Mode::Boss, 1);
+    record(path, Battle::new(Mode::Boss, 1).map_err(|e| e.to_string())?)
+}
+
+fn demo_loadout(path: &str, id: &str, version: &str, hash: &str) -> Result<(), String> {
+    let revision = KitRevision {
+        version: version.parse().map_err(|e| format!("kit version: {e}"))?,
+        config_hash: u64::from_str_radix(hash, 16).map_err(|e| format!("kit hash: {e}"))?,
+    };
+    let request = LoadoutRequest {
+        kit: KitRequest { id, revision },
+        binding: LoadoutBinding::UnresolvedLegacyFixture,
+        equipment: &[],
+    };
+    let battle = Battle::with_loadout(Mode::Boss, 1, request).map_err(|e| e.to_string())?;
+    println!(
+        "loadout {} v{} hash {:016x}: {:?}",
+        id, revision.version, revision.config_hash, request.binding
+    );
+    record(path, battle)
+}
+
+fn record(path: &str, mut battle: Battle) -> Result<(), String> {
     battle.bout_mut().set_autopilot(true);
     let limit = 5 * 60 * 60;
     while !battle.is_settled() && battle.world().tick() < limit {

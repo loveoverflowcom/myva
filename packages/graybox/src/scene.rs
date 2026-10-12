@@ -551,7 +551,7 @@ mod tests {
 
     /// Chạy tới khi boss bắt đầu đòn đầu tiên.
     fn boss_winding_up() -> Battle {
-        let mut battle = Battle::new(Mode::Boss, 1);
+        let mut battle = Battle::new(Mode::Boss, 1).unwrap();
         battle.bout_mut().set_autopilot(true);
         while rival_phase(&battle) != Some(Phase::Startup) {
             battle.step(CommandFrame::IDLE);
@@ -589,7 +589,7 @@ mod tests {
 
     #[test]
     fn player_attack_boxes_only_show_with_debug() {
-        let mut battle = Battle::new(Mode::Duel, 1);
+        let mut battle = Battle::new(Mode::Duel, 1).unwrap();
         battle.toggle_sparring_bot();
         battle.step(press(Action::Attack(Attack::Light)));
         assert!(!layers(&battle, false).contains(&Layer::Telegraph));
@@ -629,7 +629,7 @@ mod tests {
 
     #[test]
     fn projectile_telegraph_covers_its_flight_lane() {
-        let mut battle = Battle::new(Mode::Duel, 1);
+        let mut battle = Battle::new(Mode::Duel, 1).unwrap();
         battle.toggle_sparring_bot();
         battle.step(press(Action::Skill(0)));
         let arena = ArenaView::of(&battle);

@@ -46,6 +46,18 @@ impl FactionId {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct IdError;
 
+/// Runtime lookup validates the same syntax without allocating or leaking a static ID.
+pub(crate) fn valid_slug(value: &str) -> bool {
+    !value.is_empty()
+        && value.len() <= 64
+        && value.split('-').all(|part| {
+            !part.is_empty()
+                && part
+                    .bytes()
+                    .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit())
+        })
+}
+
 macro_rules! slug_id {
     ($($name:ident),+ $(,)?) => {$ (
         /// ID authored cho catalog tĩnh; đổi metadata không đổi ID. Namespace theo kiểu.
@@ -55,10 +67,7 @@ macro_rules! slug_id {
         impl $name {
             /// ASCII lowercase kebab-case, tối đa 64 byte; không tạo ID từ index catalog.
             pub fn new(value: &'static str) -> Result<Self, IdError> {
-                let valid = !value.is_empty() && value.len() <= 64
-                    && value.split('-').all(|part| !part.is_empty()
-                        && part.bytes().all(|b| b.is_ascii_lowercase() || b.is_ascii_digit()));
-                if valid { Ok(Self(value)) } else { Err(IdError) }
+                if valid_slug(value) { Ok(Self(value)) } else { Err(IdError) }
             }
 
             pub const fn as_str(self) -> &'static str { self.0 }

@@ -87,6 +87,7 @@ pub struct Session {
     queue: CommandQueue,
     members: Vec<Member>,
     recorder: Option<Recorder>,
+    replay_contract: Option<crate::replay::ReplayContract>,
 }
 
 impl Session {
@@ -97,6 +98,7 @@ impl Session {
             queue: CommandQueue::new(),
             members: Vec::new(),
             recorder: None,
+            replay_contract: None,
         }
     }
 
@@ -242,7 +244,53 @@ impl Session {
             None => Recorder::new(&self.world, self.config.checkpoint_every).snapshot(&self.world),
         };
         replay.seed = Some(self.config.seed);
+        replay.contract = self.replay_contract.clone();
+        if let Some(contract) = replay.contract.as_mut() {
+            // Spawn remains legal before tick 0, including actors added after the Bout.
+            // Emit only used pins from the validated available revisions.
+            contract
+                .kits
+                .retain(|pin| replay.spawns.iter().any(|s| s.kit.id == pin.id.as_str()));
+        }
         replay
+    }
+
+    /// The loadout boundary pins all implemented actors before the first tick. Raw fixture
+    /// spawning stays available for existing authored tests; it is not a player loadout API.
+    pub(crate) fn pin_replay(
+        &mut self,
+        registry: &crate::registry::KitRegistry<'_>,
+    ) -> Result<(), crate::registry::RegistryError> {
+        use crate::registry::{KitPin, RULES_VERSION, RegistryError, rules_config_hash};
+        if self.world.tick() != 0 {
+            return Err(RegistryError::RoundAlreadyStarted);
+        }
+        for fighter in self.world.fighters() {
+            let entry = registry.entry(fighter.kit.id)?;
+            if entry.kit != fighter.kit {
+                return Err(RegistryError::UnregisteredSpec(fighter.kit.id.to_owned()));
+            }
+        }
+        let kits = registry
+            .entries()
+            .iter()
+            .map(|entry| {
+                let id = entry
+                    .kit
+                    .catalog_id()
+                    .map_err(|_| RegistryError::InvalidId(entry.kit.id.to_owned()))?;
+                Ok(KitPin {
+                    id,
+                    revision: entry.revision,
+                })
+            })
+            .collect::<Result<Vec<_>, RegistryError>>()?;
+        self.replay_contract = Some(crate::replay::ReplayContract {
+            rules_version: RULES_VERSION,
+            rules_hash: rules_config_hash(),
+            kits,
+        });
+        Ok(())
     }
 
     /// Seed cho bộ não của nhân vật `id`: cùng seed phiên và cùng thứ tự spawn cho cùng seed.

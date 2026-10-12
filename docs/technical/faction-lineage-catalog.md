@@ -2,7 +2,7 @@
 
 **Trạng thái:** PR1 domain metadata, 2026-10-12; phạm vi theo [ADR 0004](../decisions/0004-five-factions-lineage-hierarchy.md), [lineages](../design/lineages.md), [#18](https://github.com/loveoverflowcom/myva/issues/18) và [#20](https://github.com/loveoverflowcom/myva/issues/20). Không duyệt roster hoặc balance.
 
-`packages/sim/src/catalog.rs` là module Rust thuần trong `myva-sim`, không có dependency mới. Consumer hiện tại là kiểm tra identity của `Kit` legacy và các fixture validator. Chưa có parser, registry thực thi, loadout hoặc schema wire mới.
+`packages/sim/src/catalog.rs` là module Rust thuần trong `myva-sim`, không có dependency mới. Consumer hiện tại là kiểm tra identity của `Kit` legacy và các fixture validator. PR1 không có parser/registry/loadout; [PR2](kit-registry-loadout.md) bổ sung registry thực thi, quyền trang bị, loadout và pins replay, dùng validator này.
 
 ## Identity và phân tầng
 
@@ -35,7 +35,7 @@ Mỗi record có display label, `ReviewStatus` riêng và provenance DK (`Source
 
 Allow-list phải được hồ sơ từng nguồn xác định. Các guard trên không thay review DK/ST theo truyền thống; validator không đọc tên để suy ra thần học. Các fixture synthetic trong tests không phải đề xuất roster.
 
-`Catalog::hierarchy(KitId)` validate trước lookup và trả `Result`. ID lạ trả `UnknownKit`; Long Lưu mặc định trả `UnmappedFixture`; dữ liệu sai trả `InvalidCatalog`. Không fallback sang tôn giáo/kit khác và không panic. Kết quả metadata của một kit proposed không phải quyền trang bị, duyệt roster hay xác nhận implementation; PR2 phải có gate riêng ở registry/loadout boundary.
+`Catalog::hierarchy(KitId)` validate trước lookup và trả `Result`. ID lạ trả `UnknownKit`; Long Lưu mặc định trả `UnmappedFixture`; dữ liệu sai trả `InvalidCatalog`. Không fallback sang tôn giáo/kit khác và không panic. Kết quả metadata của một kit proposed không phải quyền trang bị, duyệt roster hay xác nhận implementation; [Registry/loadout PR2](kit-registry-loadout.md) có gate riêng cho implementation, quyền trang bị và version/hash.
 
 ## Compatibility và bàn giao
 

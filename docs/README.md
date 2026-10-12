@@ -58,6 +58,8 @@ Yêu cầu đã chốt: MyVa / Thần Mạch; hậu duệ hoặc người kế t
 | [Repository refactor report](reports/repository-layout.md) | Mapping trước/sau, consumer compatibility và kiểm chứng nào đã chạy hoặc còn bị chặn? |
 | [Gameplay foundation](technical/gameplay-foundation.md) | Adapter ECS gọi luật lõi thế nào, lệnh/sự kiện/ID ra sao, và headless/replay/WASM đã chứng minh gì? (D04) |
 | [Faction/lineage catalog](technical/faction-lineage-catalog.md) | Identity, provenance, validator và Team độc lập; boundary không đổi combat/replay |
+| [Kit registry/loadout](technical/kit-registry-loadout.md) | Implementation/equip permission, exact revision/hash, khóa round và replay v3/v4 compatibility |
+| [PR2 registry/loadout evidence](reports/kit-registry-loadout.md) | Local tests/parity, legacy byte comparison, review và bàn giao PR3 |
 | [PR1 domain evidence](reports/faction-lineage-domain.md) | Regression replay legacy, kiểm thử local và gate còn bị chặn |
 | [Combat graybox](reports/combat-graybox.md) | Trận Bevy chơi được tới đâu; keyboard/gamepad/touch, replay và số đo nào đã có, playtest nào còn thiếu? |
 | [Web feasibility](reports/web-feasibility.md) | Spike Bevy + Leptos chạy/kiểm thử gì, còn thiếu browser/device nào? |

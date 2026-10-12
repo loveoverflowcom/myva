@@ -28,6 +28,7 @@ pub mod monster;
 pub mod npc;
 pub mod projectile;
 pub mod protocol;
+pub mod registry;
 pub mod replay;
 pub mod rng;
 pub mod session;

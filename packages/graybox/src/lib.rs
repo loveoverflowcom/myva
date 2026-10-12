@@ -29,6 +29,7 @@ pub mod touch;
 use bevy::prelude::*;
 use myva_gameplay::{Authority, GameplayPlugin};
 use myva_sim::battle::Bout;
+use myva_sim::registry::RegistryError;
 
 pub use fight::{ArenaView, CombatLog, GraySet, HostCommand, Intent, Match};
 pub use myva_sim::battle::Mode;
@@ -54,7 +55,33 @@ impl Default for GrayboxPlugin {
 
 impl Plugin for GrayboxPlugin {
     fn build(&self, app: &mut App) {
-        let (mut bout, session) = Bout::start(self.mode, 1);
+        self.install(app, Bout::start(self.mode, 1));
+    }
+}
+
+/// Host checks this before registering systems requiring Match/SimSession or starting a runner.
+#[derive(Resource, Debug)]
+pub struct GrayboxStartupError(pub RegistryError);
+
+pub fn graybox_startup_result(app: &App) -> Result<(), &RegistryError> {
+    app.world()
+        .get_resource::<GrayboxStartupError>()
+        .map_or(Ok(()), |error| Err(&error.0))
+}
+
+impl GrayboxPlugin {
+    fn install(&self, app: &mut App, started: Result<(Bout, myva_sim::Session), RegistryError>) {
+        let (mut bout, session) = match started {
+            Ok(started) => started,
+            Err(error) => {
+                error!("Graybox loadout rejected: {error}");
+                app.insert_resource(GrayboxStartupError(error));
+                app.add_systems(Startup, |mut exit: MessageWriter<AppExit>| {
+                    exit.write(AppExit::error());
+                });
+                return;
+            }
+        };
         bout.set_autopilot(self.autopilot);
         app.insert_resource(ClearColor(scene::BACKGROUND))
             // Client chơi offline/dự đoán: cùng luật với server nhưng không cấp phần thưởng.
@@ -79,4 +106,32 @@ impl Plugin for MatchPlugin {
 /// Đưa trận `bout` cùng phiên của nó vào app (phiên, `LocalInput`, [`Match`]).
 pub fn insert_match(app: &mut App, bout: Bout, session: myva_sim::Session) {
     fight::insert(app, bout, session);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use myva_gameplay::SimSession;
+
+    #[test]
+    fn rejected_startup_is_reported_before_host_systems_or_runner() {
+        let mut app = App::new();
+        app.add_plugins(MinimalPlugins);
+        GrayboxPlugin::default().install(
+            &mut app,
+            Err(RegistryError::UnknownKit("test-rejected".to_owned())),
+        );
+        // Both native and browser hosts use this gate before adding dependent systems.
+        if graybox_startup_result(&app).is_ok() {
+            app.add_systems(Update, |_: Res<Match>, _: Res<SimSession>| {});
+        }
+        assert!(matches!(
+            graybox_startup_result(&app),
+            Err(RegistryError::UnknownKit(_))
+        ));
+        assert!(!app.world().contains_resource::<Match>());
+        assert!(!app.world().contains_resource::<SimSession>());
+        app.update();
+        assert_eq!(app.should_exit(), Some(AppExit::error()));
+    }
 }
