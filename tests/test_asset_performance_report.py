@@ -168,6 +168,27 @@ class PerformanceContractTests(unittest.TestCase):
         with self.assertRaises(reporter.CaptureError):
             self.report()
 
+    def test_integral_render_scale_accepts_javascript_json_representation(self):
+        # JSON.stringify turns the configured High scale of 1.0 into JSON 1.
+        self.capture["metadata"]["config"]["render_scale"] = 1
+        self.assertEqual(self.report()["metadata"]["config"]["render_scale"], 1)
+
+    def test_render_scale_rejects_nonmatching_or_nonnumeric_values(self):
+        for value in (True, "1", 0.75, float("nan"), float("inf")):
+            with self.subTest(value=value):
+                self.capture["metadata"]["config"]["render_scale"] = value
+                with self.assertRaises(reporter.CaptureError):
+                    self.report()
+
+    def test_scene_counts_and_flags_keep_exact_types(self):
+        for key, value in (("gameplay_players", True), ("gameplay_players", 1.0),
+                           ("hud", 1), ("hud", 1.0)):
+            with self.subTest(key=key, value=value):
+                self.capture = unit_fixture()
+                self.capture["metadata"]["config"][key] = value
+                with self.assertRaises(reporter.CaptureError):
+                    self.report()
+
     def test_missing_metrics_cannot_carry_stale_numbers(self):
         self.capture["metrics"]["rss_bytes"] = {"status": "NOT_RUN", "reason": "No sampler.", "samples": [100]}
         with self.assertRaises(reporter.CaptureError):
