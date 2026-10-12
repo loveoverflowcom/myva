@@ -48,7 +48,8 @@ pub struct NpcKind(pub &'static NpcSpec);
 
 #[derive(Component, Clone, Copy, Debug, PartialEq, Eq)]
 #[component(immutable)]
-pub struct Faction(pub Option<myva_sim::Team>);
+/// Đội đồng minh/địch trong trận; độc lập với `myva_sim::catalog::FactionId`.
+pub struct CombatTeam(pub Option<myva_sim::Team>);
 
 /// Mili-pixel, y hướng lên; với đạn là tâm ngang và mép dưới của hộp va chạm.
 #[derive(Component, Clone, Copy, Debug, PartialEq, Eq)]

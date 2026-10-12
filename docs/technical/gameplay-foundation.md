@@ -41,7 +41,7 @@ Thiết bị chạy theo frame ở `Update` và chỉ ghi vào `LocalInput`: hư
 | Loại | Component |
 | --- | --- |
 | Mọi entity | `SimId(EntityRef)` |
-| Người chơi / quái | `Player` hoặc `Monster`, `KitRef`, `Faction`, `Position`, `Facing`, `Health`, `Stamina`, `Energy`, `Mach`, `Stance`, `CurrentAction`, `Cooldowns`, `StatusEffects`, `Hurtbox`, `AttackBox`, `Invulnerable`, `Grounded`, `GuardWindow`, `AckedSeq`; quái có thêm `Ai` |
+| Người chơi / quái | `Player` hoặc `Monster`, `KitRef`, `CombatTeam`, `Position`, `Facing`, `Health`, `Stamina`, `Energy`, `Mach`, `Stance`, `CurrentAction`, `Cooldowns`, `StatusEffects`, `Hurtbox`, `AttackBox`, `Invulnerable`, `Grounded`, `GuardWindow`, `AckedSeq`; quái có thêm `Ai` |
 | Đạn | `Projectile`, `Owner`, `SourceAction`, `Heading`, `Position`, `Volume` |
 | NPC | `Npc`, `NpcKind`, `Position` |
 

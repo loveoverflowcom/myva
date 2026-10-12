@@ -17,6 +17,7 @@
 pub mod battle;
 pub mod boss;
 pub mod bot;
+pub mod catalog;
 pub mod control;
 pub mod fighter;
 pub mod fixture;
