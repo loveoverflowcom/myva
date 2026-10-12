@@ -20,6 +20,7 @@ pub mod bot;
 pub mod catalog;
 pub mod character;
 pub mod control;
+pub mod equipment;
 pub mod fighter;
 pub mod fixture;
 pub mod input;
