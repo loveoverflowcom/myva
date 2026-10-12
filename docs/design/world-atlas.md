@@ -5,6 +5,8 @@
 
 ## 1. Cấu trúc thế giới
 
+**Đồng bộ #18, 2026-10-12:** năm thế lực (Kitô giáo, Hồi giáo, Ấn Độ giáo, Phật giáo, Đạo giáo) và nguồn/trực hệ độc lập bản đồ theo [ADR 0004](../decisions/0004-five-factions-lineage-hierarchy.md). Danh mục dưới đây là cảnh quan/nội dung, không phải vùng độc quyền tôn giáo. Một vùng có thể chứa nhiều thế lực, cùng trực hệ có mentor ở nhiều vùng. Không sửa bundle/streaming hoặc ngân sách tài nguyên theo vùng. Song Nguyên, cấp 30 và nội dung ra mắt vẫn là đề xuất D3–D5 chưa duyệt.
+
 - **Thần Mạch** chảy qua đất, nước, sinh vật và ký ức. Thời xa xưa nó là một **Đại Mạch**; **Cuộc Phân Dòng** chia nó thành các **linh vực** (ST, chi tiết ở [narrative.md](narrative.md#2-trả-lời-các-câu-hỏi-nền)).
 - Mỗi linh vực có các **nút mạch** (nguồn nước, đỉnh núi, giếng, cây cổ thụ, kho văn bản). Nút khỏe thì vùng xung quanh tái sinh tài nguyên trong ngân sách; nút bị Hắc Triều rút thì **lệch nhịp**, có thể thành **Vùng Quên**.
 - Các linh vực nối bằng **Mạch Đạo** — tuyến đi theo dòng mạch qua đèo, biển, sông. Mạch Đạo là bản đồ có thật, không phải màn hình chọn vùng.
@@ -32,6 +34,8 @@ flowchart LR
 ```
 
 ## 2. Quy tắc kết nối linh vực
+
+Học kỹ năng theo nguồn/trực hệ và thử thách; mở bản đồ không tự cấp hoặc khóa một hệ nhân vật. Không yêu cầu đổi quê hương để học chéo. Các mentor/đạo trường được đề xuất dưới đây là địa điểm kể chuyện, không độc quyền nguồn truyền thừa.
 
 1. **Mở theo câu chuyện, không theo tiền.** Đèo Gió Mặn mở sau chương 1; Song Nguyên mở khi qua đèo. Không bán quyền mở sớm.
 2. **Không khóa vĩnh viễn.** Sau khi mở, người chơi đi lại tự do giữa mọi linh vực đã phát hành. Linh vực xuất phát chỉ đổi mở đầu và cộng đồng quen biết ([World Bible §3](world-bible.md#3-linh-vực-và-cách-mở-rộng)).
@@ -75,7 +79,7 @@ Chấm 1–5 (5 tốt nhất); điểm là đánh giá định tính:
 | Nguồn nghiên cứu sẵn có | 4 | 5 | 5 | 4 |
 | **Tổng** | **23** | 21 | 20 | 21 |
 
-**Đề xuất: Song Nguyên.** Nó nối trực tiếp phản diện (Người Đo Mạch, Mạch Bạ) với một mô-típ có nguồn (Bảng Định Mệnh), đổi khủng hoảng từ "chia nước" sang "quyền tiếp cận và đo đạc", và tạo tương phản hình ảnh mạnh. Thần thoại Lưỡng Hà cổ không còn được thờ phụng rộng rãi, nên rủi ro thấp hơn dùng thần Hindu, nhưng vẫn có ⚠ với cộng đồng đầm lầy, người Assyria và nguy cơ Đông phương học.
+**Đề xuất: Song Nguyên.** Nó nối trực tiếp phản diện (Người Đo Mạch, Mạch Bạ) với một mô-típ có nguồn (Bảng Định Mệnh), đổi khủng hoảng từ "chia nước" sang "quyền tiếp cận và đo đạc", và tạo tương phản hình ảnh mạnh. Lựa chọn này dựa trên cảnh quan và tuyến truyện ST, không quyết định thế lực/trực hệ hiện diện. Vẫn cần nghiên cứu cộng đồng đầm lầy, người Assyria và nguy cơ Đông phương học; không dùng mức thờ phụng để xếp hạng tôn giáo hoặc sức mạnh nhân vật.
 
 Nếu đầu tư sớm được cố vấn Nam Á, linh vực Nam Á là ứng viên mạnh cho linh vực thứ ba.
 
@@ -116,7 +120,7 @@ Ba archetype của slice là Lính Gác, Xạ Thủ Nỏ, Ống Dò Mạch, kh�
 
 - **Cảm hứng:** làng bến sông có nhà sàn và cột mốc nước. **Vị trí:** nhánh sông dưới Đập Cổ.
 - **Cấp:** 1–3. **Không gian:** hub chia sẻ, an toàn.
-- **Nội dung:** NPC chính (Mai, An, Tùng; thêm Ngàn và Nguyệt ở bản ra mắt), sân tập năm truyền thừa, điểm hồi sinh, bàn chế tạo.
+- **Nội dung:** NPC chính (Mai, An, Tùng; thêm Ngàn và Nguyệt ở bản ra mắt), sân tập các kit đã mở theo gate, chưa cam kết roster năm thế lực, điểm hồi sinh, bàn chế tạo.
 - **Tài nguyên:** không khai thác; nhận gói khởi đầu.
 - **Bí mật:** cột mốc nước khắc vạch lũ các năm (Hồi Ức đầu tiên); vọng ảnh dưới gầm nhà sàn chỉ thấy khi có Mạch tính Ký.
 
@@ -211,7 +215,7 @@ Ba archetype của slice là Lính Gác, Xạ Thủ Nỏ, Ống Dò Mạch, kh�
 
 - **Cấp:** 20–22. **Không gian:** hub chia sẻ.
 - **Hình ảnh:** cảng sông ở hợp lưu, chợ có mái vòm, tòa Nhà Bảng với kệ bảng đất sét và cuộn giấy.
-- **Nội dung:** Nhà Bảng (thế lực); đạo trường Tơ Vọng; trạm Thương Hội; mentor truyền thừa phụ.
+- **Nội dung:** Nhà Bảng (tổ chức); đạo trường Tơ Vọng; trạm Thương Hội; mentor truyền thừa phụ.
 - **Bí mật:** phòng lưu trữ đóng kín — mảnh Mạch Bạ đầu tiên được đọc (bí ẩn trung tâm).
 
 ### 6.2 Đầm Sậy Nổi
@@ -282,4 +286,4 @@ Ba archetype của slice là Lính Gác, Xạ Thủ Nỏ, Ống Dò Mạch, kh�
 
 ## 9. Linh vực tương lai
 
-Mỗi linh vực mới cần: một xung đột riêng, một yếu tố địa hình làm đổi lối chơi, ít nhất một boss đọc pattern, một nhánh địa phương cho truyền thừa có sẵn, và hồ sơ duyệt văn hóa ([roadmap](../production/roadmap.md#mở-rộng-thế-giới)). Thứ tự đề xuất sau bản ra mắt: Sương Hải (rủi ro thấp) hoặc linh vực Nam Á (nếu có cố vấn); các linh vực Bắc Mỹ, Australia, Thái Bình Dương, châu Phi chỉ bắt đầu khi có đối tác sáng tạo từ cộng đồng.
+Mỗi linh vực mới cần: một xung đột riêng, một yếu tố địa hình làm đổi lối chơi, ít nhất một boss đọc pattern, hồ sơ duyệt văn hóa và mentor/trực hệ nếu có nhu cầu được duyệt riêng ([roadmap](../production/roadmap.md#mở-rộng-thế-giới)). Thứ tự đề xuất sau bản ra mắt: Sương Hải (rủi ro thấp) hoặc linh vực Nam Á (nếu có cố vấn); các linh vực Bắc Mỹ, Australia, Thái Bình Dương, châu Phi chỉ bắt đầu khi có đối tác sáng tạo từ cộng đồng.

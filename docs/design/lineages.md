@@ -1,442 +1,194 @@
-# MyVa — Thần Mạch: truyền thừa, vai trò và năm hệ nhân vật ra mắt
+# MyVa — Thần Mạch: thế lực, trực hệ và kit
 
-> Đề xuất v0.2, 2026-10-09. Phụ thuộc [quyết định 0002](../decisions/0002-lineages-world-structure.md) (chưa duyệt).
-> Tài liệu này trả lời mục **C** (so sánh phương án phân chia) và **D** (năm hệ cho bản ra mắt) của [báo cáo thiết kế](worldbuilding-report.md).
-> Mọi chỉ số là **giả thuyết** cần graybox và mô phỏng ([combat-progression-balance.md](combat-progression-balance.md)); không có truyền thừa nào được coi là đã cân bằng.
-
-**Nhãn dùng trong tài liệu:** **DK** = dữ kiện có nguồn trong [khảo sát thần thoại](../research/mythology-survey.md); **GT** = giả thuyết thiết kế cần đo; **ST** = sáng tác mới của MyVa; **⚠** = nội dung nhạy cảm, phải qua [quy trình duyệt văn hóa](../research/risk-register.md#4-quy-trình-duyệt-văn-hóa).
+> Cập nhật 2026-10-12 cho [#18](https://github.com/loveoverflowcom/myva/issues/18). **Đã chốt:** năm nền tảng và trục phân chia theo [ADR 0004](../decisions/0004-five-factions-lineage-hierarchy.md). **Chưa duyệt:** mọi tên trực hệ/nhánh/skill, roster, ánh xạ và thông số dưới đây. Chưa triển khai năm thế lực trong gameplay.
+> **DK** = dữ kiện có nguồn; **ST** = sáng tác MyVa; **GT** = giả thuyết cần prototype/playtest. ID ứng viên chỉ dùng trong tài liệu, không phải ID runtime. Nguồn C/I/H/B/T ở [hồ sơ năm thế lực](../research/five-factions-sources.md).
 
 ## 1. Phân tầng khái niệm
 
-Draft gọi mọi thứ là "hệ". v0.2 tách thành sáu tầng, mỗi tầng có một quyết định riêng của người chơi:
+**Thế lực → Nguồn bảo trợ → Trực hệ → Nhánh chiến đấu → Kit.** “Nguồn bảo trợ” viết gọn cho nguồn thần linh, bảo trợ hoặc truyền pháp cụ thể, tùy truyền thống.
 
-| Tầng | Câu hỏi nó trả lời | Người chơi chọn khi nào | Có đổi được? | Ảnh hưởng chỉ số? |
-| --- | --- | --- | --- | --- |
-| **Linh vực** | Tôi lớn lên ở đâu, mở đầu câu chuyện nào? | Tạo nhân vật (khi có nhiều linh vực phát hành) | Không cần đổi; mọi linh vực đều đến được | **Không** |
-| **Thế lực** | Tôi đứng về tổ chức nào trong thế giới? | Theo tuyến truyện và danh vọng | Có, theo quy tắc mùa | Không; chỉ mở nhiệm vụ/mỹ phẩm |
-| **Truyền thừa** (= hệ nhân vật) | Tôi chiến đấu bằng bộ khung nào? | Tạo nhân vật, sau khi thử ở sân tập | Có, tại hub; miễn phí trước cấp 10 | Có: bộ khung, vũ khí, cơ chế |
-| **Nhánh** | Tôi chuyên sâu hướng nào trong truyền thừa? | Cấp 10 | Có, tại hub, chi phí thấp | Nội tại và thuật thay thế, trong ngân sách |
-| **Vai trò** | Tôi làm gì cho đội trong trận này? | Phát sinh từ truyền thừa + nhánh + thuật | Theo loadout | Gián tiếp |
-| **Mạch tính** | Đòn của tôi tác động gì lên thế giới và boss? | Gắn với từng thuật | Theo loadout | **Không nhân sát thương**; đổi tương tác |
+| Tầng | Định nghĩa | Ví dụ đề xuất | Quyết định gameplay |
+| --- | --- | --- | --- |
+| Thế lực | Nhóm lấy nền tảng từ một trong năm tôn giáo đã chọn | Thế lực lấy nền tảng Kitô giáo, chưa đặt tên riêng | Có nhiều trực hệ/lối chơi; không bonus theo số tín đồ |
+| Nguồn bảo trợ | Ai/nguồn nào truyền hoặc dẫn sức mạnh, với vai trò đúng theo hồ sơ | Thiên Chúa — ân sủng qua tuyến Michael; Michael là thiên thần | Nguồn bản sắc; không phải một kit hoặc avatar của thần |
+| Trực hệ | Quan hệ kế thừa cụ thể: từ ai, qua ai, bằng cách nào | C-MIC “Hộ Ước”: người được chọn/ban phước qua tuyến bảo trợ hư cấu | Đặt bản sắc và giới hạn truyền thừa, không mặc định huyết thống |
+| Nhánh chiến đấu | Cách chuyên sâu của cùng trực hệ | “Giữ Tuyến” hoặc “Phản Kích” | Chọn ưu tiên/đánh đổi; vai trò có thể thay đổi |
+| Kit | Bộ hành động cụ thể để thử hoặc trang bị | Kit ứng viên Giữ Tuyến: 2 đòn + 3 thuật, một thuật tăng cường | Có nội tại, chi phí, telegraph, hit/block/whiff và counterplay |
 
-```mermaid
-flowchart LR
-    Realm["Linh vực<br/>(xuất thân, không chỉ số)"] -.-> Story["Tuyến mở đầu"]
-    Faction["Thế lực"] -.-> Story
-    Lineage["Truyền thừa<br/>(bộ khung)"] --> Branch["Nhánh"]
-    Branch --> Loadout["2 đòn cơ bản + 3 thuật"]
-    Secondary["Truyền thừa phụ"] -->|"tối đa 1 thuật khách"| Loadout
-    Loadout --> Role["Vai trò trong trận"]
-    Loadout --> Affinity["Mạch tính của từng thuật"]
-```
+**Các chiều độc lập:** linh vực/bản đồ (xuất thân, nhiệm vụ, địa hình, tải asset); tổ chức chính trị/danh vọng (Hắc Triều, Liên Bến...); vai trò phát sinh trong trận; Mạch tính là thẻ tương tác hư cấu của thuật. Không dùng chúng thay năm thế lực. Bản đồ có thể chứa nhiều thế lực, nguồn và trực hệ; mỗi trực hệ có thể được học ở nhiều bản đồ khi nội dung được phát hành.
 
-Quy tắc bất biến (giữ từ [World Bible §2](world-bible.md#2-những-quy-tắc-giữ-thế-giới-nhất-quán) và [quyết định 0001](../decisions/0001-project-foundation.md)):
+Một quan hệ ban phước/truyền pháp **trong MyVa** là ST, kể cả khi tên nguồn là DK. Huyết thống chỉ được đề xuất khi hồ sơ cụ thể phù hợp, không dùng cho Allah/thiên thần/Bồ-tát một cách mặc định. Thần, hóa thân, thánh, ngôn sứ, Phật/Bồ-tát và tiên có vai trò riêng. Không phân loại người chơi bằng tôn giáo ngoài đời, dân tộc, quốc tịch, nơi sinh hoặc ngoại hình.
 
-- Linh vực, diện mạo, giới tính, giọng nói và truyền thừa **độc lập**. Không có bonus theo xuất thân, dân tộc hay vị trí thực của người chơi.
-- Truyền thừa **xuyên văn hóa**: mỗi truyền thừa lấy cảm hứng từ một mô-típ xuất hiện ở nhiều nền văn hóa, không đại diện một dân tộc.
-- Không thêm nút. Mọi khác biệt của truyền thừa đi qua 8 nút đã định ở [combat.md §12](combat.md#12-điều-khiển-và-khả-năng-tiếp-cận).
+## 2. Năm thế lực đã chốt và phần còn mở
 
-## 2. So sánh phương án phân chia hệ nhân vật
+| Nền tảng đã chốt | Hướng nghiên cứu | Những phân biệt phải giữ | Độ đa dạng đề xuất trong §4 |
+| --- | --- | --- | --- |
+| Kitô giáo | Ân sủng, bảo trợ, gìn giữ và chữa lành | Một Thiên Chúa theo Ba Ngôi; thiên thần/thánh không phải thần ngang hàng | Giữ tuyến/phản công và du kích/hồi phục có điều kiện |
+| Hồi giáo | Đức tin, dẫn dắt, ban phước | Allah không có con; Jibril/Mikail là thiên thần; Muhammad là ngôn sứ | Tầm trung/dẫn hướng và cận chiến/giữ nhịp |
+| Ấn Độ giáo | Nguồn thần cụ thể, ban phước và truyền thừa | Phân biệt vị thần, hóa thân và người kế thừa; ghi hệ phái nguồn | Khống chế đường đi và áp sát cam kết |
+| Phật giáo | Pháp hệ Phật/Bồ-tát, thầy–trò và tu học | Phật không phải thần sáng thế; pháp hệ không là phả hệ huyết thống | Điều tiết khoảng cách/hỗ trợ và đấu sĩ đọc nhịp |
+| Đạo giáo | Thần, tiên, pháp phái và thầy–trò cụ thể | Phân biệt Đạo giáo, tín ngưỡng dân gian giao thoa và hư cấu tu tiên | Giữ thế/phản kích và kiếm thuật cơ động hữu hạn |
 
-Năm phương án được chấm 1–5 (5 là tốt nhất) theo sáu tiêu chí. Điểm là đánh giá định tính của nhóm thiết kế, không phải đo lường.
-
-| Phương án | Bản sắc gameplay | Rủi ro văn hóa (5 = thấp) | Mở rộng dài hạn | Dễ cân bằng | Chi phí sản xuất (5 = thấp) | Khớp docs v0.1 | Tổng |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| A. Mỗi hệ = một châu lục/nền văn hóa | 3 | 1 | 2 | 2 | 1 | 1 | 10 |
-| B. Theo nguyên tố (kiểu ngũ hành/tứ đại) | 2 | 4 | 3 | 2 | 4 | 3 | 18 |
-| C. Theo vai trò thuần (tank/DPS/healer) | 3 | 5 | 3 | 3 | 4 | 2 | 20 |
-| D. Theo loại vũ khí | 3 | 5 | 3 | 4 | 3 | 3 | 21 |
-| **E. Theo dòng mạch xuyên văn hóa, mỗi dòng một bộ cơ chế** | **5** | **4** | **5** | **3** | **3** | **5** | **25** |
-
-**Vì sao loại A.** Biến một châu lục thành một "chủng tộc chiến đấu" đi ngược [World Bible §2](world-bible.md#2-những-quy-tắc-giữ-thế-giới-nhất-quán) ("không coi một châu lục là một nền văn hóa"), tạo khuôn mẫu ("Bắc Âu = chiến binh băng tuyết"), và bắt buộc làm 7+ hệ trước khi có hệ nào đủ sâu. Người chơi ở một nước cũng sẽ cảm thấy bị gán vào một lối chơi.
-
-**Vì sao loại B.** Nguyên tố là ngôn ngữ dễ hiểu nhưng đã quá phổ biến, và một hệ năm yếu tố dễ bị đọc nhầm thành ngũ hành Đông Á, kéo theo kỳ vọng tương sinh–tương khắc. Khắc chế theo hệ số sát thương (×1,5 khi khắc) làm kết quả phụ thuộc lựa chọn trước trận hơn là kỹ năng, trái trụ cột "khó thành thạo" của [GDD §3](gdd.md#3-các-trụ-cột-có-thể-kiểm-chứng).
-
-**Vì sao C chỉ giữ làm một tầng.** Vai trò rõ ràng nhưng nhạt bản sắc thần thoại. Một healer bắt buộc mâu thuẫn quy tắc "không kit chỉ khả dụng khi có đồng đội" ([combat.md §8](combat.md#8-khung-hai-kit-còn-lại)). Vai trò được giữ như **tầng phát sinh**, không phải lớp nhân vật.
-
-**Vì sao D chỉ giữ làm một thuộc tính.** Vũ khí quyết định silhouette và đòn cơ bản, nên mỗi truyền thừa vẫn có một họ vũ khí. Nhưng chỉ chia theo vũ khí thì thiếu lý do trong thế giới và thiếu cơ chế đặc trưng.
-
-**Vì sao chọn E.** Thần Mạch đã được định nghĩa là dòng năng lượng trong "đất, nước, sinh vật và ký ức" ([World Bible §1](world-bible.md#1-tiền-đề)). Năm dòng mạch (Thủy, Thạch, Phong, Sinh, Ký) mở rộng trực tiếp định nghĩa đó. Mỗi dòng ứng với một **mô-típ lặp lại ở nhiều nền văn hóa độc lập** (DK, xem [khảo sát §10](../research/mythology-survey.md#10-mô-típ-xuyên-văn-hóa)): núi chống nước, rắn giữ nước, chim thần, người-thú, sợi dệt số mệnh. Vì vậy một truyền thừa lấy cảm hứng từ nhiều nơi mà không gom chúng thành một dân tộc. Ba truyền thừa của slice (Long Lưu, Sơn Cốt, Phong Vũ) khớp ngay ba dòng đầu, nên không phải làm lại thiết kế đã có.
-
-Điểm yếu của E là khó cân bằng hơn A–D vì mỗi truyền thừa có cơ chế riêng. Bù lại bằng ngân sách sức mạnh và mô phỏng ở [combat-progression-balance.md §10–11](combat-progression-balance.md#10-giả-thuyết-cân-bằng-ban-đầu).
-
-**Mạch tính không phải ngũ hành.** Năm Mạch tính không có vòng tương sinh/tương khắc và không nhân sát thương. Chúng chỉ quyết định: (1) tương tác với Mạch cơ trên bản đồ, (2) loại phản ứng của "điểm lệch" trên boss (choáng, lộ điểm yếu, đổi pha). Mỗi boss luôn có ít nhất hai cách mở điểm yếu mà truyền thừa nào cũng làm được ([world-atlas.md §8](world-atlas.md#8-quy-chuẩn-dựng-bản-đồ)).
+Tên nguồn thật được nghiên cứu trực tiếp theo #18. Chưa chọn tên hiển thị, hình tượng, nghi thức hoặc mức xuất hiện. Không đổi toàn bộ thành Cổ Linh vô danh; Cổ Linh vẫn có thể là sinh vật ST riêng. Không suy mọi nguồn trong năm truyền thống là các mảnh của một vị thần chung trong lore.
 
 ## 3. Quy tắc và phương án đặt tên
 
-### Quy tắc
+- Trong docs, dùng đúng tên nguồn + ID ứng viên để truy vết; trong game có thể dùng tên hư cấu của trực hệ nhưng vẫn ghi nguồn rõ ở hồ sơ. Tên tạm dưới đây **chưa duyệt**, không phải thuật ngữ tôn giáo có thật.
+- Tên phe, trực hệ, nhánh và kit không dùng lẫn nhau. Không đổi tên nguồn thành tên skill rồi trình bày như phép thuật có thật.
+- Tên quốc tế, quyền dùng hình/âm thanh và tra nhãn hiệu cần hồ sơ riêng trước công bố ([R-02](../production/content-roadmap.md#6-đầu-việc-đề-xuất)). Chưa tra nhãn hiệu cho tên mới.
+- Đổi presentation sau này không tự đổi ID kit, protocol, replay hoặc asset hiện tại; cần kế hoạch migration nếu thực sự đổi dữ liệu runtime.
 
-1. **Hai âm tiết Hán–Việt hoặc Việt**, theo mẫu `[dòng mạch][phẩm chất]` đã có (Long Lưu, Sơn Cốt, Phong Vũ). Dễ đọc với người Việt, không cần biết chữ Hán.
-2. **Tên quốc tế dịch nghĩa**, ghép hai gốc tiếng Anh, ≤ 10 ký tự, để người chơi ngoài Việt Nam đoán được lối chơi.
-3. **Linh vực dùng phiên âm** (Vân Thủy → *Van Thuy*), vì địa danh nên giữ âm gốc; truyền thừa dùng dịch nghĩa vì là lựa chọn gameplay.
-4. **Không lấy tên dân tộc, quốc gia, thần linh hay báu vật có thật** (không "Naga", "Garuda", "Odin", "Sampo").
-5. **Không trùng hình vị giữa linh vực và truyền thừa** để tránh đọc nhầm. Ví dụ hiện có cần xem lại: linh vực "Thạch Phong" (Bắc Mỹ, tương lai) trùng "Phong" của Phong Vũ và nghĩa "đá" của Sơn Cốt.
-6. **Kiểm tra nhãn hiệu trước khi công bố**: tra USPTO Trademark Search, WIPO Global Brand Database, cơ sở dữ liệu của Cục Sở hữu trí tuệ Việt Nam, Steam/app store và tên lớp nhân vật trong các game lớn. Bảng dưới **chưa** được tra — đây là việc R-02 ở [content-roadmap.md](../production/content-roadmap.md#6-đầu-việc-đề-xuất).
-7. **Tránh tên đã gắn với nhân vật nổi tiếng**, ví dụ *Earthshaker*, *Tidehunter*, *Windranger* (Dota 2), *Lifeweaver* (Overwatch 2), *Bastion* (Overwatch; game Bastion), *Cragheart* (Gloomhaven).
+## 4. Danh mục trực hệ ứng viên
 
-### Phương án cho từng truyền thừa
+**Toàn bộ §4 là đề xuất ST/GT chưa duyệt.** Mỗi hồ sơ gồm phần giữ từ nguồn (DK), quan hệ hư cấu, hai nhánh khác ưu tiên và một cơ chế đặc trưng. Tên kỹ năng là ví dụ để #20 phát triển thành kit; chưa có timing/damage, chưa là true combo hoặc lời hứa cân bằng. Nhánh thứ hai không tự được cộng vào kit của nhánh thứ nhất.
 
-| Dòng | Phương án 1 | Phương án 2 | Phương án 3 | Chọn | Lý do |
-| --- | --- | --- | --- | --- | --- |
-| Thủy | **Long Lưu** / *Tidecoil* | Long Lưu / *Dragonflow* | Thủy Mạch / *Rivercoil* | 1 | Giữ tên v0.1; "coil" gợi thân rắn/rồng và dòng xoáy mà không gọi tên sinh vật có thật |
-| Thạch | **Sơn Cốt** / *Peakward* | Sơn Cốt / *Stonebone* | Thạch Trụ / *Rootstone* | 1 | "ward" nói rõ vai trò che chắn; *Stonebone* dịch sát nhưng gợi hình xương, không gợi bảo vệ |
-| Phong | **Phong Vũ** / *Galewing* | Phong Vũ / *Skyquill* | Phong Vũ / *Rainshear* | 1 | *Galewing* đọc được ngay là gió + cánh; *Skyquill* đẹp nhưng khó phát âm với người Việt |
-| Sinh | **Lâm Trảo** / *Rootfang* | Mộc Sinh / *Verdant* | Lâm Trảo / *Wildclaw* | 1 | "Rừng + vuốt" nói rõ lối đánh áp sát; *Rootfang* ghép rễ (sự sống) và nanh (thú). *Mộc Sinh* gợi hồi máu thuần, sai vai trò; *Wildclaw* quá phổ biến |
-| Ký | **Tơ Vọng** / *Echoweave* | Ấn Ký / *Threadmark* | Linh Ti / *Spiritsilk* | 1 | "Sợi tơ của tiếng vọng" nói đúng hai cơ chế (sợi neo + tiếng vọng). *Ấn Ký* quen trong truyện tiên hiệp nên kém khác biệt; *Linh Ti* khó hiểu |
+| Thế lực theo nền tảng | Nguồn tham chiếu | Trực hệ ứng viên (tên ST) | Hai nhánh chiến đấu đề xuất |
+| --- | --- | --- | --- |
+| Kitô giáo | Thiên Chúa — tuyến Michael | C-MIC / Hộ Ước | Giữ Tuyến / Phản Kích |
+| Kitô giáo | Thiên Chúa — tuyến Raphael | C-RAP / Đồng Hành | Dẫn Lộ / Hồi Sức |
+| Hồi giáo | Allah — tuyến Jibril | I-JIB / Dẫn Quang | Định Hướng / Chuyển Tuyến |
+| Hồi giáo | Allah — tuyến Mikail | I-MIK / Kiên Tín | Giữ Nhịp / Tiếp Bước |
+| Ấn Độ giáo | Vishnu | H-VIS / Trì Thế | Hộ Trì / Luân Hồi Kích |
+| Ấn Độ giáo | Shiva/Shankara | H-SHI / Chuyển Vũ | Phá Thế / Thu Vũ |
+| Phật giáo | Avalokiteśvara/Quán Âm | B-AVA / Từ Hành | Giải Áp / Hộ Hành |
+| Phật giáo | Mañjuśrī/Văn Thù | B-MAN / Minh Kiến | Kiến Nhịp / Khai Lộ |
+| Đạo giáo | Chân Vũ/Zhenwu | T-ZHE / Trấn Vũ | Trấn Tuyến / Phản Chấn |
+| Đạo giáo | Lữ Động Tân/Lü Dongbin | T-LU / Vân Kiếm | Du Kiếm / Định Kiếm |
 
-Ghi chú phát âm: "Tơ Vọng" có thể bị nghe gần "tơ vương" (thành ngữ chỉ sự vương vấn). Nghĩa gần đó hợp chủ đề ký ức, nhưng cần thử với người chơi miền Nam và miền Trung trước khi chốt.
+### 4.1 Kitô giáo — C-MIC / Hộ Ước
 
-## 4. Năm truyền thừa cho bản ra mắt
+- **Nguồn/giữ lại (DK):** Thiên Chúa — tuyến bảo trợ Michael, thiên thần có vai trò chiến đấu trong Khải Huyền 12 (C1, C2). Không coi Michael là thần hoặc người chơi là Michael.
+- **Quan hệ (ST):** người được chọn nhận ân sủng qua tuyến bảo trợ Michael, luyện cùng mentor con người. Không quan hệ huyết thống; việc trao sức mạnh này là hư cấu MyVa.
+- **Nhánh (ST):** **Giữ Tuyến** ưu tiên bảo vệ một hướng; **Phản Kích** ưu tiên trừng phạt đòn cam kết, giảm khả năng giữ vùng.
+- **Đặc trưng (GT): Hộ Ước** — phòng thủ chính xác tích tối đa một nhịp, tiêu bằng đòn thường kế tiếp trúng để đẩy đối thủ. Không tự proc khi giữ guard, không phản mọi hướng.
+- **Thuật ứng viên (ST/GT):** **Khiên Ước** che phía trước trong cửa ngắn; **Bước Hộ** dịch ngắn để giữ tuyến; **Phá Vây** quét gần có startup rõ. Đại thuật là Phá Vây tăng cường trên cùng ô, vẫn cần điều kiện Mạch/cost chung.
+- **Mạnh:** giữ trung cự, phạt đòn đoán trước được. **Yếu:** bị nhử guard, đánh sau lưng hoặc kéo rời vị trí. **Khắc chế mềm:** gây khó cho lao thẳng; đối thủ có thể feint/lùi rồi phạt recovery. Người dùng đổi vị trí bằng Bước Hộ hữu hạn, không có miễn CC/damage mặc định.
 
-### Tổng quan
+### 4.2 Kitô giáo — C-RAP / Đồng Hành
 
-| Truyền thừa | Dòng | Vai trò chính / phụ | Cơ chế đặc trưng | Bộ pháp | Họ vũ khí | Độ khó (GT) |
-| --- | --- | --- | --- | --- | --- | --- |
-| Long Lưu / Tidecoil | Thủy | Du kích / Khống chế | Phản đòn và đổi hướng dòng chảy | Lướt Dòng: lướt xa hơn trên mặt nước, bơi nhanh | Côn (gậy dài) | 3/5 |
-| Sơn Cốt / Peakward | Thạch | Tiên phong / Đột kích (phá thủ) | Thế Núi: giáp một đòn trong đòn nặng; đỡ tiến | Trụ Đá: lao xuống phá nền nứt; không nhảy kép | Chùy + khiên tay | 2/5 |
-| Phong Vũ / Galewing | Phong | Xạ kích / Du kích | Góc bắn trên không, đánh dấu | Lượn Gió: nhảy kép, giữ nhảy để lượn ngắn | Cung ngắn + dao găm | 3/5 |
-| Lâm Trảo / Rootfang | Sinh | Đột kích / Tiên phong (bám trụ) | Hoang Sinh: lấy lại máu bằng phản công | Leo Vách: bám và bật vách | Trảo đao đôi | 3/5 |
-| Tơ Vọng / Echoweave | Ký | Khống chế / Hộ trợ | Vọng (tiếng vọng lặp thuật) + Neo (sợi giữa hai điểm) | Móc Neo: phóng sợi rồi kéo mình tới điểm neo | Thoi tơ (dây phóng) | 4/5 |
+- **Nguồn/giữ lại (DK):** Thiên Chúa — tuyến Raphael, thiên thần được sai đến chữa lành trong Tobit (C1, C3); phạm vi Công giáo của nguồn được ghi riêng.
+- **Quan hệ (ST):** người nhận ban phước, học qua người hướng dẫn; không con cháu Raphael và không tuyên bố nghi thức game là bí tích thật.
+- **Nhánh (ST):** **Dẫn Lộ** ưu tiên dịch chuyển/tầm trung; **Hồi Sức** ưu tiên trao đổi dài, giảm burst. Cả hai có đường solo, không healer bắt buộc.
+- **Đặc trưng (GT): Dưỡng Nhịp** — một lần đánh trúng trong cửa phản công hợp lệ tạo một lần hồi nhỏ có trần/cooldown; không hồi từ whiff/guard/hazard hoặc proc tự kích proc.
+- **Thuật ứng viên:** **Dẫn Lộ** bước ngắn; **Hộ Hành** tạo khoảng an toàn ngắn, không bất tử; **Hoàn Nhịp** đòn tầm trung tiêu nhịp để tự hồi nhỏ, khi co-op có thể chọn trợ đồng đội thay phần tự hồi. Đại thuật tăng cường Hoàn Nhịp cùng ô.
+- **Mạnh:** trao đổi bền khi phản công đúng. **Yếu:** hồi cần trúng, burst thấp, bị ép khi mất nhịp. **Khắc chế mềm:** hiệu quả với cấu rỉa đơn nhịp; đối thủ trì hoãn để hết cửa hồi hoặc ép một đợt có telegraph. Người dùng có thể rút bằng Dẫn Lộ, trả giá mất áp lực.
 
-Phủ vai trò: mỗi vai trò trong sáu vai trò có ít nhất một truyền thừa chính hoặc phụ, và không truyền thừa nào là healer bắt buộc. Hồi phục đồng đội chỉ là phần thưởng thêm khi chơi nhóm (Sơn Cốt che chắn, Lâm Trảo nhánh Rễ Sống, Tơ Vọng nhánh Kết Tơ).
+### 4.3 Hồi giáo — I-JIB / Dẫn Quang
 
-### Kho kỹ năng chung cho mọi truyền thừa
+- **Nguồn/giữ lại (DK):** Allah — tuyến Jibril, thiên thần truyền đạt mặc khải theo phép Allah (I1–I3). Không ngôn sứ/thần độc lập.
+- **Quan hệ (ST):** người được ban phước qua tuyến dẫn dắt hư cấu gắn Jibril, luyện kỹ thuật qua mentor; không tự nhận mặc khải thật và không hậu duệ Allah.
+- **Nhánh (ST):** **Định Hướng** kiểm soát đường đạn trung cự; **Chuyển Tuyến** đổi góc bắn, giảm độ bền vùng.
+- **Đặc trưng (GT): Tuyến Dẫn** — đặt tối đa một mốc nhìn thấy được; thuật kế tiếp cam kết hướng qua mốc rồi tiêu nó. Mốc không bám mục tiêu hoặc tự đọc input.
+- **Thuật ứng viên:** **Quang Tuyến** đạn thẳng; **Đổi Góc** bước ngắn không miễn đòn; **Dẫn Kích** phát đạn trễ qua mốc có báo trước. Đại thuật tăng cường Dẫn Kích cùng ô. Quang/mốc/đạn đều là ST, không thuộc tính tôn giáo được I2 xác nhận.
+- **Mạnh:** ép đường tiếp cận, tạo góc trên nền ngang. **Yếu:** cần bố trí, yếu khi bị vượt mốc/áp sát. **Khắc chế mềm:** gây khó cho giữ thế đứng yên; đối thủ nhảy/đổi tầng hoặc đỡ đạn, ép hồi chiêu Đổi Góc. Người dùng vẫn có đòn nhẹ gần và đường rút ngắn.
 
-- 2 đòn cơ bản (nhẹ 3 nhịp, nặng) + **6 thuật trong kho** (3 thuật lõi + mỗi nhánh mở 1–2 thuật thay thế). Trang bị 3 thuật, một thuật chọn làm đại thuật ([combat.md §2](combat.md#2-bộ-hành-động-và-trạng-thái)).
-- 1 nội tại truyền thừa + 1 nội tại nhánh. Không có thanh nội tại cộng dồn vô hạn.
-- Bộ pháp là **biến thể của nhảy/lướt chung**, không thêm nút, và không thay thế đường đi chính của bản đồ.
-- Tên thuật của Long Lưu, Sơn Cốt và Phong Vũ giữ nguyên từ [combat.md §7–8](combat.md#7-kit-mẫu-long-lưu); thuật mới được đánh dấu **ST**.
+### 4.4 Hồi giáo — I-MIK / Kiên Tín
 
----
+- **Nguồn/giữ lại (DK):** Allah — tuyến Mikail, thiên thần được nêu trong Qur'an 2:98 (I1, I2). Chưa gán quyền quản mưa/nước/sét khi nguồn này không xác nhận chức trách đó.
+- **Quan hệ (ST):** người nhận ban phước theo tuyến Mikail hư cấu, học thầy–trò; không huyết thống Allah/thiên thần.
+- **Nhánh (ST):** **Giữ Nhịp** cận chiến bền; **Tiếp Bước** tiến ngắn có cam kết, giảm phòng thủ tại chỗ.
+- **Đặc trưng (GT): Kiên Nhịp** — dừng chuỗi đúng cửa hồi động tác tạo một nhịp giảm chi phí đòn kế tiếp có sàn; spam không tạo thêm nhịp, không hồi tài nguyên dương vô hạn.
+- **Thuật ứng viên:** **Trụ Bước** giữ một hướng ngắn; **Tiếp Kích** tiến đánh không homing; **Chấn Nhịp** đòn gần phá áp lực guard với startup rõ. Đại thuật tăng cường Chấn Nhịp cùng ô. Đây là cơ chế ST, không khẳng định Mikail dạy võ thuật thật.
+- **Mạnh:** duy trì áp lực bằng quản lý tài nguyên. **Yếu:** tầm ngắn, có khoảng nghỉ dễ đoán. **Khắc chế mềm:** gây khó cho đối thủ tiêu sức bền quá sớm; đối thủ lùi giữ khoảng cách hoặc đổi nhịp để phạt lúc nghỉ. Người dùng có Tiếp Kích để tiếp cận hữu hạn, không miễn đạn.
 
-### 4.1 Long Lưu / Tidecoil — dòng Thủy
+### 4.5 Ấn Độ giáo — H-VIS / Trì Thế
 
-**Tên và ý nghĩa.** "Long" (rồng, thân dài uốn lượn) + "Lưu" (dòng chảy). Người dùng Long Lưu không chặn sức mạnh mà dẫn nó đổi hướng.
+- **Nguồn/giữ lại (DK):** Vishnu được nêu và phân biệt với hóa thân Vamana trong H1. Chọn mô-típ gìn giữ thế trận là diễn giải ST, không khẳng định mọi hệ phái đồng nhất.
+- **Quan hệ (ST):** người được ban phước theo tuyến Vishnu, học qua mentor; chưa chọn hóa thân hoặc huyết thống. Người chơi không là Vishnu/Vamana.
+- **Nhánh (ST):** **Hộ Trì** kiểm soát vùng nhỏ; **Luân Hồi Kích** đòn đi–về trung cự, giảm khả năng giữ nền. Tên nhánh là sáng tác gameplay.
+- **Đặc trưng (GT): Đường Về** — một đòn có đường đi và đường về cố định, mỗi mục tiêu chỉ nhận ngân sách hit đã định; không nhân damage bằng đứng chồng quỹ đạo.
+- **Thuật ứng viên:** **Luân Kích** phóng vật lực hư cấu; **Trì Vực** đánh dấu vùng nhỏ; **Thu Thế** thu hồi vật lực với recovery. Đại thuật tăng cường Luân Kích cùng ô, không triệu chính vị thần.
+- **Mạnh:** ép đường ngang, bảo vệ một vị trí. **Yếu:** khó đổi hướng khi đã phóng, dễ bị đánh từ tầng khác. **Khắc chế mềm:** gây khó cho lao theo cùng một tuyến; đối thủ đổi tầng, chờ đòn đi qua rồi vào recovery. Người dùng có thể giữ đòn thường để tự vệ thay vì phóng tiếp.
 
-**Nguồn cảm hứng (DK, xem [khảo sát](../research/mythology-survey.md)).**
+### 4.6 Ấn Độ giáo — H-SHI / Chuyển Vũ
 
-| Mô-típ | Ví dụ có nguồn | Mức dùng |
-| --- | --- | --- |
-| Rắn/rồng nước hiền, mang nước và mùa màng | Rồng và giao long trong truyền thuyết Việt; nāga trong văn hóa Đông Nam Á và Nam Á | 1–2 ⚠ (rồng gắn với nguồn gốc dân tộc Việt; nāga là hình tượng tôn giáo đang thờ) |
-| Trị thủy bằng khơi dòng thay vì đắp chặn | Vũ (Yu) khơi kênh thành công sau khi Cổn (Gun) đắp đê thất bại | 3 |
-| Dòng chảy đảo chiều theo mùa | Sông Tonlé Sap chảy ngược vào Biển Hồ mỗi mùa lũ | 3 (hiện tượng tự nhiên) |
-| Quản lý nước chung | Hệ thống subak và đền nước ở Bali | 2 ⚠ (gắn triết lý Tri Hita Karana và nghi lễ Hindu Bali) |
+- **Nguồn/giữ lại (DK):** Shiva/Shankara trong H2; không coi là phe ác. Vòng động tác chiến đấu là ST, không tái hiện nghi lễ/vũ điệu thiêng.
+- **Quan hệ (ST):** người nhận ban phước tuyến Shiva, rèn qua thầy–trò; không tự xưng hóa thân hoặc con cháu thần.
+- **Nhánh (ST):** **Phá Thế** cam kết đòn nặng; **Thu Vũ** cơ động gần, giảm áp lực guard.
+- **Đặc trưng (GT): Nhịp Chuyển** — sau khi hoàn tất recovery hợp lệ, một đòn thường trúng mở lựa chọn tiếp nhịp hoặc thu vị trí; không cancel cứu đòn hụt miễn phí.
+- **Thuật ứng viên:** **Khai Vũ** quét gần; **Chuyển Bộ** bước cam kết; **Đoạn Thế** đòn chậm ép guard. Đại thuật tăng cường Đoạn Thế cùng ô, vẫn đọc được startup.
+- **Mạnh:** punish recovery, ép quyết định ở cự ly gần. **Yếu:** đòn lớn hụt bị phạt, truy đuổi xa kém. **Khắc chế mềm:** gây khó cho tấn công quá cam kết; đối thủ giữ tầm hoặc nhử đòn nặng. Người dùng chọn Thu Vũ để đổi vị trí với chi phí mất burst.
 
-**Lịch sử trong MyVa (ST).** Sau Cuộc Phân Dòng, những người chèo đò ở các bến sông học cách "đi theo dòng" khi lũ về: thay vì chống, họ đổi hướng thuyền theo xoáy nước. Hội Đò truyền nghề ấy thành võ. Long Lưu chia thành hai lối: người giữ đò (nhánh Hồi Triều) và người vượt ghềnh (nhánh Liên Lưu).
+### 4.7 Phật giáo — B-AVA / Từ Hành
 
-**Triết lý.** *Khơi chứ không chặn.* Sức mạnh bị chặn sẽ tìm đường phá ra; sức mạnh được dẫn sẽ nuôi đồng ruộng. Mặt tối: người tin mình đủ giỏi để dẫn mọi dòng có thể trở thành Kẻ Giữ Đập.
+- **Nguồn/giữ lại (DK):** Avalokiteśvara/Quán Âm, Bồ-tát gắn với từ bi trong B2; B1 đối chiếu việc không ép Phật giáo thành phả hệ thần sáng thế.
+- **Quan hệ (ST):** pháp hệ tu học hư cấu lấy cảm hứng Quán Âm, qua mentor và thực hành; không huyết thống, không chứng nhận truyền pháp thật.
+- **Nhánh (ST):** **Giải Áp** kiểm soát khoảng cách; **Hộ Hành** hỗ trợ có đường tự vệ solo, giảm sát thương bộc phát.
+- **Đặc trưng (GT): Khoảng Lặng** — đỡ/né đúng đòn có cam kết tạo một nhịp dùng cho đẩy lùi hoặc khiên nhỏ, chỉ chọn một. Không tích lũy vô hạn hoặc xóa mọi CC.
+- **Thuật ứng viên:** **Mở Khoảng** đẩy gần; **Dẫn Bước** di chuyển ngắn; **An Vực** vùng nhỏ có báo trước để tiêu nhịp phòng thủ. Đại thuật tăng cường Mở Khoảng cùng ô. Không tụng kinh/dhāraṇī làm chiêu đánh.
+- **Mạnh:** cắt nhịp lao liên tục, duy trì khoảng trống. **Yếu:** burst thấp, bị nhử công cụ đẩy. **Khắc chế mềm:** gây khó cho áp sát vô điều kiện; đối thủ chờ vùng hết hoặc đánh từ ngoài tầm. Người dùng có Dẫn Bước và đòn thường để tiếp tục solo, không cần đồng đội nhận buff.
 
-**Vùng khởi đầu và đạo trường.** Bến Lau (Vân Thủy), sân tập trên nhà sàn nổi. Kiến trúc: nhà sàn, cầu tre, cột đánh dấu mực nước, đèn treo trên mặt nước.
+### 4.8 Phật giáo — B-MAN / Minh Kiến
 
-**Phong cách chiến đấu.** Tầm trung 2–6 m. Đánh nhẹ quét vòng cung, ép đối thủ vào nhịp rồi phản đòn khi họ cam kết. Mạnh nhất khi đối thủ tấn công đoán trước được.
+- **Nguồn/giữ lại (DK):** Mañjuśrī/Văn Thù, Bồ-tát gắn với trí tuệ trong B3; không thần sáng thế.
+- **Quan hệ (ST):** pháp hệ thầy–trò/thực hành lấy cảm hứng Văn Thù, không nhận gen hoặc điều khiển Bồ-tát. “Đọc nhịp” là kỹ năng người chơi, không biết input bí mật.
+- **Nhánh (ST):** **Kiến Nhịp** phản công trung cự; **Khai Lộ** chủ động áp sát ngắn, giảm cửa phòng thủ.
+- **Đặc trưng (GT): Minh Nhịp** — chỉ đánh trúng recovery hợp lệ mới có một nhịp để biến đổi đòn thường kế tiếp; hụt/bị đỡ không tạo nhịp.
+- **Thuật ứng viên:** **Thăm Thế** đòn thăm tầm; **Khai Bộ** tiến ngắn; **Đoạn Nhịp** đòn punish có startup. Đại thuật tăng cường Đoạn Nhịp cùng ô, không auto counter.
+- **Mạnh:** thưởng đọc đúng tình huống. **Yếu:** khó tạo lợi thế nếu đoán sai, không giữ vùng lâu. **Khắc chế mềm:** gây khó cho chuỗi đều nhịp; đối thủ dừng sớm/đổi nhịp hoặc giữ tầm. Người dùng có Thăm Thế để chủ động thăm dò thay vì chờ phản công mãi.
 
-**Cơ chế đặc trưng — Thuận Dòng (GT).** Đỡ hoàn hảo một đạn thường (không phải của boss) sẽ phản nó lại theo hướng đang nhìn. PvP: tối đa một lần mỗi 4 giây; đạn bị phản không được nối khống chế.
+### 4.9 Đạo giáo — T-ZHE / Trấn Vũ
 
-| Điểm mạnh | Điểm yếu |
+- **Nguồn/giữ lại (DK):** Chân Vũ/Zhenwu, thần bảo hộ trong hồ sơ T1; dùng phạm vi Đạo giáo, ghi nhận giao thoa với truyền thống khác.
+- **Quan hệ (ST):** người nhận bảo trợ tuyến Chân Vũ qua đạo trường hư cấu; không tự công bố pháp phái lịch sử hoặc hậu duệ thần.
+- **Nhánh (ST):** **Trấn Tuyến** giữ nền; **Phản Chấn** phản kích gần, giảm thời gian giữ thế.
+- **Đặc trưng (GT): Trấn Điểm** — chọn một điểm đứng có tín hiệu, tăng ổn định phía trước khi ở điểm; bị buộc rời điểm thì mất lợi thế. Không miễn damage/hazard.
+- **Thuật ứng viên:** **Lập Trấn** đặt điểm; **Hộ Thế** chắn phía trước ngắn; **Phản Chấn** trả đòn có cam kết. Đại thuật tăng cường Phản Chấn cùng ô.
+- **Mạnh:** giữ tuyến, phạt lao thẳng. **Yếu:** cơ động thấp, điểm bị tránh/ép bỏ. **Khắc chế mềm:** gây khó cho cận chiến nóng vội; đối thủ đổi tầng/đánh hướng khác hoặc ép di chuyển. Người dùng có thể bỏ điểm, mất buff để dùng đòn thường và tái bố trí.
+
+### 4.10 Đạo giáo — T-LU / Vân Kiếm
+
+- **Nguồn/giữ lại (DK):** Lữ Động Tân/Lü Dongbin, một trong Bát Tiên; T2 ghi quan hệ nhận tri thức từ Chung Ly Quyền. Không đồng nhất với mọi truyện tu tiên.
+- **Quan hệ (ST):** truyền thừa tiên qua chuỗi thầy–trò hư cấu đến người chơi; không tuyên bố chuỗi này là lịch sử pháp phái thật.
+- **Nhánh (ST):** **Du Kiếm** đổi vị trí gần; **Định Kiếm** kiếm đòn trung cự, giảm khả năng nối bước.
+- **Đặc trưng (GT): Hồi Kiếm** — sau một bước cam kết, chọn một đường kiếm trở về có tín hiệu, dùng cùng ô; chỉ một lần, không teleport hoặc reset dash vô hạn.
+- **Thuật ứng viên:** **Xuất Kiếm** đòn trung cự; **Vân Bộ** bước hữu hạn; **Hồi Kiếm** đường trở về cam kết, hụt chịu recovery. Đại thuật tăng cường Xuất Kiếm cùng ô.
+- **Mạnh:** đổi khoảng cách và góc giao tranh. **Yếu:** yếu khi bị ép vào góc, hết bước không thoát miễn phí. **Khắc chế mềm:** gây khó cho giữ một hướng cố định; đối thủ giữ đòn chống không trung/đường về và phạt điểm đáp. Người dùng chọn Định Kiếm để giữ tầm thay cho tiếp tục lao.
+
+## 5. Khắc chế theo cơ chế
+
+**Không có vòng tôn giáo A khắc B.** Bảng dưới là câu hỏi matchup GT giữa các nhánh/kit, không phải bảng ưu thế của thế lực. Hai trực hệ trong cùng thế lực cũng có thể là đối trọng; mirror cần kiểm tra tương tự.
+
+| Cơ chế gây áp lực | Mục tiêu dễ bất lợi | Phản ứng của bên bất lợi | Tình huống đảo chiều cần thử |
+| --- | --- | --- | --- |
+| Giữ tuyến/phản công (C-MIC, T-ZHE) | Lao thẳng (H-SHI, T-LU) | Feint, đổi tầng/hướng, chờ công cụ phòng thủ hồi | Người giữ tuyến bị kéo khỏi điểm hoặc đánh sau lưng |
+| Đường đạn/vùng (I-JIB, H-VIS) | Giữ nền ít cơ động | Đỡ/né, đổi tầng, rút khỏi vùng rồi vào recovery | Người bắn bị áp sát lúc đã cam kết quỹ đạo |
+| Áp sát đổi nhịp (I-MIK, H-SHI, B-MAN) | Đối thủ cần chuẩn bị mốc/vùng | Dùng đòn thường chống áp sát, giữ tài nguyên rút | Áp sát hụt hoặc hết sức bền trước mục tiêu |
+| Hồi có điều kiện/giải áp (C-RAP, B-AVA) | Cấu rỉa hoặc lao đều nhịp | Ngắt nhịp, không trao hit hồi miễn phí | Kit hồi bị ép khi công cụ đẩy/di chuyển đang hồi |
+| Cơ động hữu hạn (T-LU, nhánh Chuyển Tuyến) | Giữ một hướng, đòn lớn | Giữ công cụ chống không trung/điểm đáp | Hết bước trong góc hoặc bị dụ đi qua vùng đã đặt |
+
+Mục tiêu là bất lợi vừa phải và có đáp trả, không định trước win rate hoặc damage multiplier theo tôn giáo. Ma trận 5 kit cũ là giả thuyết lịch sử của ADR 0002; không dùng làm ma trận năm thế lực. #20 sẽ chọn số ít matchup để đo với side-swap, map, trình độ, touch/keyboard và latency; chưa có kết quả playtest cho các ứng viên §4.
+
+## 6. Giữ kit hiện tại và mở rộng theo gate
+
+| Kit/mẫu cơ chế cũ | Giữ cho việc gì | Trạng thái thực tế | Ánh xạ nguồn/trực hệ |
+| --- | --- | --- | --- |
+| Long Lưu | Phản công/giữ trung cự; Lưu Tiễn, Hồi Thế, Triều Dâng | Baseline core/graybox #2, #19; bằng chứng tại [combat](combat.md#14-lát-cắt-19-và-trạng-thái-triển-khai) | **Chưa chọn**; giữ ID, replay và asset `long_luu` |
+| Sơn Cốt | Giữ vị trí/áp lực guard | Kit thiết kế mở rộng theo gate slice #4 | **Chưa chọn** |
+| Phong Vũ | Đổi tầng/tầm xa | Kit thiết kế mở rộng theo gate slice #4 | **Chưa chọn** |
+| Lâm Trảo | Áp sát có điều kiện | Mẫu thiết kế; cải biến Dấu Săn thuộc #20, chưa implement | **Chưa chọn**; không mang hồi máu cũ vào #20 mặc định |
+| Tơ Vọng | Neo/bày thế | Mẫu thiết kế và backlog; chưa vào prototype đầu | **Chưa chọn** |
+
+Không ghép một–một năm tên cũ với năm tôn giáo. Các số liệu, nội tại/nhánh cũ trong [combat-progression-balance](combat-progression-balance.md) là GT chưa duyệt, không được #18 nâng thành luật core. Muốn dùng một cơ chế cũ cho trực hệ mới cần bảng mapping riêng, review DK/ST rồi prototype theo gate; không sửa code/asset để đủ bảng lore.
+
+Thêm bản đồ là thêm không gian chơi, không bắt buộc thêm trực hệ/kit. Mentor của cùng trực hệ có thể hiện diện ở nhiều vùng; học chéo theo hồ sơ nguồn và thử thách, không khóa theo nơi sinh. Luật một thuật khách của D7 vẫn chưa duyệt; tính tương thích giữa các trực hệ/thế lực cần quyết định riêng. Ngân sách tài nguyên và cơ chế tải asset theo vùng giữ nguyên.
+
+## 7. Hợp đồng bàn giao cho issue #20
+
+#18 bàn giao danh mục ứng viên, quan hệ nguồn và giới hạn lore. [#20](https://github.com/loveoverflowcom/myva/issues/20) chọn kit cụ thể, item và ruleset; [#19](https://github.com/loveoverflowcom/myva/issues/19) / [combat.md](combat.md) giữ luật chung. Không chép timing mới vào hồ sơ lore.
+
+Mỗi kit được chọn cần một hồ sơ sau (đây là **mẫu thiết kế chưa triển khai**, không đổi schema runtime):
+
+| Trường | Nội dung tối thiểu |
 | --- | --- |
-| Phản đòn tốt, khắc chế đạn và lối áp sát đoán trước được | Sát thương bộc phát thấp; phải chờ đối thủ hành động |
-| Đẩy và kéo mục tiêu, phù hợp khống chế vị trí | Phụ thuộc đỡ; bị lối phá thủ (Sơn Cốt) gây áp lực sức bền |
-| Bộ pháp tốt ở vùng có nước | Kém hơn trên nền khô, nhiều tầng cao |
-
-**Kỹ năng.**
-
-| Ô | Tên | Mô tả | Nguồn |
-| --- | --- | --- | --- |
-| Nhẹ | Gợn Sóng | 3 nhịp côn, nhịp 3 đẩy lùi nhẹ | combat.md |
-| Nặng | Phá Lưu | Đòn chẻ, áp lực guard cao | combat.md |
-| Thuật lõi | Lưu Tiễn | Đạn nước thẳng, một hit mỗi mục tiêu | combat.md |
-| Thuật lõi | Hồi Thế | Tư thế phản đòn phía trước | combat.md |
-| Thuật lõi | Triều Dâng | Sóng cận–trung, đẩy; đại thuật mặc định | combat.md |
-| Hồi Triều | Xoáy Nước | Vùng xoáy nhỏ làm lệch đạn đi qua trong 1,5 s | ST |
-| Liên Lưu | Dòng Xiết | Lướt chém theo đường thẳng, nối được từ nhẹ trúng | ST |
-| Liên Lưu | Mưa Giọt | Ba giọt rơi vòng cung, khống chế vùng | ST |
-| Nội tại truyền thừa | Thuận Dòng | Như trên | ST |
-| Nội tại Hồi Triều | Lặng Như Nước | Hồi Thế thành công hồi 15 sức bền | ST |
-| Nội tại Liên Lưu | Nước Chảy Đá Mòn | Trúng liên tiếp cùng mục tiêu tăng áp lực guard, trần +30% | ST |
-
-**Nhánh.** *Hồi Triều* (phản đòn, chống đạn) — vai trò Du kích/Khống chế. *Liên Lưu* (nối đòn tầm trung, ép guard) — vai trò Du kích/Đột kích.
-
-**Mạch tính Thủy (Mạch cơ).** Làm quay guồng nước, đổ đầy máng để nâng phao, dập lửa trên đường đi.
-
-**Nhân vật quan trọng.** An (người hướng dẫn, đã có); **Kẻ Giữ Đập** — được đề xuất là học trò cũ của An (ST), lý giải vì sao An sợ trao quyền cho một người.
-
-**Boss và sinh vật liên quan.** Kẻ Giữ Đập (Đập Cổ); Giao Ngược — boss thế giới ở Biển Hồ Nghịch Dòng; Thuồng Luồng Mắc Lưới — biến thể elite dùng lại rig của Giao Ngược ([world-atlas.md](world-atlas.md#4-vân-thủy)).
-
-**Quan hệ.** Phối hợp: Tơ Vọng (đẩy mục tiêu vào sợi neo), Sơn Cốt (Sơn Cốt giữ tiền tuyến, Long Lưu phản đạn). Khắc chế nhẹ: Lâm Trảo, Phong Vũ. Bị khắc chế nhẹ: Sơn Cốt, Tơ Vọng.
-
----
-
-### 4.2 Sơn Cốt / Peakward — dòng Thạch
-
-**Tên và ý nghĩa.** "Sơn" (núi) + "Cốt" (xương, cốt lõi). Người đứng như xương sống của núi để người khác đi qua.
-
-**Nguồn cảm hứng.**
-
-| Mô-típ | Ví dụ có nguồn | Mức dùng |
-| --- | --- | --- |
-| Núi dâng lên chống nước để cứu người | Sơn Tinh nâng đồi chống Thủy Tinh (Việt); Trentren Vilu nâng đất chống Caicai Vilu (Mapuche, Chile) | 1–2 ⚠ (Sơn Tinh được thờ ở Ba Vì; truyện Mapuche gắn cộng đồng bản địa đang sống) |
-| Người gánh trời/đất | Atlas (Hy Lạp) | 3 |
-| Đá dựng, trụ ranh giới | Đá dựng thời tiền sử ở nhiều nơi | 3 |
-| Võ vật, gậy nặng | Vật cổ truyền; gậy *meel* trong zurkhaneh (Iran) | 2 |
-
-**Lịch sử trong MyVa (ST).** Khi Phân Dòng gây lũ, những người làng trên đồi khiêng đá đắp nền cao cho người dưới xuôi chạy lên. Họ học cách "nghe" dòng Thạch trong đá: đá chỉ đứng vững khi biết mình đỡ ai. Một nhánh sau này tin rằng đá nên chặn mọi dòng; nhánh ấy trở thành kỹ sư của Hắc Triều.
-
-**Triết lý.** *Đứng vững để người khác qua.* Phân biệt rõ với lối đắp chặn của Cổn: Sơn Cốt che chắn, không giam giữ.
-
-**Vùng khởi đầu và đạo trường.** Mỏ đá cũ cạnh Đập Cổ. Kiến trúc: bậc đá xếp khan, cột mốc lũ khắc vạch, mái ngói nặng.
-
-**Phong cách chiến đấu.** Gần 0–3 m. Tiến chậm sau khiên, hấp thụ một đòn rồi đáp trả bằng đòn nặng; chuyên phá thủ.
-
-**Cơ chế đặc trưng — Thế Núi (GT).** Sau 250 ms startup của đòn nặng, nhân vật chịu được **một** đòn mà không bị ngắt (vẫn nhận sát thương). Hồi 6 giây. Không áp dụng với đòn ném/không đỡ được của boss. Đỡ khi di chuyển tới trước chậm (Tiến Thủ), tốn thêm 20% sức bền.
-
-| Điểm mạnh | Điểm yếu |
-| --- | --- |
-| Máu và hiệu quả đỡ cao nhất | Chậm nhất, không nhảy kép, kém trên không |
-| Phá thủ, gây áp lực sức bền lên lối dựa vào đỡ | Startup dài, bị đọc là bị phạt |
-| Che chắn đồng đội phía sau | Bị thả diều bởi tầm xa và bẫy |
-
-**Kỹ năng.**
-
-| Ô | Tên | Mô tả | Nguồn |
-| --- | --- | --- | --- |
-| Nhẹ | Nện Đất | 3 nhịp chùy chậm, nhịp 3 đẩy | ST |
-| Nặng | Sơn Băng | Đập xuống, có Thế Núi | ST |
-| Thuật lõi | Thạch Chấn | Sóng đất ngắn, chỉ trúng mục tiêu đứng trên nền | combat.md (tên) |
-| Thuật lõi | Trấn Sơn | Tư thế giáp: chịu một đòn rồi đập trả | combat.md (tên) |
-| Thuật lõi | Cốt Kích | Húc vai phá thủ, startup dài | combat.md (tên) |
-| Trấn Thủ | Vách Đá | Dựng vách chặn đạn 4 s; cũng là bệ đứng một lần | ST |
-| Trấn Thủ | Gánh Núi | Nối với một đồng đội 5 s, nhận thay 30% sát thương của họ | ST |
-| Phá Sơn | Nứt Gãy | Đòn bổ không đỡ được, startup ≥ 600 ms, tín hiệu rõ | ST |
-| Nội tại truyền thừa | Thế Núi | Như trên | ST |
-| Nội tại Trấn Thủ | Núi Vững | Đỡ tốn ít hơn 20% khi có đồng đội phía sau; 10% khi chơi một mình | ST |
-| Nội tại Phá Sơn | Đá Lở | Phá thủ thành công rút ngắn hồi Cốt Kích 2 s | ST |
-
-**Nhánh.** *Trấn Thủ* (che chắn, giữ điểm) — Tiên phong/Hộ trợ. *Phá Sơn* (phá thủ, bộc phát) — Tiên phong/Đột kích.
-
-**Mạch tính Thạch.** Phá vách nứt, dựng trụ đá ở ổ cắm đánh dấu, ép đòn bẩy nặng.
-
-**Nhân vật quan trọng.** An (người hướng dẫn nhập môn). **Đốc Kè** (ST) — kỹ sư Hắc Triều dùng Sơn Cốt để đắp tường chuyển lũ sang làng khác; đại diện "đá chặn" đối lập "đá che".
-
-**Boss và sinh vật liên quan.** Đốc Kè (Ruộng Bậc Mây); Tượng Gác Đèo — trên Đèo Gió Mặn, thử thách chứ không phải kẻ thù.
-
-**Quan hệ.** Phối hợp: Phong Vũ (bắn từ sau vách), Lâm Trảo (giữ mục tiêu cho Lâm Trảo áp sát). Khắc chế nhẹ: Lâm Trảo, Long Lưu. Bị khắc chế nhẹ: Phong Vũ, Tơ Vọng.
-
----
-
-### 4.3 Phong Vũ / Galewing — dòng Phong
-
-**Tên và ý nghĩa.** "Phong" (gió) + "Vũ" (mưa; đồng âm "vũ" là lông cánh). Người mượn cánh chim và gió mùa để đi khắp nơi.
-
-**Nguồn cảm hứng.**
-
-| Mô-típ | Ví dụ có nguồn | Mức dùng |
-| --- | --- | --- |
-| Chim thần che chở và chữa lành | Simurgh nuôi Zāl, chữa cho Rostam (Shahnameh) | 2 |
-| Chim thần là quốc huy | Garuda (Indonesia, Thái Lan) | 1 ⚠ (biểu tượng quốc gia: không làm kẻ thù hay loot) |
-| Chim trên trống đồng | Chim Lạc trên trống Đông Sơn | 2 ⚠ (biểu tượng bản sắc Việt) |
-| Chim bão cướp vật quyền lực | Anzû cướp Bảng Định Mệnh (Lưỡng Hà) | 3 (dùng cho phản diện/boss) |
-| Gió mùa mang mưa | Hệ gió mùa Nam Á và Đông Nam Á | 3 (hiện tượng tự nhiên) |
-
-**Lịch sử trong MyVa (ST).** Sau Phân Dòng, các linh vực mất đường liên lạc. Người đưa tin học theo đàn chim di cư, đọc gió mùa để vượt núi và biển. Phong Vũ ra đời từ nghề đưa tin; hiện nay họ là trinh sát và cung thủ.
-
-**Triết lý.** *Gió không giữ gì, nên đi được khắp nơi.* Tự do, kết nối, nhưng dễ xem nhẹ trách nhiệm ở lại.
-
-**Vùng khởi đầu và đạo trường.** Gò cối xay gió trên Ruộng Bậc Mây. Kiến trúc: tháp canh gió, cờ đuôi nheo đo hướng gió, chuồng chim đưa thư.
-
-**Phong cách chiến đấu.** Xa 5–12 m. Giữ khoảng cách, đổi tầng cao liên tục, bắn từ góc trên không.
-
-**Cơ chế đặc trưng — Lượn Gió (GT).** Nhảy kép, giữ nút nhảy để lượn tối đa 0,8 s. Lướt trên không 1 lần như chung. Không bất tử khi lượn; đạn trúng khi lượn gây hitstun dài hơn 20% (cái giá của cơ động).
-
-| Điểm mạnh | Điểm yếu |
-| --- | --- |
-| Cơ động trên không và tầm đánh cao nhất | Máu và sức bền đỡ thấp |
-| Đánh dấu, trinh sát, xử lý mục tiêu bay | Bị áp sát leo vách (Lâm Trảo) và phản đạn (Long Lưu) |
-| Mạnh ở bản đồ nhiều tầng | Yếu trong hành lang hẹp, hang tối |
-
-**Kỹ năng.**
-
-| Ô | Tên | Mô tả | Nguồn |
-| --- | --- | --- | --- |
-| Nhẹ | Cắt Gió | 3 nhịp dao găm nhanh, tầm ngắn | ST |
-| Nặng | Tên Xé Gió | Chạm: bắn nhanh; giữ: tên nạp, xa hơn | ST |
-| Thuật lõi | Phong Tiễn | Bắn chéo lên/xuống theo hướng giữ | combat.md (tên) |
-| Thuật lõi | Vũ Bộ | Bước trên không đổi vị trí, không bất tử | combat.md (tên) |
-| Thuật lõi | Gió Quẩn | Lốc nhỏ đẩy địch, làm chậm đạn đi qua | combat.md (tên) |
-| Tiễn Vũ | Mưa Tên | Mưa tên xuống vùng đánh dấu sau 600 ms | ST |
-| Tiễn Vũ | Tên Dấu | Đánh dấu mục tiêu 6 s; đồng đội thấy vị trí | ST |
-| Phong Bộ | Gió Ngược | Bật lùi và bắn một mũi | ST |
-| Nội tại truyền thừa | Lượn Gió | Như trên | ST |
-| Nội tại Tiễn Vũ | Tầm Gió | Tên nạp bay xa hơn 25% | ST |
-| Nội tại Phong Bộ | Nhẹ Như Gió | Lướt tốn ít hơn 20% sức bền; đòn nhẹ ngay sau lướt nhanh hơn | ST |
-
-**Nhánh.** *Tiễn Vũ* (cung thủ đứng xa) — Xạ kích/Hộ trợ (đánh dấu). *Phong Bộ* (đánh–chạy) — Du kích.
-
-**Mạch tính Phong.** Xoay chong chóng, đẩy vật nhẹ, dùng luồng khí bốc lên để nhảy cao.
-
-**Nhân vật quan trọng.** An (nhập môn). **Én Đen** (ST) — người đưa tin của Hắc Triều, buôn lậu mảnh Mạch Bạ; đại diện tự do không trách nhiệm.
-
-**Boss và sinh vật liên quan.** Én Đen (Vịnh Đá Nổi); Chim Bão Giữ Bảng — boss thế giới ở Song Nguyên, cảm hứng Anzû.
-
-**Quan hệ.** Phối hợp: Sơn Cốt (vách che), Tơ Vọng (Tên Dấu + sợi neo). Khắc chế nhẹ: Sơn Cốt, Tơ Vọng (phá điểm neo từ xa). Bị khắc chế nhẹ: Lâm Trảo, Long Lưu.
-
----
-
-### 4.4 Lâm Trảo / Rootfang — dòng Sinh (mới)
-
-**Tên và ý nghĩa.** "Lâm" (rừng) + "Trảo" (vuốt). Sức sống của rừng thể hiện qua bản năng săn và khả năng hồi lại sau vết thương.
-
-**Nguồn cảm hứng.**
-
-| Mô-típ | Ví dụ có nguồn | Mức dùng |
-| --- | --- | --- |
-| Người hoang dã sống cùng thú, được "khai hóa" | Enkidu trong Sử thi Gilgamesh | 3 |
-| Cơn biến hình chiến đấu | *Ríastrad* của Cú Chulainn (Ulster, Ireland); chiến binh *berserkir* (sagas Bắc Âu) | 3 / 2 |
-| Tục kính hổ | Thờ "ông Ba Mươi"/Sơn quân ở Việt Nam; hổ trong tín ngưỡng sơn thần Hàn Quốc | 1 ⚠ (tín ngưỡng đang thực hành) |
-| Cây thần chữa lành | Cây đa và lá thuốc trong truyện Chú Cuội (Việt) | 3 |
-| Vũ khí dạng vuốt | Karambit (Đông Nam Á hải đảo), *bagh nakh* (Ấn Độ) | 3 / 2 ⚠ (bagh nakh gắn với nhân vật lịch sử Shivaji) |
-
-**Lịch sử trong MyVa (ST).** Ở vùng rừng đầu nguồn, thợ săn và người hái thuốc nhận ra thú lệch nhịp có thể được "trả nhịp" nếu ai đó chịu đứng trong vòng vuốt của chúng đủ lâu. Lâm Trảo là truyền thừa của những người sống sát nỗi đau đó: họ hồi phục nhờ không bỏ chạy.
-
-**Triết lý.** *Săn để sống, không sống để săn.* Thiên nhiên không hiền, nhưng tàn phá không bao giờ là cân bằng.
-
-**Vùng khởi đầu và đạo trường.** Trại thợ săn trên Rừng Bậc Nước. Kiến trúc: nhà dài mái lá, chòi trên cây, bàn thờ đá cạnh gốc cây cổ thụ (thiết kế mới, không sao chép miếu cụ thể).
-
-**Phong cách chiến đấu.** Sát 0–2 m. Áp sát, nối đòn nhanh, đổi bên (cross-up) để buộc đối thủ đoán hướng đỡ. Càng bị đánh càng phải đánh trả để lấy lại máu.
-
-**Cơ chế đặc trưng — Hoang Sinh (GT).** 50% sát thương nhận vào trở thành "máu hồi được" trong 3 giây; đánh trúng mục tiêu sẽ lấy lại phần đó. PvP: 40% và giảm dần; không nhận từ sát thương môi trường. Cơ chế "lấy lại máu bằng phản công" là ý tưởng game design phổ biến (ví dụ hệ *regain* của Bloodborne); MyVa không sao chép số liệu hay trình bày.
-
-| Điểm mạnh | Điểm yếu |
-| --- | --- |
-| Bộc phát và tự hồi phục cao nhất | Không có đòn tầm xa; bị thả diều |
-| Đổi bên, ép đoán, mạnh khi kề sát | Bị phản đòn (Long Lưu) và giáp (Sơn Cốt) phạt nặng |
-| Leo vách, đuổi mục tiêu trên cao | Sức bền đỡ thấp; đứng yên là thua |
-
-**Kỹ năng.**
-
-| Ô | Tên | Mô tả | Nguồn |
-| --- | --- | --- | --- |
-| Nhẹ | Cào Xé | 3 nhịp vuốt, startup ngắn nhất (mục tiêu 120 ms) | ST |
-| Nặng | Vồ | Lao tới đòn nặng, có thể nối sau lướt | ST |
-| Thuật lõi | Vồ Mồi | Nhảy vồ tới mục tiêu hoặc vách; đại thuật mặc định | ST |
-| Thuật lõi | Gầm Rừng | Tiếng gầm ngắt startup của địch thường gần, đẩy đạn nhẹ; không gây sợ hãi mất điều khiển | ST |
-| Thuật lõi | Rễ Siết | Rễ trồi trói ngắn (khống chế mạnh, tính DR chung) | ST |
-| Săn Mồi | Nanh Kép | Hai nhịp lướt chém, nhịp hai đổi bên | ST |
-| Rễ Sống | Vỏ Cây | Chuyển máu hồi được thành khiên | ST |
-| Rễ Sống | Mầm Hồi | Gieo mầm: vùng hồi nhỏ 6 s, có thể bị phá | ST |
-| Nội tại truyền thừa | Hoang Sinh | Như trên | ST |
-| Nội tại Săn Mồi | Khát Săn | Trúng đòn trong 1 s sau lướt: startup kế tiếp nhanh hơn 10% | ST |
-| Nội tại Rễ Sống | Đất Lành | Cửa sổ Hoang Sinh 3 → 4 s; tỷ lệ +10% | ST |
-
-**Đại thuật Thú Tướng (GT).** Vồ Mồi tăng cường: chuỗi ba cú vồ, hiện bóng thú bằng **VFX phủ lên nhân vật**, không đổi sang model khác. Lý do sản xuất: không cần rig thú cho người chơi ([assets-performance.md §2](../technical/assets-performance.md#2-skeletal-animation-là-lựa-chọn-cần-kiểm-chứng)).
-
-**Nhánh.** *Săn Mồi* (áp sát bộc phát) — Đột kích. *Rễ Sống* (bám trụ, hồi phục) — Tiên phong/Hộ trợ nhẹ.
-
-**Mạch tính Sinh.** Mọc dây leo ở hạt giống (leo được), làm sống lại cây khô mở lối, làm dịu thú hoang không tham chiến.
-
-**Nhân vật quan trọng.** **Ngàn** (ST) — người hướng dẫn, thợ săn kiêm người hái thuốc ở đầu nguồn, từ chối giết thú khi còn trả nhịp được. **Thợ Bẫy Hắc Triều** — săn thú lệch nhịp để rút mạch.
-
-**Boss và sinh vật liên quan.** Hổ Mất Nhịp (Hang Vọng Thạch) ⚠ — trận kết thúc bằng trả nhịp, không giết; Vườn Chủ Khô Héo (Song Nguyên).
-
-**Quan hệ.** Phối hợp: Sơn Cốt (giữ chân mục tiêu), Tơ Vọng (sợi neo kéo mục tiêu vào tầm). Khắc chế nhẹ: Phong Vũ, Tơ Vọng. Bị khắc chế nhẹ: Sơn Cốt, Long Lưu.
-
----
-
-### 4.5 Tơ Vọng / Echoweave — dòng Ký (mới)
-
-**Tên và ý nghĩa.** "Tơ" (sợi tơ) + "Vọng" (tiếng vọng). Ký ức là sợi nối giữa các khoảnh khắc; người Tơ Vọng kéo một khoảnh khắc đã qua trở lại.
-
-**Nguồn cảm hứng.**
-
-| Mô-típ | Ví dụ có nguồn | Mức dùng |
-| --- | --- | --- |
-| Người dệt số mệnh bên giếng | Các Norn bên giếng Urðarbrunnr dưới cây Yggdrasil (Bắc Âu) | 3 |
-| Suối ký ức và sông quên | Mnemosyne và Lethe trong các thẻ vàng Orphic (Hy Lạp) | 3 |
-| Người giữ mọi câu chuyện | Anansi giành kho truyện của thần trời Nyame (Akan, Ghana) | 2 |
-| Dây thắt nút làm sổ ghi | Khipu của Inca | 2 ⚠ (một số cộng đồng Andes còn giữ khipu) |
-| Sợi chỉ duyên | Sợi chỉ đỏ/Nguyệt Lão (Đông Á); thành ngữ "xe duyên" (Việt) | 3 |
-| Người giữ ký ức sống | Truyền thống griot/jeli (Tây Phi); cuộc cứu bản thảo Timbuktu năm 2012 | 1 ⚠ (nghề và cộng đồng đang sống) / 2 |
-
-**Lịch sử trong MyVa (ST).** Sau Phân Dòng, mỗi cộng đồng chỉ còn giữ một mảnh ký ức về Đại Mạch. Những người chép truyện ở Song Nguyên phát hiện rằng ký ức được kể lại sẽ để lại "vọng" trong dòng Ký: một tiếng vọng có thể lặp lại một hành động đã xảy ra. Họ dệt các vọng thành sợi để nối các cộng đồng. Người Đo Mạch từng là bậc thầy của truyền thừa này trước khi tin rằng chỉ một bản ghi cố định mới đáng tin.
-
-**Triết lý.** *Một sợi không thành vải.* Ký ức sống thuộc về nhiều người; ký ức bị ghi cứng và độc quyền trở thành công cụ cai trị.
-
-**Vùng khởi đầu và đạo trường.** Hang Vọng Thạch (Vân Thủy, vùng tiếng vọng) và Nhà Bảng ở Cảng Hai Dòng (Song Nguyên). Ở bản ra mắt, Nguyệt dạy nhập môn tại Bến Lau. Kiến trúc: khung cửi treo, vách khắc tranh, kệ cuộn và dây thắt nút.
-
-**Phong cách chiến đấu.** Trung 3–8 m, gián tiếp. Đặt neo và tiếng vọng để tạo đe dọa trễ; thắng bằng bày thế trước khi đối thủ tới gần.
-
-**Cơ chế đặc trưng — Vọng và Neo (GT).**
-
-- **Vọng:** mỗi thuật để lại một tiếng vọng lặp lại thuật đó với 40% hiệu lực sau 0,8 s, **tại vị trí gốc** (không bám theo người dùng). Tiếng vọng không gây khống chế mạnh và không tiêu tài nguyên. Mỗi tiếng vọng có ID riêng do server mô phỏng.
-- **Neo:** tối đa 2 điểm neo (3 với nội tại Lưới Chặt). Sợi giữa hai neo làm chậm 20% và đánh dấu kẻ đi qua; đồng đội có thể dùng sợi như dây leo.
-
-| Điểm mạnh | Điểm yếu |
-| --- | --- |
-| Khống chế vùng và hỗ trợ đồng đội cao nhất | Sát thương trực tiếp thấp nhất |
-| Tiếng vọng trễ phá nhịp đỡ hoàn hảo của đối thủ | Phụ thuộc bày thế; bị áp sát nhanh là vỡ |
-| Tạo đường đi cho đồng đội (sợi neo) | Neo có thể bị phá từ xa; khó điều khiển trên cảm ứng |
-
-**Kỹ năng.**
-
-| Ô | Tên | Mô tả | Nguồn |
-| --- | --- | --- | --- |
-| Nhẹ | Đưa Thoi | 3 nhịp phóng thoi tầm trung | ST |
-| Nặng | Kéo Sợi | Giật kéo địch nhẹ lại gần; địch nặng/boss không bị kéo | ST |
-| Thuật lõi | Neo Mạch | Phóng neo vào bề mặt hoặc địch; giữ nút để kéo mình tới neo | ST |
-| Thuật lõi | Lưới Tơ | Căng sợi giữa các neo thành bẫy | ST |
-| Thuật lõi | Hồi Vọng | Đổi chỗ với tiếng vọng gần nhất trong 6 m; đại thuật mặc định | ST |
-| Dệt Lưới | Kén Tơ | Trúng 3 lần bởi sợi trong 2 s thì bị trói 600 ms (khống chế mạnh, DR chung) | ST |
-| Dệt Lưới | Ảo Vọng | Tiếng vọng mô phỏng dáng đứng/chạy; địch thường nhắm vào nó | ST |
-| Kết Tơ | Chỉ Hộ Mệnh | Nối với đồng đội 8 s: họ nhận khiên; chơi một mình thì nối với neo để tự nhận khiên nhỏ | ST |
-| Kết Tơ | Nhắc Nhịp | Đồng đội được nối có cửa sổ đỡ hoàn hảo +40 ms trong 1 s kế tiếp | ST |
-| Nội tại truyền thừa | Vọng | Như trên | ST |
-| Nội tại Dệt Lưới | Lưới Chặt | Thêm 1 neo tối đa | ST |
-| Nội tại Kết Tơ | Xe Duyên | Đồng đội được nối hồi sức bền nhanh hơn 15% | ST |
-
-**Đại thuật Vạn Vọng (GT).** Mọi tiếng vọng tạo trong 4 giây trước đó lặp lại cùng lúc với 60% hiệu lực. Ngân sách sát thương và khống chế vẫn áp dụng như mọi chuỗi ([combat.md §6](combat.md#6-combo-và-cancel)).
-
-**Nhánh.** *Dệt Lưới* (bẫy, khống chế) — Khống chế. *Kết Tơ* (nối đồng đội, khuếch đại kỹ năng của họ) — Hộ trợ. *Nhắc Nhịp* thưởng cho kỹ năng của đồng đội thay vì bù sai lầm, đúng trụ cột "kỹ năng tạo khác biệt".
-
-**Mạch tính Ký.** Hiện vọng ảnh (cảnh ký ức) ở di tích, kích hoạt tranh khắc cơ quan, phục hồi Vùng Quên nhanh hơn.
-
-**Nhân vật quan trọng.** **Nguyệt** (ST) — người chép vọng của Nhà Bảng, chạy trốn Hắc Triều tới Bến Lau; mở đường sang Song Nguyên. **Người Đo Mạch** — phản diện chính, bậc thầy Tơ Vọng đã quay sang ghi chép độc quyền.
-
-**Boss và sinh vật liên quan.** Kẻ Chép Câm (Đài Đo Sao) — cỗ máy xóa ký ức; Người Giữ Kênh Hóa Tướng (Kênh Ngầm Mười Giếng).
-
-**Quan hệ.** Phối hợp: Long Lưu (đẩy địch vào sợi), Lâm Trảo (kéo mục tiêu vào tầm vồ), Phong Vũ (Tên Dấu + bẫy). Khắc chế nhẹ: Long Lưu (tiếng vọng trễ phá phản đòn), Sơn Cốt (làm chậm lối tiến chậm). Bị khắc chế nhẹ: Lâm Trảo, Phong Vũ.
-
-## 5. Ma trận quan hệ
-
-Mỗi truyền thừa **khắc chế nhẹ hai** và **bị khắc chế nhẹ bởi hai** truyền thừa khác (vòng 5 phần tử). "Nhẹ" nghĩa là mục tiêu thắng 52–55% khi cùng trình độ trong PvP chuẩn hóa, không phải khắc chế cứng. Đây là **giả thuyết thiết kế**; ngưỡng kiểm chứng ở [combat-progression-balance.md §11](combat-progression-balance.md#11-phương-pháp-kiểm-chứng).
-
-| Hàng gặp cột | Long Lưu | Sơn Cốt | Phong Vũ | Lâm Trảo | Tơ Vọng |
-| --- | --- | --- | --- | --- | --- |
-| **Long Lưu** | — | − | + | + | − |
-| **Sơn Cốt** | + | — | − | + | − |
-| **Phong Vũ** | − | + | — | − | + |
-| **Lâm Trảo** | − | − | + | — | + |
-| **Tơ Vọng** | + | + | − | − | — |
-
-Phía bất lợi luôn có công cụ phản ứng: Phong Vũ gặp Lâm Trảo có Gió Ngược và Vũ Bộ; Sơn Cốt gặp Tơ Vọng có Cốt Kích xuyên sợi; Lâm Trảo gặp Long Lưu có Nanh Kép đổi bên để né Hồi Thế. Thuật khách cho phép vá một điểm yếu với chi phí một ô thuật.
-
-**Phối hợp nhóm gợi ý (co-op 2–4, GT):** Sơn Cốt + Phong Vũ (vách và tầm xa); Tơ Vọng + Lâm Trảo (kéo và vồ); Long Lưu + Tơ Vọng (đẩy vào bẫy). Không boss nào yêu cầu một tổ hợp cụ thể.
-
-## 6. Mở rộng sau ra mắt
-
-### Thêm nhánh địa phương thay vì thêm lớp nhân vật
-
-Mỗi linh vực mới nên thêm **một nhánh địa phương** cho 1–2 truyền thừa sẵn có (ví dụ một nhánh Sơn Cốt của vùng núi lạnh) và **tối đa một** truyền thừa mới. Nhánh dùng lại rig, vũ khí và phần lớn animation, nên thể hiện được truyền thống võ của nơi mới với chi phí thấp hơn nhiều so với lớp mới.
-
-### Ứng viên truyền thừa thứ sáu
-
-| Ứng viên | Mô-típ | Lối chơi | Vì sao chưa đưa vào bản ra mắt |
-| --- | --- | --- | --- |
-| Dòng Lôi (bão sét) | Thần bão diệt rắn giữ nước (Indra–Vritra, Thor–Jörmungandr, Ba'al–Yam) | Nạp lực rồi giải phóng, bộc phát xa | Trùng vùng "trời" với Phong Vũ; mô-típ dùng tốt hơn cho xung đột cốt truyện |
-| Dòng Rèn (lửa, chế tác) | Thợ rèn thần thoại (Ilmarinen rèn Sampo; nhiều truyền thống thợ rèn) | Đặt công trình, bẫy, súng máy | Cần AI công trình và nhiều hiệu ứng; nối mạnh với kinh tế nên chờ dữ liệu pilot |
-| Dòng Ảnh (lừa lọc) | Kẻ lừa lọc (Anansi, Sang Kancil, Loki) | Tàng hình, giả đòn | Tàng hình trong 2D nhìn ngang khó đọc và dễ gây ức chế PvP |
-
-## 7. Câu hỏi mở
-
-- Hai dáng cơ thể (A/B) không gắn giới tính có đủ cho năm truyền thừa và mỹ phẩm không? Cần quyết định trước khi chọn pipeline animation ([risk-register K-01](../research/risk-register.md#k--kỹ-thuật)).
-- Tơ Vọng có điều khiển được trên cảm ứng với 8 nút không? Cần spike sớm (R-05).
-- Lâm Trảo có nên đưa vào MVP Online để thử mở rộng roster, hay đợi bản ra mắt? Đề xuất: đưa vào MVP nếu gate G2 của slice đạt ([content-roadmap.md](../production/content-roadmap.md)).
-- Nhắc Nhịp (tăng cửa sổ đỡ hoàn hảo của đồng đội) có hợp lệ trong PvP xếp hạng không, hay chỉ PvE?
+| Danh tính | Nền tảng thế lực, nguồn + ID hồ sơ, trực hệ ứng viên, nhánh, kit; trạng thái duyệt riêng từng lớp |
+| Truyền thừa | Ai trao/ai dẫn, người chơi nhận bằng cách nào, DK giữ lại, ST thêm mới, tên/hình tượng còn mở |
+| Vòng quyết định | Một cơ chế đặc trưng hữu hạn, nội tại → đòn thường → 3 thuật; điều kiện tạo/tiêu tài nguyên |
+| Hành động | 2 đòn cơ bản + 3 thuật; đại thuật biến thể cùng ô; không thêm nút; vũ khí/build khóa trong giao tranh theo luật chung |
+| Phản ứng | Tầm/hướng/tầng cao, telegraph, hit/block/whiff/recovery, cách chống trên không, cửa đối thủ đáp trả |
+| Solo và nhóm | Thắng bằng gì, thiếu gì, đường solo boss bằng đồ nhiệm vụ; lợi ích nhóm không biến thành hỗ trợ bắt buộc |
+| Trang bị | Loại item phù hợp và chi phí cơ hội; không xóa điểm yếu, không vòng proc/refund; catalog/số ô do #20 thiết kế |
+| Kiểm chứng | Kit/seed/build/config, matchup và side-swap, map, trình độ, touch/keyboard; tách simulation, local người thật và online |
+| Migration | Nếu gắn lore vào kit cũ: mapping tên hiển thị, giữ ID/protocol/replay/asset; thay dữ liệu thật cần kế hoạch riêng |
+
+Trình tự: tiếp tục Long Lưu baseline → Sơn Cốt/Phong Vũ theo gate #4 → chọn một ứng viên nguồn nếu được duyệt, thử offline nhỏ. Không đòi làm 10 trực hệ hoặc năm roster trước khi một kit có cảm giác tốt. PvP thật chờ #5 hai client authoritative/reconnect; Đấu trường và Chiến tuyến thuộc thiết kế #20, không mở vào solo slice bởi PR tài liệu này.

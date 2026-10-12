@@ -41,7 +41,9 @@ Giữ gameplay core tách renderer từ consumer đầu tiên. Chưa tách micro
 
 ## Mở rộng thế giới
 
-Mỗi linh vực mới cần một xung đột riêng, một kỹ năng làm thay đổi lối chơi, một đặc trưng địa hình và ít nhất một boss đọc pattern. Không coi thay màu quái hoặc tăng level là mở rộng hoàn chỉnh.
+Theo [ADR 0004](../decisions/0004-five-factions-lineage-hierarchy.md), năm thế lực và trực hệ độc lập địa lý. Thêm vùng không bắt buộc thêm hệ nhân vật; mentor/nhánh của trực hệ sẵn có có thể xuất hiện ở nhiều vùng. #18 chỉ đồng bộ docs, #20 sở hữu kit/item/ruleset; cả hai không tăng scope #4 hoặc ngân sách tài nguyên.
+
+Mỗi linh vực mới cần một xung đột riêng, một thử thách dùng kỹ năng có ý nghĩa, một đặc trưng địa hình và ít nhất một boss đọc pattern. Không coi thay màu quái hoặc tăng level là mở rộng hoàn chỉnh.
 
 Khi mở origin tự chọn, mọi xuất thân phải có tutorial, vật tư đầu và đường thoát khỏi hub tương đương. Việc sinh ra ở vùng khác không biến thành lựa chọn bắt buộc để có build mạnh nhất.
 

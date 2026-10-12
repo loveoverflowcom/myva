@@ -4,7 +4,7 @@
 
 ## Kết quả người chơi nhận được
 
-Trong 20–30 phút, một người mới đến Bến Lau, học di chuyển và phòng thủ, chọn một truyền thừa, vượt hai tình huống địa hình, thu thập vật tư, chế tạo một món đồ và đánh bại Kẻ Giữ Đập. Có thể chơi lại bằng kit khác và nhận thấy chiến thuật khác biệt.
+Trong 20–30 phút, một người mới đến Bến Lau, học di chuyển và phòng thủ, chọn một kit thử nghiệm, vượt hai tình huống địa hình, thu thập vật tư, chế tạo một món đồ và đánh bại Kẻ Giữ Đập. Có thể chơi lại bằng kit khác và nhận thấy chiến thuật khác biệt.
 
 Đây là lát cắt chất lượng, không phải bản game chỉ có màn giới thiệu hoặc animation demo. Single-player prototype được phép chạy simulation local để thử luật; trạng thái đó không chuyển thành item online thật.
 
@@ -14,7 +14,7 @@ Trong 20–30 phút, một người mới đến Bến Lau, học di chuyển v�
 | --- | --- |
 | Linh vực | Vân Thủy, hư cấu |
 | Bản đồ | Bến Lau: hub; Rừng Bậc Nước: học di chuyển/khai thác; Đập Cổ: arena boss |
-| Truyền thừa | Long Lưu, Sơn Cốt, Phong Vũ |
+| Kit | Long Lưu, Sơn Cốt, Phong Vũ; chưa ánh xạ nguồn/trực hệ |
 | Loadout | 2 đòn căn bản nhẹ/nặng + 3 thuật; thanh Mạch mở đại thuật là biến thể của một thuật |
 | Level | 1–10 để thử pacing; không ép farm tới cap mới đánh boss |
 | Đối thủ | 3 archetype thường: cận chiến, đạn chậm, kiểm soát địa hình; 1 boss nhiều phase |
@@ -24,7 +24,7 @@ Trong 20–30 phút, một người mới đến Bến Lau, học di chuyển v�
 | Platform | Bevy + Leptos web qua #11; Android/iOS Bevy + CMP qua #10 riêng từng hệ rồi mobile slice |
 | Online kiểm chứng | 2 client co-op nhỏ sau khi slice local đạt cảm giác chơi |
 
-Số lượng này chỉ là ngân sách slice. Không đồng nghĩa MMORPG phát hành chỉ có ba truyền thừa.
+Số lượng này chỉ là ngân sách slice. Không chốt roster MMORPG. [ADR 0004](../decisions/0004-five-factions-lineage-hierarchy.md) ghi năm nền tảng thế lực; #18 không thêm kit hoặc đổi core, Bevy, tải asset theo vùng. Long Lưu là baseline đã chạy; Sơn Cốt/Phong Vũ vẫn theo gate slice.
 
 Trước slice, [ADR 0003](../decisions/0003-bevy-engine-adoption.md) và foundation #12 phải được áp dụng vào combat #2; economy #3 giữ độc lập engine. #13 đo pipeline trên platform đã đạt gate. Cảnh spike 2D hoặc graybox Macroquad lịch sử không thay thế các gate này.
 
@@ -57,7 +57,7 @@ Nếu chơi thử kéo dài vì người chơi lạc hoặc UI khó hiểu, sử
 
 ## Asset cần cho slice
 
-- Một bộ silhouette/portrait cho mỗi truyền thừa; cùng tỉ lệ và anchor.
+- Một bộ silhouette/portrait cho mỗi kit; cùng tỉ lệ và anchor.
 - Animation tối thiểu: idle, chạy, nhảy/rơi, dash, guard, light/heavy, trúng đòn, gục, thuật.
 - Tiles/background cho ba bản đồ; layers phục vụ parallax có giới hạn.
 - Telegraph/hit effect/đạn rõ ở màn hình mobile; color không là tín hiệu duy nhất.

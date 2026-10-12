@@ -1,13 +1,15 @@
 # MyVa — Thần Mạch: World Bible
 
-> Đề xuất v0.1. Đây là thế giới hư cấu và hướng phát triển, chưa phải toàn bộ phạm vi cần làm cho MVP.
+> Nền v0.1, đồng bộ #18 ngày 2026-10-12 theo [ADR 0004](../decisions/0004-five-factions-lineage-hierarchy.md). Năm nền tảng/trục phân chia đã chốt; lore chi tiết, tên và roster mới vẫn là đề xuất. Đây là thế giới hư cấu, chưa phải toàn bộ phạm vi cần làm cho MVP.
 > Tên tiếng Việt chính thức: **Thần Mạch**. Người chơi là người kế thừa sức mạnh, không đóng vai thần linh.
 
 ## 1. Tiền đề
 
 Thần Mạch là mạng lưới dòng năng lượng nằm trong đất, nước, sinh vật và ký ức của thế giới.
 Các cộng đồng học cách chung sống với nó bằng những truyền thừa khác nhau: bảo vệ, chữa lành, chế tác, chiến đấu và kể chuyện.
-Không cộng đồng nào sở hữu toàn bộ chân lý, và không truyền thừa nào có quyền thống trị các truyền thừa còn lại.
+Không truyền thừa nào có quyền thống trị các truyền thừa còn lại. Mô tả Thần Mạch là sáng tác game, không tuyên bố bản chất hoặc thứ bậc đúng/sai của tôn giáo ngoài đời.
+
+Năm thế lực lấy nền tảng từ **Kitô giáo, Hồi giáo, Ấn Độ giáo, Phật giáo và Đạo giáo**. Nhân vật theo trục **Thế lực → Nguồn bảo trợ → Trực hệ → Nhánh chiến đấu → Kit**. Nguồn và quan hệ nhận sức mạnh được ghi riêng theo từng truyền thống ở [lineages](lineages.md), không mặc định huyết thống. Một thế lực có nhiều trực hệ và lối chơi; không mặc định một tôn giáo là phe ác hoặc healer bắt buộc.
 
 Sau nhiều năm khai thác quá mức, các nút mạch bắt đầu lệch nhịp.
 Mùa nước về sai thời điểm, đường vận chuyển bị cắt, linh thú thay đổi tập tính và những vùng từng hợp tác trở nên nghi kỵ.
@@ -25,7 +27,8 @@ Mục tiêu cuối cùng là khôi phục khả năng cùng quản lý tài nguy
 | Người kế thừa vẫn là con người | Có giới hạn, sai lầm, gia đình và nghĩa vụ; sức mạnh không thay thế kỹ năng. |
 | Truyền thừa cần học và thực hành | Khả năng mới gắn với thử thách, người hướng dẫn và lựa chọn chiến thuật. |
 | Linh vực là không gian hư cấu | Không coi một châu lục là một nền văn hóa hay một hệ thần thoại duy nhất. |
-| Nơi sinh không khóa cơ thể hoặc chỉ số | Người chơi chọn diện mạo, xuất thân và truyền thừa độc lập; không có bonus theo chủng tộc. |
+| Địa lý độc lập với trục nhân vật | Nơi sinh, ngoại hình không khóa thế lực/trực hệ/kit hoặc chỉ số; nhiều thế lực cùng có mặt trong một vùng, một thế lực ở nhiều vùng. |
+| Vai trò nguồn không hoán đổi | Phân biệt Thiên Chúa/Allah, thiên thần, thánh, ngôn sứ, thần/hóa thân, Phật/Bồ-tát và tiên; quan hệ game là ST. |
 | Mạch có giới hạn | Cốt truyện khai thác tài nguyên tuân theo giới hạn nguồn cung của hệ thống kinh tế. |
 | Kẻ thù có hành động cụ thể | Phê phán độc quyền, cưỡng ép và khai thác; không biến văn hóa khác biệt thành quái vật. |
 | Cốt truyện chính có đường solo | Liên minh và bang hội mở thêm góc nhìn, không khóa kết thúc chính. |
@@ -33,7 +36,7 @@ Mục tiêu cuối cùng là khôi phục khả năng cùng quản lý tài nguy
 
 ## 3. Linh vực và cách mở rộng
 
-Các nhóm địa lý dưới đây là danh mục lập kế hoạch tham chiếu, **không phải bảy bộ thần thoại thống nhất**.
+Các nhóm địa lý dưới đây là danh mục cảnh quan/nội dung, không là bảng phân chia thế lực/trực hệ hoặc vị trí độc quyền của một tôn giáo. Đây là danh mục lập kế hoạch tham chiếu, **không phải bảy bộ thần thoại thống nhất**.
 Mỗi linh vực phải được chia thành cộng đồng, thời kỳ, hệ sinh thái và nguồn tư liệu riêng trước khi sản xuất.
 Các tên địa danh và truyền thừa ở bản v0.1 là sáng tác của MyVa.
 
@@ -75,7 +78,7 @@ Một lượt core của slice dài khoảng **20–30 phút**, gồm thử kỹ
 | --- | --- | --- | --- |
 | Người kế thừa — nhân vật người chơi | Hiểu sức mạnh mới và bảo vệ người thân | Muốn sửa mọi thứ ngay nhưng chưa hiểu hệ thống nước | Chọn truyền thừa, hỏi chuyện, luyện tập và giải quyết tuyến chính. |
 | Mai, người vận hành bến | Giữ đường vận chuyển và nước sinh hoạt | Sợ việc tấn công đập làm dân làng chịu lũ | Dạy nhiệm vụ, đưa phản hồi về hậu quả và hỗ trợ sơ tán. |
-| An, người hướng dẫn truyền thừa | Truyền kỹ năng mà không tạo một người thống trị mới | Từng thất bại khi trao quyền cho một học trò | Dạy cả ba hướng nhập môn bằng nhiệm vụ tương đương. |
+| An, người hướng dẫn truyền thừa | Truyền kỹ năng mà không tạo một người thống trị mới | Từng thất bại khi trao quyền cho một học trò | Hướng dẫn thử ba kit theo gate slice bằng nhiệm vụ tương đương; chưa gán An làm người truyền mọi pháp hệ. |
 | Tùng, thợ chế tác | Sửa bộ điều tiết bằng vật liệu vừa đủ | Bị nghi tiếp tay vì đã cung cấp linh kiện cho trạm | Dạy thu thập, chế tạo và chi phí cơ hội. |
 | Kẻ Giữ Đập | Ngăn một trận lũ mà họ tin sắp xảy ra | Chấp nhận rút mạch và khóa nước để giữ quyền kiểm soát | Boss có lựa chọn hậu chiến; hành vi đã gây hại cần chịu trách nhiệm. |
 
@@ -83,18 +86,18 @@ NPC không chỉ đứng yên phát phần thưởng: họ giải thích mục t
 Hội thoại ngắn trong lúc chơi; người muốn biết sâu có thể đọc nhật ký và trò chuyện thêm.
 Không dùng lựa chọn hội thoại chưa có hệ quả thật để giả vờ tạo một thế giới rẽ nhánh vô hạn.
 
-## 6. Ba truyền thừa nhập môn
+## 6. Ba kit nhập môn
 
 Đây là các mô-típ hư cấu, không được quảng cáo là tái hiện chính xác tín ngưỡng hoặc truyền thuyết có thật.
-Ba truyền thừa dùng cùng nền tảng di chuyển, có công cụ tự vệ và phải hoàn thành được cùng tuyến solo.
+Ba kit dùng cùng nền tảng di chuyển, có công cụ tự vệ và phải hoàn thành được cùng tuyến solo.
 
-| Truyền thừa | Cảm giác chiến đấu | Điểm phải học | Nhược điểm chiến thuật |
+| Kit/mẫu cơ chế | Cảm giác chiến đấu | Điểm phải học | Nhược điểm chiến thuật |
 | --- | --- | --- | --- |
 | Long Lưu | Dòng lực mềm, đổi hướng, nối đòn và kéo giãn khoảng cách | Canh nhịp lướt, vị trí sau đòn và thời điểm phản công | Chuỗi dài bị ngắt khi dùng sai khoảng cách. |
 | Sơn Cốt | Giữ vị trí, chặn ngắn, phá thế và đòn chắc | Đọc hướng tấn công, chọn lúc chịu áp lực và trả đòn | Cam kết động tác lớn; đuổi mục tiêu kém nếu đoán sai. |
 | Phong Vũ | Di chuyển linh hoạt, góc bắn và kiểm soát vùng nhỏ | Dự đoán đường đạn, quản lý khoảng cách và thoát áp sát | Dễ mất ưu thế khi bị ép sát hoặc dùng hết tài nguyên kỹ năng. |
 
-Không gắn Long Lưu với một dân tộc, Sơn Cốt với một giới tính hay Phong Vũ với một quốc tịch.
+Long Lưu, Sơn Cốt, Phong Vũ là ba kit slice giữ lại, chưa ánh xạ nguồn/trực hệ; Lâm Trảo và Tơ Vọng là mẫu thiết kế mở rộng. Không ghép năm tên này một–một với năm tôn giáo. Long Lưu đã có baseline graybox; hai kit slice còn lại theo gate. Không gắn kit với dân tộc, giới tính hay quốc tịch.
 Người chơi thử cả ba ở sân tập trước khi chọn; đổi hướng đầu game phải dễ tiếp cận.
 Tên và hiệu ứng sẽ qua kiểm tra khả năng đọc ở màn hình nhỏ, phân biệt silhouette và nhận diện dấu hiệu chiến đấu.
 
@@ -103,7 +106,7 @@ Tên và hiệu ứng sẽ qua kiểm tra khả năng đọc ở màn hình nh�
 | Bước | Mục tiêu trong truyện | Hành động và kỹ năng được kiểm tra | Kết quả |
 | --- | --- | --- | --- |
 | 1. Nước về muộn | Mai nhờ kiểm tra dấu nước gần bến | Đi, nhảy, tương tác, đọc một mục tiêu ngắn | Người chơi thấy vấn đề trước khi nhận lời giải thích dài. |
-| 2. Nhịp đầu tiên | An nhận ra người chơi cảm được mạch | Thử đòn cơ bản, né, đỡ và một kỹ nghệ | Chọn truyền thừa; mở sân tập để thử lại. |
+| 2. Nhịp đầu tiên | An nhận ra người chơi cảm được mạch | Thử đòn cơ bản, né, đỡ và một kỹ nghệ | Chọn kit thử nghiệm; mở sân tập để thử lại. |
 | 3. Linh kiện còn thiếu | Tùng cần sửa van phụ | Thu vật liệu trong trữ lượng có hạn; vượt Rừng Bậc Nước | Chế tạo công cụ nhiệm vụ; không farm vô hạn để qua bước. |
 | 4. Dấu chuyển dòng | Tìm đường ống bị giấu | Né đạn, dùng địa hình, đánh nhóm địch nhỏ | Có bằng chứng Hắc Triều chuyển tài nguyên. |
 | 5. Mở đường nước | Mai chuẩn bị bảo vệ người ở hạ lưu | Kích hoạt van theo quy luật, vượt một chặng ngắn | Đấu trường mở với trạng thái an toàn cho dân làng. |
@@ -112,7 +115,7 @@ Tên và hiệu ứng sẽ qua kiểm tra khả năng đọc ở màn hình nh�
 
 Boss **Kẻ Giữ Đập** có ba mô-típ: quét ngang có báo trước, áp lực nước theo vùng và khoảng hồi phục sau đòn lớn.
 Ngưỡng chuyển pha thay đổi thứ tự/kết hợp mô-típ; không chỉ tăng HP rồi lặp lại trận đấu.
-Cửa sổ tấn công phải tồn tại cho cả ba truyền thừa và điều khiển cảm ứng.
+Cửa sổ tấn công phải tồn tại cho cả ba kit slice và điều khiển cảm ứng.
 Sau thất bại, hồi sinh gần khu thử thách và hướng dẫn dựa trên dấu hiệu đã bỏ lỡ; không cần mua vật phẩm để thử lại.
 
 ## 8. Cung truyện dài hạn
@@ -129,7 +132,7 @@ Xung đột PvP theo luật và vùng đăng ký, không cho người mạnh tù
 
 ## 9. Cổng nghiên cứu và duyệt văn hóa
 
-Trước khi dùng tên thần, biểu tượng, nghi lễ hoặc tích truyện có thật, mỗi nội dung cần hồ sơ riêng:
+Tên/thực thể tôn giáo có thật được nghiên cứu làm nguồn trực hệ theo #18; không bắt buộc thay mọi nguồn bằng Cổ Linh. Danh mục ứng viên và [nguồn](../research/five-factions-sources.md) chưa là duyệt tên/hình tượng để phát hành. Trước chuyển thể cụ thể, mỗi nội dung cần hồ sơ riêng:
 
 - Cộng đồng/truyền thống, địa điểm và bối cảnh thời gian cụ thể; không chỉ ghi tên châu lục.
 - Nguồn có thể truy vết, phần nào là kiến thức nguồn và phần nào là sáng tác của MyVa.
@@ -152,4 +155,4 @@ Trạng thái xuất bản của một nội dung tham chiếu thực tế phả
 
 Xem [tiến triển và hoạt động xã hội](progression-social.md) để biết cách chuyển hành trình này thành hệ thống chơi.
 
-Đề xuất v0.2 mở rộng vũ trụ quan, danh mục linh vực, năm truyền thừa và cốt truyện dài hạn nằm ở [báo cáo thiết kế thế giới](worldbuilding-report.md); tài liệu này chỉ được cập nhật sau khi [quyết định 0002](../decisions/0002-lineages-world-structure.md) được duyệt.
+Năm thế lực/trục trực hệ đã có hiệu lực theo [ADR 0004](../decisions/0004-five-factions-lineage-hierarchy.md). Vũ trụ quan, Song Nguyên, cấp tối đa và phạm vi ra mắt trong [ADR 0002](../decisions/0002-lineages-world-structure.md) vẫn chưa duyệt. [Báo cáo đồng bộ](worldbuilding-report.md) ghi bàn giao #20; không thay combat core, Bevy hoặc cơ chế tải asset theo vùng.

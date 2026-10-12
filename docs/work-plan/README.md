@@ -19,6 +19,10 @@ Số `010`, `020`, ... biểu thị **thứ tự khuyến nghị hiện tại**,
 
 [#7 tooling/skills](https://github.com/loveoverflowcom/myva/issues/7) chạy song song D01, phải dùng Bevy và phân biệt headless, browser, standalone mobile, CMP embedding, thiết bị thật. Issue #1 chỉ giữ lịch sử Macroquad; không tiếp tục triển khai theo hợp đồng cũ. Một gate chưa đạt không được đánh dấu phần phụ thuộc đã xong.
 
+## Thiết kế thế lực và kit
+
+[#18](https://github.com/loveoverflowcom/myva/issues/18) đồng bộ năm thế lực/trục trực hệ qua [ADR 0004](../decisions/0004-five-factions-lineage-hierarchy.md), [ứng viên](../design/lineages.md) và [nguồn](../research/five-factions-sources.md). #19/combat.md sở hữu luật chung; [#20](https://github.com/loveoverflowcom/myva/issues/20) nhận nền nguồn để thiết kế kit/item/ruleset. Chưa duyệt roster mới, không thêm năm thế lực vào prototype, không mở PvP vào #4; PvP thật chờ #5.
+
 ## Sau slice
 
 - [Online pilot](backlog/online-pilot.md) chỉ được đưa vào active queue khi slice và integrity prerequisites đạt.

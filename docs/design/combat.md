@@ -98,6 +98,8 @@ Slow không xếp cộng vô hạn: chỉ hiệu lực mạnh nhất, giới h�
 
 ## 7. Kit mẫu: Long Lưu
 
+Đồng bộ lore #18 theo [ADR 0004](../decisions/0004-five-factions-lineage-hierarchy.md): Long Lưu và các tên kit cũ là mẫu cơ chế chưa ánh xạ nguồn/trực hệ, không phải thế lực. PR #18 giữ nguyên luật, thông số và ID runtime; danh mục ứng viên/bàn giao #20 ở [lineages](lineages.md).
+
 Chủ đề: điều tiết dòng chảy, giữ khoảng cách vừa và phản công. Không phải bộ kỹ năng thuần hồi máu hoặc phiên bản của một vị thần có thật. Tất cả giá trị dưới đây là tương đối ở phòng thử với 1.000 HP.
 
 | Hành động | Startup / active / recovery | Chi phí / cooldown | Hiệu ứng mẫu |

@@ -1,6 +1,6 @@
 # Mục lục tài liệu MyVa — Thần Mạch
 
-Phiên bản nền tảng: **v0.1 / 2026-10-09**. Ngôn ngữ thiết kế chính: tiếng Việt.
+Phiên bản nền tảng: **v0.1 / 2026-10-09**; đồng bộ #18: **2026-10-12**. Ngôn ngữ thiết kế chính: tiếng Việt.
 
 ## Cách hiểu trạng thái
 
@@ -11,7 +11,7 @@ Phiên bản nền tảng: **v0.1 / 2026-10-09**. Ngôn ngữ thiết kế chín
 | Gate | Điều kiện phải đạt trước khi chuyển sang bước phụ thuộc |
 | Chưa kiểm chứng | Không được mô tả như tính năng đã triển khai |
 
-Yêu cầu đã chốt: MyVa / Thần Mạch; hậu duệ hoặc người kế thừa; MMORPG hành động 2D HD; web, Android, iOS; Rust + Bevy, Leptos, CMP; mobile hướng native; solo và cày chay có đường tiến triển; phát hành tài nguyên bị giới hạn; server authoritative; nhánh đầu tiên và mặc định `develop`.
+Yêu cầu đã chốt: MyVa / Thần Mạch; hậu duệ hoặc người kế thừa; MMORPG hành động 2D HD; web, Android, iOS; Rust + Bevy, Leptos, CMP; mobile hướng native; solo và cày chay có đường tiến triển; phát hành tài nguyên bị giới hạn; server authoritative; nhánh đầu tiên và mặc định `develop`. [ADR 0004](decisions/0004-five-factions-lineage-hierarchy.md) ghi năm thế lực lấy nền tảng Kitô giáo, Hồi giáo, Ấn Độ giáo, Phật giáo, Đạo giáo và trục **Thế lực → Nguồn bảo trợ → Trực hệ → Nhánh chiến đấu → Kit**; địa lý độc lập. Tên/roster/skill mới chưa duyệt và chưa triển khai.
 
 ## Thiết kế
 
@@ -25,16 +25,16 @@ Yêu cầu đã chốt: MyVa / Thần Mạch; hậu duệ hoặc người kế t
 | [Progression & Social](design/progression-social.md) | Solo, bang hội, build và chiến dịch liên vùng cùng tồn tại thế nào? |
 | [Economy](design/economy.md) | Tài nguyên hồi phục mà tồn kho, ngân sách phát hành và tiền tệ vẫn được kiểm soát thế nào? |
 
-### Đề xuất v0.2 — thế giới, thần thoại và hệ nhân vật
+### Thế giới và hệ nhân vật — quyết định hiện hành và đề xuất
 
-Chờ duyệt qua [quyết định 0002](decisions/0002-lineages-world-structure.md); chưa sửa các tài liệu v0.1 ở trên.
+#18 đã thay trục phân chia của [quyết định 0002](decisions/0002-lineages-world-structure.md). Các đề xuất còn lại của ADR 0002 giữ trạng thái riêng; không coi toàn bộ v0.2 đã được duyệt.
 
 | Tài liệu | Câu hỏi được giải quyết |
 | --- | --- |
 | [Báo cáo thiết kế](design/worldbuilding-report.md) | Vision hiện tại thiếu gì, mâu thuẫn ở đâu, và cần chủ dự án quyết định điều gì? (mục A–J) |
 | [Glossary](design/glossary.md) | Mỗi thuật ngữ nghĩa là gì, và tồn tại để phục vụ việc chơi nào? |
-| [Lineages](design/lineages.md) | "Hệ nhân vật" được phân tầng thế nào; năm truyền thừa ra mắt khác nhau ra sao? |
-| [Combat, progression & balance](design/combat-progression-balance.md) | Truyền thừa đổi combat thế nào, học kỹ năng liên vùng ra sao, và kiểm chứng cân bằng bằng gì? |
+| [Lineages](design/lineages.md) | Năm tầng nhân vật, 10 trực hệ ứng viên, điểm mạnh/yếu/khắc chế và hợp đồng bàn giao #20 |
+| [Combat, progression & balance](design/combat-progression-balance.md) | Truyền thừa đổi combat thế nào, học chéo trực hệ ra sao, và kiểm chứng cân bằng bằng gì? |
 | [World atlas](design/world-atlas.md) | Các linh vực nối nhau thế nào; từng bản đồ có gì? |
 | [Narrative](design/narrative.md) | Thần Mạch là gì, ai là phản diện, câu chuyện và chiến dịch tiến triển ra sao? |
 | [Monetization](design/monetization.md) | Kinh tế bản ra mắt mở rộng thế nào và kiếm tiền mà không bán sức mạnh ra sao? |
@@ -43,6 +43,7 @@ Chờ duyệt qua [quyết định 0002](decisions/0002-lineages-world-structure
 
 | Tài liệu | Câu hỏi được giải quyết |
 | --- | --- |
+| [Nguồn năm thế lực](research/five-factions-sources.md) | Phân biệt thần, thiên thần, ngôn sứ, Phật/Bồ-tát và tiên; nguồn nào hỗ trợ từng ứng viên #18? |
 | [Mythology survey](research/mythology-survey.md) | Thần thoại và văn hóa nào có thể dùng, ở mức nào, với nguồn nào? |
 | [Risk register](research/risk-register.md) | Rủi ro thiết kế, văn hóa, bản quyền, kỹ thuật, pháp lý là gì; duyệt văn hóa theo quy trình nào? |
 
@@ -71,7 +72,8 @@ Chờ duyệt qua [quyết định 0002](decisions/0002-lineages-world-structure
 | [Planning & Kanban](work-plan/planning.md) | Issue, project và điều kiện chuyển trạng thái được theo dõi ở đâu? |
 | [Bevy adoption — ADR 0003](decisions/0003-bevy-engine-adoption.md) | Engine hiện hành, phiên bản, ownership và gate Web/Android/iOS là gì? |
 | [Foundation decision](decisions/0001-project-foundation.md) | Quy tắc tên, nhánh, scope và nguồn sự thật là gì? |
-| [Decision 0002 (đề xuất)](decisions/0002-lineages-world-structure.md) | Truyền thừa, linh vực thứ hai, vũ trụ quan và chính sách văn hóa được đề xuất chốt thế nào? |
+| [Five factions — ADR 0004](decisions/0004-five-factions-lineage-hierarchy.md) | Quyết định #18 có hiệu lực ở đâu, thay D1/D2/D6 thế nào, phần nào chưa duyệt? |
+| [Decision 0002 (lịch sử, duyệt từng phần)](decisions/0002-lineages-world-structure.md) | Truyền thừa, linh vực thứ hai, vũ trụ quan và chính sách văn hóa được đề xuất chốt thế nào? |
 
 ## Quy tắc cập nhật
 
