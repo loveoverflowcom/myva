@@ -399,10 +399,13 @@ fn update_texts(
     log: Res<CombatLog>,
     catalog: Res<HudCatalog>,
     art: Res<crate::art::Art>,
+    window: Single<&Window, With<PrimaryWindow>>,
+    touch: Res<TouchUi>,
     mut texts: Query<(&HudText, &mut Text)>,
     mut banner_box: Single<&mut Visibility, With<BannerBox>>,
     mut thresholds: Query<&mut Visibility, (With<Threshold>, Without<BannerBox>)>,
 ) {
+    let compact = touch.visible || window.height() < COMPACT_HEIGHT;
     let banner = banner(&arena, &game);
     **banner_box = if banner.is_some() {
         Visibility::Inherited
@@ -425,6 +428,7 @@ fn update_texts(
                 };
                 let label = match &catalog.0 {
                     Ok(catalog) => match catalog.lookup(fighter.kit.id) {
+                        Ok(view) if compact => ascii(view.record.metadata.display_name),
                         Ok(view) => {
                             let myva_sim::character::CharacterIcon::Placeholder(icon) =
                                 view.details.icon;
@@ -465,6 +469,9 @@ fn update_texts(
                 crate::art::ArtStatus::Off => "Art tat | hinh khoi placeholder".into(),
                 crate::art::ArtStatus::Loading => "Dang tai art placeholder...".into(),
                 crate::art::ArtStatus::Ready => "Art fixture placeholder".into(),
+                crate::art::ArtStatus::Failed { code, .. } if compact => {
+                    format!("Art loi [{}]", ascii(code))
+                }
                 crate::art::ArtStatus::Failed { code, .. } => {
                     format!("Art loi [{}] | hinh khoi placeholder", ascii(code))
                 }
@@ -530,12 +537,13 @@ fn update_texts(
 }
 
 /// HUD gọn khi màn hình thấp hoặc đang dùng cảm ứng: ẩn log/phím, nhãn phụ và dòng hồi chiêu
-/// (nút thuật cảm ứng tự hiện hồi chiêu). Pha boss luôn hiện.
+/// (nút thuật cảm ứng tự hiện hồi chiêu) và metadata. Pha boss và lỗi art luôn hiện.
 #[allow(clippy::type_complexity)]
 fn update_layout(
     window: Single<&Window, With<PrimaryWindow>>,
     touch: Res<TouchUi>,
     arena: Res<ArenaView>,
+    art: Res<crate::art::Art>,
     mut desktop: Query<&mut Visibility, With<DesktopOnly>>,
     mut bars: Query<(&HudBar, &mut Node)>,
     mut labels: Query<(&HudLabel, &mut Visibility), Without<DesktopOnly>>,
@@ -547,7 +555,8 @@ fn update_layout(
         let hidden = compact
             && match slot.0 {
                 Slot::Detail(Side::Rival) => !boss,
-                Slot::Detail(Side::Player) | Slot::State(_) => true,
+                Slot::Detail(Side::Player) | Slot::State(_) | Slot::Catalog => true,
+                Slot::Art => !matches!(art.status, crate::art::ArtStatus::Failed { .. }),
                 _ => false,
             };
         let display = if hidden { Display::None } else { Display::Flex };

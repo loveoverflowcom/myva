@@ -233,13 +233,17 @@ fn scene_keys(
 ) -> Result<(Vec<BundleKey>, Vec<BundleKey>), MappingError> {
     let (_, player) = mapping::resolve(manifest, KIT_ASSETS, kit)?;
     let map = mapping::bundle(manifest, "map.dap_co", myva_assets::BundleKind::Map)?;
-    let vfx = mapping::bundle(manifest, "vfx.combat", myva_assets::BundleKind::Vfx)?;
+    let optional = match mapping::bundle(manifest, "vfx.combat", myva_assets::BundleKind::Vfx) {
+        Ok(vfx) => vec![key(manifest, vfx)],
+        Err(MappingError::MissingBundle(_)) => Vec::new(),
+        Err(error) => return Err(error),
+    };
     let mut required = vec![key(manifest, player), key(manifest, map)];
     if mode == Mode::Boss {
         let (_, boss) = mapping::resolve(manifest, KIT_ASSETS, "ke-giu-dap")?;
         required.push(key(manifest, boss));
     }
-    Ok((required, vec![key(manifest, vfx)]))
+    Ok((required, optional))
 }
 
 fn projection(catalog: &Manifest, key: &BundleKey) -> Option<Manifest> {
@@ -633,6 +637,32 @@ mod tests {
     }
 
     #[test]
+    fn present_optional_vfx_still_validates_kind_and_dependencies() {
+        let mut catalog = catalog();
+        let vfx = catalog
+            .bundles
+            .iter_mut()
+            .find(|bundle| bundle.id == "vfx.combat")
+            .unwrap();
+        vfx.kind = myva_assets::BundleKind::Character;
+        assert!(matches!(
+            scene_keys(&catalog, Mode::Boss, "long-luu"),
+            Err(MappingError::InvalidBundle(id)) if id == "vfx.combat"
+        ));
+        let vfx = catalog
+            .bundles
+            .iter_mut()
+            .find(|bundle| bundle.id == "vfx.combat")
+            .unwrap();
+        vfx.kind = myva_assets::BundleKind::Vfx;
+        vfx.dependencies.push("character.long_luu".into());
+        assert!(matches!(
+            scene_keys(&catalog, Mode::Boss, "long-luu"),
+            Err(MappingError::UnsupportedDependencies(id)) if id == "vfx.combat"
+        ));
+    }
+
+    #[test]
     fn selected_plan_skips_every_unrelated_character_and_reports_missing_mapping() {
         let mut catalog = catalog();
         let mut unrelated = catalog.bundles[0].clone();
@@ -972,6 +1002,74 @@ mod tests {
                 .sheets
                 .contains_key("unused.sheet")
         );
+    }
+
+    #[test]
+    fn real_asset_server_absent_optional_vfx_keeps_required_art_ready() {
+        let assets = fault_assets();
+        let mut manifest = catalog();
+        let vfx_assets = manifest
+            .bundles
+            .iter()
+            .find(|bundle| bundle.id == "vfx.combat")
+            .unwrap()
+            .assets
+            .clone();
+        manifest.bundles.retain(|bundle| bundle.id != "vfx.combat");
+        manifest
+            .assets
+            .retain(|asset| !vfx_assets.contains(&asset.id));
+        let mut issues = Vec::new();
+        myva_assets::validate::check_manifest(&manifest, &mut issues);
+        assert!(issues.is_empty(), "{issues:?}");
+        std::fs::write(
+            assets.0.join("fixture/manifest.json"),
+            serde_json::to_vec(&manifest).unwrap(),
+        )
+        .unwrap();
+        std::fs::remove_file(assets.0.join("runtime-vfx.combat.myva")).unwrap();
+        std::fs::remove_dir_all(assets.0.join("fixture/vfx")).unwrap();
+
+        for (mode, expected_loads) in [(Mode::Boss, 3), (Mode::Duel, 2)] {
+            let mut app = headless(assets.0.to_str().unwrap());
+            let (bout, _) = myva_sim::battle::Bout::start(mode, 1).unwrap();
+            app.insert_resource(Match::new(bout));
+            app.insert_resource(crate::ArenaView::of(
+                &myva_sim::battle::Battle::new(mode, 1).unwrap(),
+            ));
+            until(&mut app, |app| {
+                ready(app)
+                    || matches!(
+                        app.world().resource::<Art>().status,
+                        ArtStatus::Failed { .. }
+                    )
+            });
+            assert_eq!(app.world().resource::<Art>().status, ArtStatus::Ready);
+            // Body entities spawn when tables become Ready, then receive images next frame.
+            app.update();
+            let runtime = app.world().resource::<StreamRuntime>();
+            assert_eq!(runtime.summary().completed_loads, expected_loads);
+            assert_eq!(runtime.summary().failed_loads, 0);
+            assert!(runtime.summary().mapping_error.is_none());
+            assert!(runtime.keys.iter().all(|key| key.kind != BundleKind::Vfx));
+            let tables = app.world().resource::<ArtTables>();
+            assert!(tables.sheets.contains_key("long_luu.sheet"));
+            assert!(tables.layout.is_some());
+            assert_eq!(
+                tables.sheets.contains_key("ke_giu_dap.sheet"),
+                mode == Mode::Boss
+            );
+            assert!(!tables.sheets.contains_key("vfx.combat"));
+            let mut bodies = app
+                .world_mut()
+                .query_filtered::<&Sprite, With<art::ArtBody>>();
+            assert_eq!(bodies.iter(app.world()).count(), 2);
+            assert!(
+                bodies
+                    .iter(app.world())
+                    .all(|sprite| sprite.image != Handle::default())
+            );
+        }
     }
 
     #[test]
