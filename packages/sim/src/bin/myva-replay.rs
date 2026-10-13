@@ -15,11 +15,12 @@ use myva_sim::registry::{KitRequest, KitRevision, LoadoutBinding, LoadoutRequest
 use myva_sim::replay::Replay;
 use myva_sim::{CommandFrame, Event, FighterId, World};
 
-const USAGE: &str = "dùng: myva-replay <verify|events|demo> <file>\nmyva-replay demo-loadout <file> <kit-id> <version> <hash-hex> --legacy-fixture";
+const USAGE: &str = "dùng: myva-replay <verify|events|demo> <file>\nmyva-replay demo-loadout <file> <kit-id> <version> <hash-hex> --legacy-fixture\nmyva-replay build-check [item-id ...]";
 
 fn main() -> ExitCode {
     let args: Vec<String> = std::env::args().skip(1).collect();
     let result = match args.as_slice() {
+        [command, ids @ ..] if command == "build-check" => build_check(ids),
         [command, path] if command == "verify" => verify(path),
         [command, path] if command == "events" => events(path),
         [command, path] if command == "demo" => demo(path),
@@ -37,6 +38,35 @@ fn main() -> ExitCode {
             ExitCode::FAILURE
         }
     }
+}
+
+/// Offline build consumer only: no World spawn, combat effects, entitlement or replay export.
+fn build_check(ids: &[String]) -> Result<(), String> {
+    let ids: Vec<&str> = ids.iter().map(String::as_str).collect();
+    let registry = myva_sim::registry::KitRegistry::baseline().map_err(|e| e.to_string())?;
+    let request = LoadoutRequest {
+        equipment: &ids,
+        ..myva_sim::registry::legacy_fixture_loadout()
+    };
+    let loadout = registry.resolve_loadout(request).map_err(|e| e.to_string())?;
+    let build = loadout.equipment();
+    println!(
+        "offline build: budget={} fingerprint={:016x}",
+        build.budget_used(),
+        build.fingerprint()
+    );
+    let rules = build.rules_revision();
+    println!("build-rules {} {:016x}", rules.version, rules.config_hash);
+    for pin in build.pins() {
+        println!(
+            "item {} {} {:016x}",
+            pin.id.as_str(),
+            pin.revision.version,
+            pin.revision.config_hash
+        );
+    }
+    println!("effect prototypes only; equipment combat/replay integration: NOT_IMPLEMENTED");
+    Ok(())
 }
 
 fn load(path: &str) -> Result<Replay, String> {

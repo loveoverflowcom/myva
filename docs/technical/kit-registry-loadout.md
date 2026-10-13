@@ -14,7 +14,7 @@
 
 `KitRegistry::baseline()` validate dữ liệu tĩnh hiện có. `entry(&str)` và `resolve(KitRequest)` nhận chuỗi runtime, dùng cùng luật slug của catalog mà không leak/allocation để ép ID thành static. Identity lấy từ `Kit.id`, độc lập thứ tự registry. `resolve` yêu cầu version/hash chính xác; `InvalidId`, `UnknownKit`, `VersionMismatch`, `HashMismatch` và `InvalidRegistry` là lỗi explicit.
 
-`resolve_loadout(LoadoutRequest)` tạo `LockedLoadout` với private fields và getters `kit()`, `pin()`, `binding()`. Nhánh yêu cầu phải bằng `KitPlacement::Branch` trong catalog; kit và toàn bộ parent chain phải có metadata approval. Permission `Player` riêng biệt với approval lore; boss/quái hoặc `Disabled` trả `NotEquippable`.
+`resolve_loadout(LoadoutRequest)` tạo `LockedLoadout` với private fields và getters `kit()`, `pin()`, `binding()`, `equipment()`. Nhánh yêu cầu phải bằng `KitPlacement::Branch` trong catalog; kit và toàn bộ parent chain phải có metadata approval. Permission `Player` riêng biệt với approval lore; boss/quái hoặc `Disabled` trả `NotEquippable`.
 
 Long Lưu vẫn là `UnmappedFixture` và metadata proposed. Caller phải chọn rõ `LoadoutBinding::UnresolvedLegacyFixture`; nhánh bất kỳ trả `BranchMismatch`. Đây là ngoại lệ cho fixture offline, không là xác nhận roster/theology hoặc quyền dùng trong chế độ cạnh tranh. Năm nền tảng vẫn giữ nguyên, sources/lineages/branches mặc định rỗng. Các branch/approval tests dùng dữ liệu synthetic; không nhập mười ứng viên hoặc ánh xạ Long Lưu sang tôn giáo. Team PvP, địa lý và presentation không nằm trong loadout contract.
 
@@ -31,7 +31,7 @@ cargo xtask run replay -- demo-loadout /tmp/long-luu-v4.myva-replay long-luu 1 a
 cargo xtask run replay -- verify /tmp/long-luu-v4.myva-replay
 ```
 
-Loadout hiện chỉ chọn toàn kit. Danh sách equipment không rỗng trả `UnsupportedEquipment`; chưa có item/proc/budget/vũ khí, nội tại Dư Ba, chọn một ultimate slot khác, respec production, online loadout authority hoặc competitive entitlement. Không silently ignore đồ/đổi cost. Các phần #20 đó là TODO theo gate của issue, không nằm trong PR2 hoặc PR3.
+Loadout hiện chỉ chọn toàn kit. [EquipmentRegistry và headless build rules](equipment-registry.md) nay validate/lock item/budget; nonempty build vẫn trả `RuntimeNotImplemented` tại combat boundary trước spawn. Chưa có runtime proc/vũ khí, nội tại Dư Ba, chọn một ultimate slot khác, respec production, online loadout authority hoặc competitive entitlement. Không silently ignore đồ/đổi cost. Các phần #20 đó là TODO theo gate của issue, không nằm trong PR2 hoặc PR3.
 
 ## Version và replay
 

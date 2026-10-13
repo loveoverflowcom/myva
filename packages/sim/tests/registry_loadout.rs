@@ -68,10 +68,12 @@ fn loadout_rejects_version_hash_equipment_and_nonplayer_kits() {
         Err(RegistryError::HashMismatch { .. })
     ));
     request = legacy_fixture_loadout();
-    request.equipment = &["an-phan-chan"];
+    request.equipment = &["unknown-item"];
     assert_eq!(
         registry.resolve_loadout(request),
-        Err(RegistryError::UnsupportedEquipment)
+        Err(RegistryError::Equipment(
+            myva_sim::equipment::EquipmentError::UnknownItem("unknown-item".to_owned())
+        ))
     );
     for id in ["ke-giu-dap", "quai-bun"] {
         let entry = registry.entry(id).unwrap();

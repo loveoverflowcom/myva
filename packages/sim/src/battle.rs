@@ -277,6 +277,13 @@ impl Bout {
         loadout: LockedLoadout,
         pinned_replay: bool,
     ) -> Result<(Self, Session), RegistryError> {
+        // v3/v4 cannot encode equipment/proc state. Headless build validation is supported,
+        // but starting combat must fail before spawn until explicit runtime/replay support.
+        if !loadout.equipment().is_empty() {
+            return Err(RegistryError::Equipment(
+                crate::equipment::EquipmentError::RuntimeNotImplemented,
+            ));
+        }
         let rival_kit = match mode {
             Mode::Boss => registry.entry("ke-giu-dap")?.kit,
             Mode::Duel => loadout.kit(),
@@ -333,7 +340,7 @@ impl Bout {
     /// Trận mới ở vòng kế tiếp, giữ chế độ lái của người chơi.
     pub fn rematch(&self, mode: Mode) -> Result<(Self, Session), RegistryError> {
         let registry = KitRegistry::baseline()?;
-        let loadout = registry.resolve_loadout(self.loadout.request())?;
+        let loadout = registry.revalidate_loadout(self.loadout)?;
         let (mut next, session) = Self::start_locked(
             mode,
             self.roster.round + 1,

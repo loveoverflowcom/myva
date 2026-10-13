@@ -107,6 +107,8 @@ Phím: A/D di chuyển, Space nhảy, Shift lướt, giữ L đỡ, J/K nhẹ/n�
 
 Long Lưu có đại thuật ở ô 3: chạm rồi thả R / RB+B / nút Triều dùng thường, giữ 450 ms yêu cầu tăng cường (100 Mạch + 35 năng lượng). Nhấn đỡ mới sau khi vào hitstun để Thoát Mạch (50 Mạch, hồi 20 s). DR/budget theo mục tiêu và feedback trúng/bị đỡ/hụt dùng cùng lõi; thông số là GT. [Báo cáo #19](docs/reports/combat-mach.md) ghi bằng chứng và các gate người thật/mạng còn thiếu.
 
+EquipmentRegistry offline ([contract](docs/technical/equipment-registry.md), [evidence](docs/reports/equipment-registry.md)) validate ba item GT, budget/stacking và lock build; CLI `cargo xtask run replay -- build-check an-phan-chan phu-vu-bo` kiểm headless. Hiệu ứng là pure prototypes, chưa active trong combat/replay; Rust checks của phần mới chưa chạy vì host thiếu toolchain.
+
 CharacterCatalog offline ([contract](docs/technical/character-catalog-assets.md), [evidence](docs/reports/character-catalog-assets.md)) dùng chung metadata Leptos/Bevy và chọn asset theo stable KitId. Long Lưu vẫn fixture chưa ánh xạ, icon/art placeholder; shell chọn exact pin trước trận, native dùng `--kit long-luu`. Chưa có roster trực hệ đã duyệt.
 
 ## Đọc tài liệu

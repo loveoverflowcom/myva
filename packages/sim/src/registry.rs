@@ -9,6 +9,7 @@ use crate::boss::KE_GIU_DAP;
 use crate::catalog::{
     BASELINE_CATALOG, BranchId, Catalog, KitId, KitPlacement, ReviewStatus, valid_slug,
 };
+use crate::equipment::{EquipmentError, EquipmentRegistry, LockedEquipment};
 use crate::kit::{ActionSpec, Hitbox, Kit, LONG_LUU};
 use crate::monster::QUAI_BUN;
 use crate::status::StatusKind;
@@ -65,7 +66,7 @@ pub enum LoadoutBinding {
 pub struct LoadoutRequest<'a> {
     pub kit: KitRequest<'a>,
     pub binding: LoadoutBinding,
-    /// TODO #20: items/procs/budgets are not implemented; a nonempty list is rejected.
+    /// Offline build IDs. Registry validates them; combat rejects effects not yet integrated.
     pub equipment: &'a [&'a str],
 }
 
@@ -75,6 +76,7 @@ pub struct LockedLoadout {
     kit: &'static Kit,
     pin: KitPin,
     binding: LoadoutBinding,
+    equipment: LockedEquipment,
 }
 
 impl LockedLoadout {
@@ -87,11 +89,15 @@ impl LockedLoadout {
     pub fn binding(self) -> LoadoutBinding {
         self.binding
     }
+    pub fn equipment(self) -> LockedEquipment {
+        self.equipment
+    }
+    /// ID request only. Use revalidate_loadout to preserve exact item/rules pins on rematch.
     pub fn request(&self) -> LoadoutRequest<'_> {
         LoadoutRequest {
             kit: self.pin.request(),
             binding: self.binding,
-            equipment: &[],
+            equipment: self.equipment.ids(),
         }
     }
 }
@@ -129,7 +135,7 @@ pub enum RegistryError {
         actual: KitPlacement,
     },
     UnapprovedKit(KitId),
-    UnsupportedEquipment,
+    Equipment(EquipmentError),
     RulesVersionMismatch {
         expected: u32,
         actual: u32,
@@ -261,9 +267,16 @@ impl<'a> KitRegistry<'a> {
         &self,
         request: LoadoutRequest<'_>,
     ) -> Result<LockedLoadout, RegistryError> {
-        if !request.equipment.is_empty() {
-            return Err(RegistryError::UnsupportedEquipment);
-        }
+        let equipment = EquipmentRegistry::baseline().map_err(RegistryError::Equipment)?;
+        self.resolve_loadout_with_equipment(request, &equipment)
+    }
+
+    /// Custom authored offline build rules share the same kit/lore boundary.
+    pub fn resolve_loadout_with_equipment(
+        &self,
+        request: LoadoutRequest<'_>,
+        equipment: &EquipmentRegistry<'_>,
+    ) -> Result<LockedLoadout, RegistryError> {
         let entry = self.resolve(request.kit)?;
         let id = entry
             .kit
@@ -303,7 +316,18 @@ impl<'a> KitRegistry<'a> {
                 revision: entry.revision,
             },
             binding: request.binding,
+            equipment: equipment
+                .resolve_build(request.equipment)
+                .map_err(RegistryError::Equipment)?,
         })
+    }
+
+    pub fn revalidate_loadout(&self, loadout: LockedLoadout) -> Result<LockedLoadout, RegistryError> {
+        let equipment = EquipmentRegistry::baseline().map_err(RegistryError::Equipment)?;
+        equipment
+            .revalidate(loadout.equipment())
+            .map_err(RegistryError::Equipment)?;
+        self.resolve_loadout_with_equipment(loadout.request(), &equipment)
     }
 }
 
