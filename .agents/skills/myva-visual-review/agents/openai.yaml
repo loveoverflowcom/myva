@@ -1,0 +1,4 @@
+interface:
+  display_name: "Visual review"
+  short_description: "Inspect captured pixels with reproducible scenario context"
+  default_prompt: "Use $myva-visual-review to capture and open the stated gameplay scenario and report only observed visual findings."

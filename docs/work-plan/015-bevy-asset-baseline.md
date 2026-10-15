@@ -19,7 +19,7 @@ Trước D05-A, `develop` chỉ có presentation bằng hình khối, không có
 
 ## Kiểm chứng
 
-Logic và report contract có test độc lập; các test ấy không xác nhận GPU upload/unload. Pin Rust 1.97.1 / Bevy 0.20.0. Task hiện hành chạy trên dot cloud với dependencies chính thức; không dùng Mac hoặc đo chồng workload. Đọc [báo cáo D05-B](../reports/asset-streaming-performance.md) để biết command và gate chưa chạy. Không đóng #13 khi còn acceptance chưa đạt.
+Logic và report contract có test độc lập; các test ấy không xác nhận GPU upload/unload. Pin Rust 1.98.1 / Bevy 0.20.0. Task hiện hành chạy trên dot cloud với dependencies chính thức; không dùng Mac hoặc đo chồng workload. Đọc [báo cáo D05-B](../reports/asset-streaming-performance.md) để biết command và gate chưa chạy. Không đóng #13 khi còn acceptance chưa đạt.
 
 ## Rủi ro / chưa biết
 

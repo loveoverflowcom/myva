@@ -21,6 +21,7 @@ pub struct Selection {
     pub web: bool,
     pub determinism: bool,
     pub native: bool,
+    pub skills: bool,
     pub reason: String,
 }
 
@@ -35,6 +36,7 @@ impl Selection {
             reports: true,
             web: true,
             determinism: true,
+            skills: true,
             reason: reason.into(),
             ..Self::default()
         }
@@ -164,7 +166,22 @@ pub fn select(workspace: &Workspace, metadata: &Metadata, paths: &[String]) -> R
     let mut selected = Selection::default();
     let mut unknown = Vec::new();
     for path in paths {
-        if within(path, "prototypes/native") {
+        if within(path, ".agents")
+            || within(path, ".claude")
+            || matches!(
+                path.as_str(),
+                "AGENTS.md"
+                    | "CLAUDE.md"
+                    | "scripts/check-skills.py"
+                    | "tests/test_check_skills.py"
+            )
+        {
+            // These inputs define agent routing and its validator, not gameplay.
+            // Keep workspace format/docs and execute both structural controls and
+            // the real xtask package tests that protect this selection/planner.
+            selected.skills = true;
+            selected.packages.insert("xtask".into());
+        } else if within(path, "prototypes/native") {
             selected.native = true;
         } else if let Some((_, name)) = directories.iter().find(|(dir, _)| within(path, dir)) {
             if name == "xtask" {
@@ -304,6 +321,34 @@ mod tests {
         let s = impact(&["apps/web/public/bootstrap.js"]);
         assert!(s.web && s.determinism);
         assert!(impact(&["prototypes/native/android/shared/build.gradle.kts"]).native);
+    }
+
+    #[test]
+    fn skills_and_runtime_routing_select_repository_controls_and_xtask_only() {
+        for path in [
+            ".agents/skills/myva-engineering/SKILL.md",
+            ".claude/skills/myva-engineering",
+            "AGENTS.md",
+            "CLAUDE.md",
+            "scripts/check-skills.py",
+            "tests/test_check_skills.py",
+        ] {
+            let s = impact(&[path]);
+            assert!(s.skills && !s.full, "{path}: {s:?}");
+            assert_eq!(s.packages, BTreeSet::from(["xtask".into()]));
+            assert!(!s.sim && !s.gameplay && !s.web && !s.determinism);
+        }
+    }
+
+    #[test]
+    fn skills_do_not_hide_mixed_rust_or_unknown_input_impact() {
+        let s = impact(&[".agents/skills/README.md", "packages/sim/src/tick.rs"]);
+        assert!(s.skills && s.sim && s.gameplay && s.web && s.determinism);
+        assert!(s.packages.contains("xtask"));
+        let s = impact(&[".agents/skills/README.md", "Cargo.lock"]);
+        assert!(s.full && s.skills && s.web && s.determinism);
+        let s = impact(&[".agents-other/README.md"]);
+        assert!(s.full, "prefix lookalikes must not narrow unknown inputs");
     }
 
     #[test]

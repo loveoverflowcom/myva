@@ -4,11 +4,11 @@
 
 ## Phiên bản và build Android
 
-Pin: Rust **1.97.1**, Bevy **0.20.0**, `winit` **0.30.13** (lockfile), Android NDK **27.0.12077973**, Gradle **9.7.0**, AGP **9.3.1**, GameActivity **4.4.0**, JDK **17**, SDK platform **37.0**, build-tools **36.0.0**. ARM64, minSdk 26, targetSdk 37. GameActivity version lấy từ mobile example của đúng tag Bevy; không thay riêng Java AAR khi chưa đối chiếu `android-activity`.
+Pin: Rust **1.98.1**, Bevy **0.20.0**, `winit` **0.30.13** (lockfile), Android NDK **27.0.12077973**, Gradle **9.7.0**, AGP **9.3.1**, GameActivity **4.4.0**, JDK **17**, SDK platform **37.0**, build-tools **36.0.0**. ARM64, minSdk 26, targetSdk 37. GameActivity version lấy từ mobile example của đúng tag Bevy; không thay riêng Java AAR khi chưa đối chiếu `android-activity`.
 
 ```bash
-rustup toolchain install 1.97.1 --profile minimal
-rustup +1.97.1 target add aarch64-linux-android
+rustup toolchain install 1.98.1 --profile minimal
+rustup +1.98.1 target add aarch64-linux-android
 sdkmanager 'platforms;android-37.0' 'build-tools;36.0.0' 'ndk;27.0.12077973' 'platform-tools'
 # Set ANDROID_HOME and JAVA_HOME if SDK/JDK are not already configured.
 cargo xtask doctor mobile --platform android
@@ -48,7 +48,7 @@ Nút mở bị khóa sau một lượt **trong process**, vì tạo lại event 
 ## Minimal reproducer: event-loop recreation
 
 ```bash
-xvfb-run -a cargo +1.97.1 run --locked --manifest-path prototypes/native/probes/event-loop/Cargo.toml
+xvfb-run -a cargo +1.98.1 run --locked --manifest-path prototypes/native/probes/event-loop/Cargo.toml
 ```
 
 Probe tạo/drop/tạo lại `winit::EventLoop` trên Linux. Kỳ vọng `second_event_loop=RecreationAttempt`; exit code 0 nghĩa là đã tái hiện đúng giới hạn, **không** có nghĩa lifecycle mobile thành công. Khi có display thật có thể bỏ `xvfb-run`. Nó bác bỏ cách mount/unmount Composable bằng cách tạo mới `DefaultPlugins`/event loop mỗi lần trong cùng process; không bác bỏ mọi custom adapter hoặc phương án B.

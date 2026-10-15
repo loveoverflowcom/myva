@@ -50,16 +50,9 @@ impl EffectGroup {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum EffectSpec {
-    PerfectGuardRecovery {
-        points: u32,
-        cooldown_ticks: u32,
-    },
-    GuardPressureReduction {
-        basis_points: u16,
-    },
-    DashCostReduction {
-        basis_points: u16,
-    },
+    PerfectGuardRecovery { points: u32, cooldown_ticks: u32 },
+    GuardPressureReduction { basis_points: u16 },
+    DashCostReduction { basis_points: u16 },
 }
 
 impl EffectSpec {
@@ -556,7 +549,9 @@ pub fn guard_recovery(
             .get(&contact.source)
             .is_none_or(|&instance| contact.action_instance > instance);
         if fresh {
-            state.seen_actions.insert(contact.source, contact.action_instance);
+            state
+                .seen_actions
+                .insert(contact.source, contact.action_instance);
             if u64::from(contact.tick) >= state.ready_at {
                 restored_points = build
                     .effects

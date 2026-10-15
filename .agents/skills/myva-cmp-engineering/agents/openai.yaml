@@ -1,0 +1,4 @@
+interface:
+  display_name: "CMP engineering"
+  short_description: "CMP shell mechanics and honest native acceptance"
+  default_prompt: "Use $myva-cmp-engineering to assess a shell lifecycle change without mistaking desktop preview for Bevy device acceptance."

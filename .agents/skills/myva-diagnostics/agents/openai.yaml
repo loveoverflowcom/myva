@@ -1,0 +1,4 @@
+interface:
+  display_name: "Diagnose a failure"
+  short_description: "Summary-first failure triage with attributable raw logs"
+  default_prompt: "Use $myva-diagnostics to explain the failing local gate, separate baseline and environment causes, and keep raw logs ignored."

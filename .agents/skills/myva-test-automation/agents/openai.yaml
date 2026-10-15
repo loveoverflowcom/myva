@@ -1,0 +1,4 @@
+interface:
+  display_name: "Test automation"
+  short_description: "Select existing xtask runners and retain honest outcomes"
+  default_prompt: "Use $myva-test-automation to select and run existing MyVa checks, recording missing prerequisites and empty suites as non-success."

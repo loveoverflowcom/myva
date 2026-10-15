@@ -2,7 +2,9 @@
 name = "myva-native-probe"
 version = "0.1.0"
 edition = "2024"
-rust-version = "1.97.1"
+# Android compile/link on Rust 1.98.1 is UNVERIFIED on the current local host.
+# Keep the native device/lifecycle gates open; see the root skills transfer report.
+rust-version = "1.98.1"
 publish = false
 
 # Independent experiment: do not make mobile toolchains a workspace requirement.

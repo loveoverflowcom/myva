@@ -1,0 +1,4 @@
+interface:
+  display_name: "Repair a UI defect"
+  short_description: "Repair one presentation defect and recheck its scenario"
+  default_prompt: "Use $myva-ui-fix to repair the authorized UI defect, preserving domain meaning and rechecking the same captured scenario."

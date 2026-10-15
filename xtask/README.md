@@ -75,7 +75,7 @@ compile/package không là runtime/device PASS. Không có iOS build implementat
 server đã được developer mở; không tự boot emulator hoặc install/launch APK.
 Không có command install/run mobile trong PR này.
 
-Prerequisites do người dùng hoặc Actions provision: Rust 1.97.1 + rustfmt/clippy,
+Prerequisites do người dùng hoặc Actions provision: Rust 1.98.1 + rustfmt/clippy,
 wasm32 target, wasm-bindgen CLI 0.2.129, Bash, Python 3, Node/npm, Playwright trong
 `node_modules` và Chromium (hoặc `CHROME_PATH`). Linux native graybox cần libudev
 development files. Android dùng toolchain pinned trong
@@ -102,3 +102,13 @@ Focused tests dùng `cargo xtask verify xtask`; full contract dùng
 sandbox cấm socket/process không đủ để chạy nhóm này. Không bỏ qua test rồi báo
 PASS. [Verification report](../docs/reports/xtask-verification.md) ghi môi trường
 và phần chưa chạy.
+
+`verify repository` chạy thêm `scripts/check-skills.py` và negative suite bắt buộc
+qua `--self-test`. Validator dùng Python standard library, kiểm canonical skills,
+metadata/provenance, index, local links/anchors, references, Claude symlinks và
+routing fixtures. Thiếu test target hoặc suite rỗng là FAIL/nonzero. Structural
+PASS không chứng minh runtime discovery hoặc routing behavior; hai phần đó phải
+được đánh giá riêng. Changed-only cho `.agents/`, `.claude/`, `AGENTS.md`,
+`CLAUDE.md`, validator và test tương ứng chạy các gate này cùng xtask clippy/tests,
+vẫn giữ workspace-wide Rust format và documentation checks. Diff trộn Rust hoặc
+unknown inputs vẫn giữ dependency impact/full fallback hiện hữu.

@@ -28,8 +28,8 @@ xcode = run("xcodebuild", "-version")
 report = {
     "recorded_at_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(),
     "host": platform.platform(),
-    "rust": run("rustc", "+1.97.1", "--version"),
-    "rust_targets": run("rustup", "+1.97.1", "target", "list", "--installed"),
+    "rust": run("rustc", "+1.98.1", "--version"),
+    "rust_targets": run("rustup", "+1.98.1", "target", "list", "--installed"),
     "android": {
         "gate": "NOT_RUN" if physical_candidates else "BLOCKED",
         "reason": "Verify physical hardware, then run the device matrix" if physical_candidates else "No authorized physical Android device detected",

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Design MyVa UI"
+  short_description: "Design clear accessible shell and gameplay presentation"
+  default_prompt: "Use $myva-ui-design to propose the requested interface with MyVa identity, accessible states and platform-owned mechanics."

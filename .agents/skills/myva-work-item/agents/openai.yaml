@@ -1,0 +1,4 @@
+interface:
+  display_name: "Deliver a work item"
+  short_description: "Deliver one scoped work item through existing rule owners"
+  default_prompt: "Use $myva-work-item to deliver the selected MyVa work item within its explicit authorization and report residual risks."

@@ -26,7 +26,7 @@ Các test nên bảo vệ luật hoặc lỗi có thể gây mất state, nhân 
 
 ## Kiểm tra tài liệu
 
-Developer và agent dùng [`cargo xtask`](xtask/README.md) theo [build contract](docs/architecture/xtask-build-contract.md), nguồn duy nhất về Single Surface Rule, command mapping, process ownership và verification selection. Repository chưa có agent instructions/skills riêng; không tạo thêm bản sao quy tắc. Scripts là implementation primitives, npm `test:web` và CI forward về xtask.
+Developer và agent dùng [`cargo xtask`](xtask/README.md) theo [build contract](docs/architecture/xtask-build-contract.md), nguồn duy nhất về Single Surface Rule, command mapping, process ownership và verification selection. Agent đọc [routing](AGENTS.md) và [skill index](.agents/skills/README.md); canonical skills có một nguồn, không tạo thêm bản sao quy tắc. Scripts là implementation primitives, npm `test:web` và CI forward về xtask.
 
 ```bash
 cargo xtask fmt

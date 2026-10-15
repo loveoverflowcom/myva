@@ -48,7 +48,9 @@ fn build_check(ids: &[String]) -> Result<(), String> {
         equipment: &ids,
         ..myva_sim::registry::legacy_fixture_loadout()
     };
-    let loadout = registry.resolve_loadout(request).map_err(|e| e.to_string())?;
+    let loadout = registry
+        .resolve_loadout(request)
+        .map_err(|e| e.to_string())?;
     let build = loadout.equipment();
     println!(
         "offline build: budget={} fingerprint={:016x}",

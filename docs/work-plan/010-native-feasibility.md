@@ -14,7 +14,7 @@ Không làm account, MMO, giao dịch, world assets hoặc voice service. Không
 
 ## Dependencies
 
-[Architecture](../technical/architecture.md), [ADR / compatibility matrix](../decisions/0003-bevy-engine-adoption.md) và [assets-performance](../technical/assets-performance.md). Bevy `=0.20.0`, Rust `1.97.1`; pin thêm CMP/Kotlin/Gradle/NDK/Xcode trong implementation và báo cáo. Chọn thiết bị thật; dependency/sample chính thức phải cùng version trước khi quyết định bridge.
+[Architecture](../technical/architecture.md), [ADR / compatibility matrix](../decisions/0003-bevy-engine-adoption.md) và [assets-performance](../technical/assets-performance.md). Bevy `=0.20.0`, Rust `1.98.1`; pin thêm CMP/Kotlin/Gradle/NDK/Xcode trong implementation và báo cáo. Chọn thiết bị thật; dependency/sample chính thức phải cùng version trước khi quyết định bridge.
 
 ## Suggested sequence
 

@@ -6,7 +6,7 @@
 
 | Nội dung | Trạng thái |
 | --- | --- |
-| Game client Rust + Bevy `=0.20.0`, toolchain Rust `1.97.1` | Đã chọn và pin; xem ADR về feature flags/MSRV |
+| Game client Rust + Bevy `=0.20.0`, toolchain Rust `1.98.1` | Đã chọn và pin; xem ADR về feature flags/MSRV |
 | Web shell Leptos `=0.8.22` CSR; mobile shell Kotlin Compose Multiplatform | Đã chọn; CMP integration/toolchain vẫn cần chứng minh trong D02 |
 | Mobile dùng renderer native, không phụ thuộc WebView | Đích kiến trúc; gate Android và iOS thật còn riêng biệt |
 | Online server authoritative | Bắt buộc với vị trí hợp lệ, chiến đấu, phần thưởng, giao dịch và tài nguyên |
