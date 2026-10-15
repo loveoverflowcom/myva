@@ -322,7 +322,10 @@ impl<'a> KitRegistry<'a> {
         })
     }
 
-    pub fn revalidate_loadout(&self, loadout: LockedLoadout) -> Result<LockedLoadout, RegistryError> {
+    pub fn revalidate_loadout(
+        &self,
+        loadout: LockedLoadout,
+    ) -> Result<LockedLoadout, RegistryError> {
         let equipment = EquipmentRegistry::baseline().map_err(RegistryError::Equipment)?;
         equipment
             .revalidate(loadout.equipment())

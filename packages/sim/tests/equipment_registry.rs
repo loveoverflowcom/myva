@@ -42,9 +42,15 @@ fn contact(tick: u32, action_instance: u32) -> GuardContact {
 fn frozen_pins_cover_gameplay_data_but_not_display_labels() {
     let r = registry();
     assert_eq!(r.entries().len(), 3);
-    assert_eq!(build_rules_hash(PROTOTYPE_BUILD_RULES.rules), 0x9dc0378661ca5573);
+    assert_eq!(
+        build_rules_hash(PROTOTYPE_BUILD_RULES.rules),
+        0x9dc0378661ca5573
+    );
     for entry in r.entries() {
-        assert_eq!(item_config_hash(entry.definition), entry.revision.config_hash);
+        assert_eq!(
+            item_config_hash(entry.definition),
+            entry.revision.config_hash
+        );
         let renamed = ItemDefinition {
             display_name: "Synthetic name",
             ..entry.definition
@@ -60,7 +66,10 @@ fn frozen_pins_cover_gameplay_data_but_not_display_labels() {
         dash_cost_floor: 16,
         ..PROTOTYPE_BUILD_RULES.rules
     };
-    assert_ne!(build_rules_hash(changed), PROTOTYPE_BUILD_RULES.revision.config_hash);
+    assert_ne!(
+        build_rules_hash(changed),
+        PROTOTYPE_BUILD_RULES.revision.config_hash
+    );
 }
 
 #[test]
@@ -69,7 +78,9 @@ fn runtime_ids_and_catalog_order_canonicalize_without_fallback() {
     entries.reverse();
     let reversed = EquipmentRegistry::new(&entries, PROTOTYPE_BUILD_RULES).unwrap();
     let dynamic = String::from("phu-vu-bo");
-    let a = registry().resolve_build(&[&dynamic, "an-phan-chan"]).unwrap();
+    let a = registry()
+        .resolve_build(&[&dynamic, "an-phan-chan"])
+        .unwrap();
     let b = reversed.resolve_build(&["an-phan-chan", &dynamic]).unwrap();
     assert_eq!(a, b);
     assert_eq!(a.fingerprint(), b.fingerprint());
@@ -77,7 +88,10 @@ fn runtime_ids_and_catalog_order_canonicalize_without_fallback() {
     assert_eq!(a.budget_used(), 5);
     assert_eq!(registry().revalidate(a).unwrap(), a);
     for id in ["", "Ấn Phản Chấn", "AN-PHAN-CHAN", "a--b", "_item", "item "] {
-        assert!(matches!(registry().entry(id), Err(EquipmentError::InvalidId(_))));
+        assert!(matches!(
+            registry().entry(id),
+            Err(EquipmentError::InvalidId(_))
+        ));
     }
     assert!(matches!(
         registry().entry(&"a".repeat(65)),
@@ -99,14 +113,22 @@ fn slots_duplicates_and_budget_are_checked_before_locking() {
     );
     assert_eq!(
         r.resolve_build(&["a", "b", "c", "d"]),
-        Err(EquipmentError::TooManySlots { limit: 3, actual: 4 })
+        Err(EquipmentError::TooManySlots {
+            limit: 3,
+            actual: 4
+        })
     );
     assert_eq!(
         r.resolve_build(&["an-phan-chan", "giap-tran-mach", "phu-vu-bo"]),
-        Err(EquipmentError::BudgetExceeded { limit: 6, actual: 8 })
+        Err(EquipmentError::BudgetExceeded {
+            limit: 6,
+            actual: 8
+        })
     );
     assert_eq!(
-        r.resolve_build(&["an-phan-chan", "giap-tran-mach"]).unwrap().budget_used(),
+        r.resolve_build(&["an-phan-chan", "giap-tran-mach"])
+            .unwrap()
+            .budget_used(),
         6
     );
 }
@@ -129,10 +151,20 @@ fn invalid_registry_and_numeric_domain_fail_explicitly() {
                 && e.contains(&EquipmentValidationError::ConfigHashMismatch(ItemId::AN_PHAN_CHAN))
     ));
     for effect in [
-        EffectSpec::PerfectGuardRecovery { points: u32::MAX, cooldown_ticks: 300 },
-        EffectSpec::PerfectGuardRecovery { points: 8, cooldown_ticks: 0 },
-        EffectSpec::GuardPressureReduction { basis_points: BASIS_POINTS },
-        EffectSpec::DashCostReduction { basis_points: u16::MAX },
+        EffectSpec::PerfectGuardRecovery {
+            points: u32::MAX,
+            cooldown_ticks: 300,
+        },
+        EffectSpec::PerfectGuardRecovery {
+            points: 8,
+            cooldown_ticks: 0,
+        },
+        EffectSpec::GuardPressureReduction {
+            basis_points: BASIS_POINTS,
+        },
+        EffectSpec::DashCostReduction {
+            basis_points: u16::MAX,
+        },
     ] {
         bad = repin(ItemEntry {
             definition: ItemDefinition {
@@ -148,13 +180,34 @@ fn invalid_registry_and_numeric_domain_fail_explicitly() {
         ));
     }
     for invalid in [
-        BuildRules { max_slots: 4, ..PROTOTYPE_BUILD_RULES.rules },
-        BuildRules { budget: 0, ..PROTOTYPE_BUILD_RULES.rules },
-        BuildRules { dash_cost_floor: 0, ..PROTOTYPE_BUILD_RULES.rules },
-        BuildRules { max_guard_reduction_bps: BASIS_POINTS, ..PROTOTYPE_BUILD_RULES.rules },
-        BuildRules { max_dash_reduction_bps: BASIS_POINTS, ..PROTOTYPE_BUILD_RULES.rules },
-        BuildRules { min_recovery_cooldown_ticks: 0, ..PROTOTYPE_BUILD_RULES.rules },
-        BuildRules { max_recovery_points: u32::MAX, ..PROTOTYPE_BUILD_RULES.rules },
+        BuildRules {
+            max_slots: 4,
+            ..PROTOTYPE_BUILD_RULES.rules
+        },
+        BuildRules {
+            budget: 0,
+            ..PROTOTYPE_BUILD_RULES.rules
+        },
+        BuildRules {
+            dash_cost_floor: 0,
+            ..PROTOTYPE_BUILD_RULES.rules
+        },
+        BuildRules {
+            max_guard_reduction_bps: BASIS_POINTS,
+            ..PROTOTYPE_BUILD_RULES.rules
+        },
+        BuildRules {
+            max_dash_reduction_bps: BASIS_POINTS,
+            ..PROTOTYPE_BUILD_RULES.rules
+        },
+        BuildRules {
+            min_recovery_cooldown_ticks: 0,
+            ..PROTOTYPE_BUILD_RULES.rules
+        },
+        BuildRules {
+            max_recovery_points: u32::MAX,
+            ..PROTOTYPE_BUILD_RULES.rules
+        },
     ] {
         assert!(matches!(
             EquipmentRegistry::new(&[], rules(invalid)),
@@ -175,7 +228,10 @@ fn stacking_is_additive_bounded_and_never_cooldown_resetting() {
     let default = EquipmentRegistry::new(&entries, PROTOTYPE_BUILD_RULES).unwrap();
     assert_eq!(
         default.resolve_build(&["phu-vu-bo", "second-dash-item"]),
-        Err(EquipmentError::GroupLimitExceeded { group: EffectGroup::DashCost, limit: 1 })
+        Err(EquipmentError::GroupLimitExceeded {
+            group: EffectGroup::DashCost,
+            limit: 1
+        })
     );
     let policy = BuildRules {
         group_limits: [1, 1, 2],
@@ -188,10 +244,18 @@ fn stacking_is_additive_bounded_and_never_cooldown_resetting() {
     );
     let r = EquipmentRegistry::new(
         &entries,
-        rules(BuildRules { max_dash_reduction_bps: 2_500, ..policy }),
+        rules(BuildRules {
+            max_dash_reduction_bps: 2_500,
+            ..policy
+        }),
     )
     .unwrap();
-    assert_eq!(r.resolve_build(&["phu-vu-bo", "second-dash-item"]).unwrap().dash_cost(100), 75);
+    assert_eq!(
+        r.resolve_build(&["phu-vu-bo", "second-dash-item"])
+            .unwrap()
+            .dash_cost(100),
+        75
+    );
     let mut second = PROTOTYPE_ITEMS[0];
     second.definition.id = ItemId::new("second-recovery-item").unwrap();
     second.definition.budget_cost = 1;
@@ -203,18 +267,17 @@ fn stacking_is_additive_bounded_and_never_cooldown_resetting() {
     let entries = [PROTOTYPE_ITEMS[0], second];
     let r = EquipmentRegistry::new(
         &entries,
-        rules(BuildRules { group_limits: [2, 1, 1], ..PROTOTYPE_BUILD_RULES.rules }),
+        rules(BuildRules {
+            group_limits: [2, 1, 1],
+            ..PROTOTYPE_BUILD_RULES.rules
+        }),
     )
     .unwrap();
-    let build = r.resolve_build(&["an-phan-chan", "second-recovery-item"]).unwrap();
-    let first = guard_recovery(
-        build,
-        &GuardRecoveryState::default(),
-        contact(0, 1),
-        0,
-        100,
-    )
-    .unwrap();
+    let build = r
+        .resolve_build(&["an-phan-chan", "second-recovery-item"])
+        .unwrap();
+    let first =
+        guard_recovery(build, &GuardRecoveryState::default(), contact(0, 1), 0, 100).unwrap();
     assert_eq!(first.restored_points, 10);
     let early = guard_recovery(build, &first.state, contact(300, 2), 0, 100).unwrap();
     assert_eq!(early.restored_points, 0);
@@ -228,27 +291,50 @@ fn stale_item_or_build_rule_pins_never_auto_upgrade() {
     let build = r.resolve_build(&["phu-vu-bo"]).unwrap();
     let pin = build.pins().next().unwrap();
     let version = ItemPin {
-        revision: EquipmentRevision { version: 99, ..pin.revision },
+        revision: EquipmentRevision {
+            version: 99,
+            ..pin.revision
+        },
         ..pin
     };
-    assert!(matches!(r.resolve(version), Err(EquipmentError::VersionMismatch { .. })));
+    assert!(matches!(
+        r.resolve(version),
+        Err(EquipmentError::VersionMismatch { .. })
+    ));
     let hash = ItemPin {
-        revision: EquipmentRevision { config_hash: 1, ..pin.revision },
+        revision: EquipmentRevision {
+            config_hash: 1,
+            ..pin.revision
+        },
         ..pin
     };
-    assert!(matches!(r.resolve(hash), Err(EquipmentError::HashMismatch { .. })));
+    assert!(matches!(
+        r.resolve(hash),
+        Err(EquipmentError::HashMismatch { .. })
+    ));
     let mut entries = PROTOTYPE_ITEMS;
-    entries[2].definition.effect = EffectSpec::DashCostReduction { basis_points: 1_000 };
+    entries[2].definition.effect = EffectSpec::DashCostReduction {
+        basis_points: 1_000,
+    };
     entries[2] = repin(entries[2]);
     entries[2].revision.version = 2;
     let changed = EquipmentRegistry::new(&entries, PROTOTYPE_BUILD_RULES).unwrap();
-    assert!(matches!(changed.revalidate(build), Err(EquipmentError::VersionMismatch { .. })));
+    assert!(matches!(
+        changed.revalidate(build),
+        Err(EquipmentError::VersionMismatch { .. })
+    ));
     let changed = EquipmentRegistry::new(
         &PROTOTYPE_ITEMS,
-        rules(BuildRules { budget: 7, ..PROTOTYPE_BUILD_RULES.rules }),
+        rules(BuildRules {
+            budget: 7,
+            ..PROTOTYPE_BUILD_RULES.rules
+        }),
     )
     .unwrap();
-    assert!(matches!(changed.revalidate(build), Err(EquipmentError::RulesRevisionMismatch { .. })));
+    assert!(matches!(
+        changed.revalidate(build),
+        Err(EquipmentError::RulesRevisionMismatch { .. })
+    ));
 }
 
 #[test]
@@ -264,7 +350,9 @@ fn lock_is_usable_headlessly_but_combat_rejects_before_spawn() {
     assert_eq!(kits.revalidate_loadout(locked).unwrap(), locked);
     assert!(matches!(
         Battle::with_loadout(Mode::Boss, 7, request),
-        Err(RegistryError::Equipment(EquipmentError::RuntimeNotImplemented))
+        Err(RegistryError::Equipment(
+            EquipmentError::RuntimeNotImplemented
+        ))
     ));
 }
 
@@ -303,20 +391,29 @@ fn recovery_is_capped_single_source_action_and_cooldown_bound() {
     assert_eq!(fresh.restored_points, 8);
     let suppressed = guard_recovery(build, &fresh.state, contact(301, 3), 0, 100).unwrap();
     assert_eq!(suppressed.restored_points, 0);
-    let delayed_contact = GuardContact { tick: 600, hit_index: 1, ..contact(301, 3) };
+    let delayed_contact = GuardContact {
+        tick: 600,
+        hit_index: 1,
+        ..contact(301, 3)
+    };
     let delayed_hit = guard_recovery(build, &suppressed.state, delayed_contact, 0, 100).unwrap();
     assert_eq!(delayed_hit.restored_points, 0);
     let stale = guard_recovery(build, &delayed_hit.state, contact(600, 2), 0, 100).unwrap();
     assert_eq!(stale.restored_points, 0);
     assert_eq!(
-        guard_recovery(build, &stale.state, contact(600, 4), 0, 100).unwrap().restored_points,
+        guard_recovery(build, &stale.state, contact(600, 4), 0, 100)
+            .unwrap()
+            .restored_points,
         8
     );
     assert_eq!(
         guard_recovery(build, &fresh.state, contact(299, 4), 0, 100),
         Err(EffectError::TimeReversed)
     );
-    let other_target = GuardContact { target: FighterId(9), ..contact(301, 4) };
+    let other_target = GuardContact {
+        target: FighterId(9),
+        ..contact(301, 4)
+    };
     assert_eq!(
         guard_recovery(build, &fresh.state, other_target, 0, 100),
         Err(EffectError::TargetMismatch)
@@ -336,23 +433,29 @@ fn recovery_is_capped_single_source_action_and_cooldown_bound() {
 fn equipment_and_nonperfect_back_unblockable_contacts_cannot_proc() {
     let build = registry().resolve_build(&["an-phan-chan"]).unwrap();
     for c in [
-        GuardContact { origin: ProcOrigin::Equipment, ..contact(0, 1) },
-        GuardContact { perfect: false, ..contact(0, 1) },
-        GuardContact { front: false, ..contact(0, 1) },
-        GuardContact { blockable: false, ..contact(0, 1) },
+        GuardContact {
+            origin: ProcOrigin::Equipment,
+            ..contact(0, 1)
+        },
+        GuardContact {
+            perfect: false,
+            ..contact(0, 1)
+        },
+        GuardContact {
+            front: false,
+            ..contact(0, 1)
+        },
+        GuardContact {
+            blockable: false,
+            ..contact(0, 1)
+        },
     ] {
         let result = guard_recovery(build, &GuardRecoveryState::default(), c, 0, 100).unwrap();
         assert_eq!(result.restored_points, 0);
     }
     let empty = registry().resolve_build(&[]).unwrap();
-    let result = guard_recovery(
-        empty,
-        &GuardRecoveryState::default(),
-        contact(0, 1),
-        0,
-        100,
-    )
-    .unwrap();
+    let result =
+        guard_recovery(empty, &GuardRecoveryState::default(), contact(0, 1), 0, 100).unwrap();
     assert_eq!(result.restored_points, 0);
 }
 
@@ -369,7 +472,10 @@ fn repeated_contacts_cannot_create_unbounded_refund_rate_or_tick_overflow() {
     assert_eq!(refunded, 11 * 8); // no more than one proc per 300 ticks
     let last = guard_recovery(build, &state, contact(u32::MAX, u32::MAX), 0, u32::MAX).unwrap();
     assert_eq!(last.restored_points, 8);
-    let other_source = GuardContact { source: FighterId(2), ..contact(u32::MAX, 1) };
+    let other_source = GuardContact {
+        source: FighterId(2),
+        ..contact(u32::MAX, 1)
+    };
     let result = guard_recovery(build, &last.state, other_source, 0, u32::MAX).unwrap();
     assert_eq!(result.restored_points, 0);
 }
@@ -423,23 +529,36 @@ fn full_loadout_revalidation_rejects_custom_stale_item_and_rules_pins() {
     };
     let changed_rules = EquipmentRegistry::new(
         &PROTOTYPE_ITEMS,
-        rules(BuildRules { budget: 7, ..PROTOTYPE_BUILD_RULES.rules }),
+        rules(BuildRules {
+            budget: 7,
+            ..PROTOTYPE_BUILD_RULES.rules
+        }),
     )
     .unwrap();
-    let locked = kits.resolve_loadout_with_equipment(request, &changed_rules).unwrap();
+    let locked = kits
+        .resolve_loadout_with_equipment(request, &changed_rules)
+        .unwrap();
     assert!(matches!(
         kits.revalidate_loadout(locked),
-        Err(RegistryError::Equipment(EquipmentError::RulesRevisionMismatch { .. }))
+        Err(RegistryError::Equipment(
+            EquipmentError::RulesRevisionMismatch { .. }
+        ))
     ));
     let mut entries = PROTOTYPE_ITEMS;
-    entries[2].definition.effect = EffectSpec::DashCostReduction { basis_points: 1_000 };
+    entries[2].definition.effect = EffectSpec::DashCostReduction {
+        basis_points: 1_000,
+    };
     entries[2] = repin(entries[2]);
     entries[2].revision.version = 2;
     let changed_item = EquipmentRegistry::new(&entries, PROTOTYPE_BUILD_RULES).unwrap();
-    let locked = kits.resolve_loadout_with_equipment(request, &changed_item).unwrap();
+    let locked = kits
+        .resolve_loadout_with_equipment(request, &changed_item)
+        .unwrap();
     assert!(matches!(
         kits.revalidate_loadout(locked),
-        Err(RegistryError::Equipment(EquipmentError::VersionMismatch { .. }))
+        Err(RegistryError::Equipment(
+            EquipmentError::VersionMismatch { .. }
+        ))
     ));
 }
 
@@ -451,9 +570,14 @@ fn guard_reduction_stacking_rejects_cap_overflow_and_preserves_exclusions() {
     second.definition.effect = EffectSpec::GuardPressureReduction { basis_points: 500 };
     second = repin(second);
     let entries = [PROTOTYPE_ITEMS[1], second];
-    let policy = rules(BuildRules { group_limits: [1, 2, 1], ..PROTOTYPE_BUILD_RULES.rules });
+    let policy = rules(BuildRules {
+        group_limits: [1, 2, 1],
+        ..PROTOTYPE_BUILD_RULES.rules
+    });
     let r = EquipmentRegistry::new(&entries, policy).unwrap();
-    let build = r.resolve_build(&["giap-tran-mach", "second-guard-item"]).unwrap();
+    let build = r
+        .resolve_build(&["giap-tran-mach", "second-guard-item"])
+        .unwrap();
     assert_eq!(build.guard_pressure(100, true, true), 80);
     assert_eq!(build.guard_pressure(100, false, true), 100);
     assert_eq!(build.guard_pressure(100, true, false), 100);
@@ -463,7 +587,9 @@ fn guard_reduction_stacking_rejects_cap_overflow_and_preserves_exclusions() {
     let r = EquipmentRegistry::new(&entries, policy).unwrap();
     assert_eq!(
         r.resolve_build(&["giap-tran-mach", "second-guard-item"]),
-        Err(EquipmentError::EffectCapExceeded(EffectGroup::GuardPressure))
+        Err(EquipmentError::EffectCapExceeded(
+            EffectGroup::GuardPressure
+        ))
     );
 }
 
@@ -476,7 +602,10 @@ fn wide_budget_sum_reports_actual_total_without_u32_wrap() {
     }
     let r = EquipmentRegistry::new(
         &entries,
-        rules(BuildRules { budget: u32::MAX, ..PROTOTYPE_BUILD_RULES.rules }),
+        rules(BuildRules {
+            budget: u32::MAX,
+            ..PROTOTYPE_BUILD_RULES.rules
+        }),
     )
     .unwrap();
     assert_eq!(
