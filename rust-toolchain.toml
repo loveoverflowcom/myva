@@ -1,4 +1,10 @@
 [toolchain]
+# Android/CMP builds with this compiler are not yet verified: this local host lacks
+# aarch64-linux-android, NDK 27/SDK 37/build-tools 36 and JDK 17. The user accepted
+# this explicit gap for the skills/toolchain PR; this pin is not native acceptance.
+# Browser E2E also has no successful run on this host: Chromium startup was blocked
+# before assertions. WASM build/lint/determinism passed; do not infer interaction PASS.
+# Evidence: docs/reports/agent-skills-transfer.md (Android and browser acceptance gaps)
 channel = "1.98.1"
 profile = "minimal"
 components = ["rustfmt", "clippy"]
