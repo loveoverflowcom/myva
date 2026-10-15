@@ -1,0 +1,4 @@
+interface:
+  display_name: "Game and economy audit"
+  short_description: "Audit combat, ECS, replay, assets, economy and authority"
+  default_prompt: "Use $myva-game-audit to audit combat and economy invariants without adding gameplay or claiming unmeasured GPU performance."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Web engineering"
+  short_description: "Leptos shell, Bevy bridge and browser verification"
+  default_prompt: "Use $myva-web-engineering to change the Leptos shell while preserving Bevy runtime ownership and browser evidence."

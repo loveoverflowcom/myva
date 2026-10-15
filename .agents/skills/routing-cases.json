@@ -1,0 +1,124 @@
+{
+  "version": 1,
+  "cases": [
+    {
+      "id": "rust-rule",
+      "prompt": "Change a combat cooldown rule in packages/sim and verify the invariant.",
+      "primary": "myva-engineering",
+      "support": [
+        "myva-test-automation"
+      ],
+      "reason": "Pure integer/tick core owns the rule; independent boundary regression precedes ECS/native/WASM claims.",
+      "mutation_authorized": true
+    },
+    {
+      "id": "replay-compatibility",
+      "prompt": "Fix rejection of a mismatched replay v4 pin without changing legacy replay v3 bytes.",
+      "primary": "myva-logic-fix",
+      "support": [
+        "myva-engineering",
+        "myva-test-automation"
+      ],
+      "reason": "Bounded logic repair composes exact pins, v3/v4 regression, metadata/hash isolation and unchanged rejection state.",
+      "mutation_authorized": true
+    },
+    {
+      "id": "bevy-lifecycle",
+      "prompt": "Audit Bevy client teardown and ECS entity mirror cleanup on rematch. Do not edit.",
+      "primary": "myva-game-audit",
+      "support": [
+        "myva-engineering",
+        "myva-code-review"
+      ],
+      "reason": "Sim/session remains the rule owner; ECS mirror and renderer ownership/lifecycle are separate boundaries.",
+      "mutation_authorized": false
+    },
+    {
+      "id": "asset-performance",
+      "prompt": "Audit asset unload/reload and the claim that CPU lifecycle tests prove GPU memory performance.",
+      "primary": "myva-game-audit",
+      "support": [
+        "myva-engineering",
+        "myva-test-automation"
+      ],
+      "reason": "Reject evidence inflation: CPU lifecycle is not GPU allocation or rendered performance; require attributable measurements.",
+      "mutation_authorized": false
+    },
+    {
+      "id": "economy",
+      "prompt": "Audit duplicate rewards, resource overflow and budget conservation in the offline economy simulator.",
+      "primary": "myva-game-audit",
+      "support": [
+        "myva-engineering",
+        "myva-test-automation"
+      ],
+      "reason": "Ledger/budget invariants and rejection atomicity are offline core claims, not implemented online server authority.",
+      "mutation_authorized": false
+    },
+    {
+      "id": "cmp-shell",
+      "prompt": "Implement an authorized CMP shell navigation fix and assess Bevy re-entry and background/resume acceptance.",
+      "primary": "myva-cmp-engineering",
+      "support": [
+        "myva-engineering",
+        "myva-test-automation"
+      ],
+      "reason": "Platform mechanics own shell lifetimes; desktop preview cannot establish Android/iOS surface, IME, pointer-cancel or device acceptance.",
+      "mutation_authorized": true
+    },
+    {
+      "id": "web-e2e",
+      "prompt": "Add and run a browser E2E check for shell leave/re-enter, keyboard focus and rejected bridge messages.",
+      "primary": "myva-web-engineering",
+      "support": [
+        "myva-engineering",
+        "myva-test-automation"
+      ],
+      "reason": "Real Leptos/Playwright surface exists; assert fresh state, build identity and teardown, distinguish DOM from canvas.",
+      "mutation_authorized": true
+    },
+    {
+      "id": "visual-only",
+      "prompt": "Review the HUD screenshot only. Do not fix source or change the visual baseline.",
+      "primary": "myva-visual-review",
+      "support": [
+        "myva-ui-design"
+      ],
+      "reason": "Open supplied pixels; record unknown build honestly and assess telegraph/hit feedback/HUD/camera/touch/fallback only when observable.",
+      "mutation_authorized": false
+    },
+    {
+      "id": "red-ci",
+      "prompt": "Explain why this CI log is red; no source edits or GitHub CI polling.",
+      "primary": "myva-diagnostics",
+      "support": [
+        "myva-engineering",
+        "myva-test-automation"
+      ],
+      "reason": "Read summary then hypothesis-focused logs; distinguish baseline/environment/flaky/regression and preserve real failures.",
+      "mutation_authorized": false
+    },
+    {
+      "id": "review-and-fix",
+      "prompt": "Review this replay parser diff and fix any verified defects. Commit and push the repair; do not merge.",
+      "primary": "myva-code-review",
+      "support": [
+        "myva-logic-fix",
+        "myva-engineering",
+        "myva-test-automation"
+      ],
+      "reason": "Review first; explicit user repair/publish authority permits bounded validated fixes but grants no merge authority.",
+      "mutation_authorized": true
+    },
+    {
+      "id": "read-only-review",
+      "prompt": "Review this PR at pinned base/head and report findings only. Do not edit, comment or approve.",
+      "primary": "myva-code-review",
+      "support": [
+        "myva-engineering"
+      ],
+      "reason": "Pin revisions and trace consumers read-only; report DEFECT/ASSURANCE_GAP/CONTRACT_DRIFT, separate severity/confidence.",
+      "mutation_authorized": false
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Code review"
+  short_description: "Read-only revision-pinned review with independent oracles"
+  default_prompt: "Use $myva-code-review to review this diff read-only, classify findings and report evidence gaps separately."

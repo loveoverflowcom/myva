@@ -36,7 +36,7 @@ embedding framework của VOT.
 | `verify assets` | Validator tests, generated fixture `--check`, manifest/provenance/hash/PNG/bundle/resource budgets, Python report contract tests |
 | `verify web` | WASM clippy, pure sim WASM build, hai bundle web, managed server, Playwright bridge/lifecycle/combat/Mạch/assets tests |
 | `verify determinism [--ticks N --seeds 1,7,12]` | Existing native/WASM script: release fixture, Node, hash từng tick cho normal/Mạch; giữ report seed/ticks/hash |
-| `verify repository` | Format, docs, root clippy/tests, replay/headless/economy/assets/report contracts; browser/determinism chọn riêng |
+| `verify repository` | Format, docs, skills structure/negative controls, root clippy/tests, replay/headless/economy/assets/report contracts; browser/determinism chọn riêng |
 | `verify xtask` | Focused format, xtask clippy và CLI/plan/impact/lifecycle tests |
 | `fmt [--check]` | Cargo fmt root workspace; explicit apply hoặc read-only check |
 | `doctor` | Read-only prerequisites, không chạy gameplay/browser/device test |
@@ -100,6 +100,7 @@ checks. Không diễn giải lỗi discovery thành diff rỗng.
 | Asset package/content/budgets | Validator/generator/provenance/hash/resource budgets và report tests; consumers graybox/web kéo theo browser verification |
 | Economy | Native package checks và simulator invariant/CSV; không build web không liên quan |
 | Native prototype | Root format/docs + nested format, script syntax, Android check/APK/CMP compile; iOS/runtime vẫn BLOCKED/NOT_RUN |
+| `.agents/`, `.claude/`, `AGENTS.md`, `CLAUDE.md`, `scripts/check-skills.py`, `tests/test_check_skills.py` | Root format/docs, skills structure + required nonempty negative suite, xtask clippy/tests; không tự chọn gameplay/browser |
 | Toolchain/Cargo/config/CI/xtask/scripts/docs/shared contracts hoặc unknown | Full root contract; native input trong cùng diff giữ thêm native gates |
 | Empty diff | Full root contract, không báo pass từ một empty plan |
 
@@ -107,6 +108,34 @@ Format và docs luôn chạy. Native workspaces độc lập không là yêu c�
 của root CI; native paths chọn gate Android tường minh. Full contract không tự
 claim Kotlin/iOS/device coverage. Printed selection và ordered plan là các stage
 thực sự chạy; không có heavyweight build song song hoặc simulated PASS.
+
+Skills input là ngoại lệ tường minh cho generic script/shared fallback. Nếu cùng
+diff có Rust, native hoặc unknown input, planner lấy union với scope hiện hữu,
+không thu hẹp các gate của input đó. Rust format luôn là `cargo fmt --all --
+--check`, kể cả skills-only diff, nên không che unrelated formatting failures.
+
+## Skills structural contract
+
+`verify repository` và full preflight/CI gọi `python3 scripts/check-skills.py`, rồi
+`python3 scripts/check-skills.py --self-test`. Suite dùng disposable repository
+fixtures; không sửa skill thật. Missing test file, empty suite hoặc negative control
+fail đều trả nonzero, không được diễn giải thành optional-skip/PASS.
+
+Canonical owner là 12 workflow dưới `.agents/skills/`, mỗi workflow có `SKILL.md`
+với name/description và metadata mapping owner/source_repository/source_revision;
+`agents/openai.yaml` có display name, short description và exact `$skill-name`
+default prompt. Index link mỗi skill đúng một lần. Local Markdown links phải tồn
+tại, ở trong repository, và có heading fragment hợp lệ nếu target là Markdown.
+References phải reachable từ chính skill entrypoint. `.claude/skills/<name>` chỉ
+là relative symlink chính xác `../../.agents/skills/<name>`; independent copies,
+extra workflows và orphan references bị từ chối.
+
+`routing-cases.json` là version-1 expected-routing fixture: mỗi case có id,
+prompt, primary, support, reason và mutation_authorized. Validator kiểm required
+scenarios, canonical owners, unique IDs/support và read-only/fix authorization
+boundaries. Nó không thực thi prompt hoặc đo lựa chọn thực tế của agent.
+Structural PASS chỉ là evidence về repository structure; runtime discovery và
+routing evaluation phải được báo riêng là verified hay NOT_RUN với bằng chứng.
 
 ## Prerequisites, resources và evidence
 

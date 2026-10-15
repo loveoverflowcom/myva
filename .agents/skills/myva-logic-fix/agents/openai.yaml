@@ -1,0 +1,4 @@
+interface:
+  display_name: "Repair a logic defect"
+  short_description: "Repair one invariant defect with a failing regression"
+  default_prompt: "Use $myva-logic-fix to fix the authorized defect using an independent regression and exact rejected-transition assertions."

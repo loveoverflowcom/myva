@@ -362,6 +362,9 @@ pub fn preflight(w: &Workspace, selection: &Selection, port: u16) -> Vec<Step> {
             ),
         ),
     ];
+    if selection.skills {
+        steps.extend(skills(w));
+    }
     if selection.full || !selection.packages.is_empty() {
         let scope: Vec<String> = if selection.full {
             vec!["--workspace".into()]
@@ -431,6 +434,19 @@ pub fn preflight(w: &Workspace, selection: &Selection, port: u16) -> Vec<Step> {
         }
     }
     steps
+}
+
+fn skills(w: &Workspace) -> Vec<Step> {
+    vec![
+        Step::command(
+            "canonical skills, provenance, links and routing fixture structure",
+            CommandSpec::new(w, "python3", &["scripts/check-skills.py"]),
+        ),
+        Step::command(
+            "skill validator negative controls (nonempty required suite)",
+            CommandSpec::new(w, "python3", &["scripts/check-skills.py", "--self-test"]),
+        ),
+    ]
 }
 
 fn append_unique(steps: &mut Vec<Step>, additional: Vec<Step>) {
@@ -807,10 +823,62 @@ mod tests {
         );
         assert!(steps.iter().any(|s| s.label.contains("determinism")));
         assert!(steps.iter().any(|s| s.label.contains("report contracts")));
+        assert!(steps.iter().any(|s| s.label.contains("canonical skills")));
+        assert!(steps.iter().any(|s| s.label.contains("negative controls")));
         assert!(
             !steps
                 .iter()
                 .any(|s| matches!(s.action, Action::AndroidPrerequisites(_)))
+        );
+    }
+
+    #[test]
+    fn repository_verification_executes_skill_validator_and_negative_controls() {
+        let steps = verify(&workspace(), &Verify::Repository);
+        let commands: Vec<_> = steps
+            .iter()
+            .filter_map(|step| match &step.action {
+                Action::Command(command) => Some(command),
+                _ => None,
+            })
+            .collect();
+        assert!(commands.iter().any(|command| {
+            command.program == "python3" && command.args == ["scripts/check-skills.py"]
+        }));
+        assert!(commands.iter().any(|command| {
+            command.program == "python3"
+                && command.args == ["scripts/check-skills.py", "--self-test"]
+        }));
+    }
+
+    #[test]
+    fn skills_only_plan_preserves_workspace_format_and_real_xtask_checks() {
+        let selection = Selection {
+            skills: true,
+            packages: ["xtask".into()].into(),
+            ..Selection::default()
+        };
+        let steps = preflight(&workspace(), &selection, DEFAULT_PORT);
+        let Action::Command(format) = &steps[0].action else {
+            panic!("format must remain a real workspace gate")
+        };
+        assert_eq!(format.args, ["fmt", "--all", "--", "--check"]);
+        assert!(steps.iter().any(|s| s.label.contains("documentation")));
+        assert!(steps.iter().any(|s| s.label.contains("canonical skills")));
+        assert!(steps.iter().any(|s| s.label.contains("negative controls")));
+        for operation in ["clippy", "test"] {
+            assert!(steps.iter().any(|step| match &step.action {
+                Action::Command(command) =>
+                    command.program == "cargo"
+                        && command.args.first().is_some_and(|arg| arg == operation)
+                        && command.args.windows(2).any(|args| args == ["-p", "xtask"]),
+                _ => false,
+            }));
+        }
+        assert!(
+            !steps
+                .iter()
+                .any(|step| matches!(step.action, Action::WebTests { .. }))
         );
     }
 

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Engineering foundation"
+  short_description: "Invariants, typed boundaries and evidence ownership"
+  default_prompt: "Use $myva-engineering to implement a bounded MyVa change with owned invariants and independent layered evidence."
