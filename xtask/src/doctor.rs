@@ -78,7 +78,7 @@ pub fn target(workspace: &Workspace, runner: &Runner, name: &str) -> Result<Stri
         workspace,
         runner,
         "rustup",
-        &["+1.97.1", "target", "list", "--installed"],
+        &["+1.98.1", "target", "list", "--installed"],
     )?;
     ensure!(
         targets.lines().any(|line| line.trim() == name),

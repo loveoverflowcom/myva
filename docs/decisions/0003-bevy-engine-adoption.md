@@ -38,7 +38,7 @@ Pin trực tiếp trong manifest và commit `Cargo.lock`; dùng `rust-toolchain.
 
 | Thành phần | Pin/quyết định | Giới hạn bằng chứng |
 | --- | --- | --- |
-| Rust | `1.97.1` | `bevy 0.20.0` khai báo `rust-version = "1.97.1"`; Rust `1.96.1` cũ của máy không đáp ứng |
+| Rust | `1.98.1` | `bevy 0.20.0` khai báo `rust-version = "1.97.1"`; Rust `1.96.1` cũ của máy không đáp ứng |
 | Bevy client | `=0.20.0`, `default-features = false` | Version/feature xác nhận từ package; compile/run ghi trong báo cáo platform |
 | Leptos shell | `=0.8.22`, feature `csr` | D03 dùng CSR; chưa đưa SSR/hydration vào spike |
 | Pure core | `myva-sim`, `myva-economy`, không phụ thuộc Bevy | Giữ test CLI/headless; schema lệnh/sự kiện thuộc `myva-sim` |
@@ -104,3 +104,11 @@ Kiểm tra ngày **09/10/2026**. Trang release không truy cập được qua we
 - **[S6]** [CMP và UIKit](https://kotlinlang.org/docs/multiplatform/compose-uikit-integration.html).
 - **[S7]** [Bevy Window: canvas/resize/browser input](https://github.com/bevyengine/bevy/blob/v0.20.0/crates/bevy_window/src/window.rs).
 - **[S8]** [Leptos: CSR và SSR là hai đường tích hợp](https://book.leptos.dev/getting_started/index.html).
+
+## Toolchain update — 2026-10-15
+
+The workspace and standalone native probes now pin Rust `1.98.1` at the user's
+request. Bevy `0.20.0` remains unchanged with minimum Rust `1.97.1`. Historical
+reports retain the compiler actually used; this upgrade does not retroactively
+verify their platform/device claims. Local upgrade results are recorded in the
+[skills transfer report](../reports/agent-skills-transfer.md).

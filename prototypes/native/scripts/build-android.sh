@@ -27,7 +27,7 @@ cargo_action=rustc
 # the final native library, preserving the dependency compilation cache.
 extra_args=(-- -C link-arg=-Wl,-z,max-page-size=16384 -C link-arg=-Wl,-z,common-page-size=16384)
 if [[ "$mode" == check ]]; then cargo_action=check; extra_args=(); fi
-cargo +1.97.1 "$cargo_action" --locked --manifest-path "$probe_dir/Cargo.toml" \
+cargo +1.98.1 "$cargo_action" --locked --manifest-path "$probe_dir/Cargo.toml" \
   --lib --target aarch64-linux-android "${extra_args[@]}"
 if [[ "$mode" == check ]]; then exit 0; fi
 mkdir -p "$probe_dir/android/app/src/main/jniLibs/arm64-v8a"
